@@ -56,19 +56,23 @@ df['url'] = df.features.apply(lambda row: row['properties']['url'])
 
 ```python
 import requests
-masterListUrl = 'http://data.gdeltproject.org/gdeltv2/masterfilelist.txt'
-directory = requests.get(masterListUrl)
-clean = directory.content.split('\n')
-clean = map(lambda x: x.split(' '),clean)
+import pandas as pd
+import numpy as np
+import re
+from dateutil.parser import parse
 ```
 
 # Logic for GDELT module
 
-Enter a date
+Enter a date or date range.
+
+Convert the entered date or date range to string, search for string in the master df list.  Use the tblType parameter to pull the correct table(s).  
+
 * default is take current time and most recent file
-* enter historical date; defaults to no time specificity
+* enter historical date; defaults to last record of day
     * parse
     * add feature to enter time for historical and pull closest 15 minute file
+    * date range will pull last file for each day and concatenate into single dataframe
     
 choose a database
 *  Select between events, event mentions or gkg
@@ -76,22 +80,86 @@ choose a database
 return it as a python or R dataframe
 *  use the feather library for Python
 
+*********************
 
-## Parameters
+
+# URLS
+
+The main urls that we need to hit to return data.
+
+
+```python
+masterListUrl = 'http://data.gdeltproject.org/gdeltv2/masterfilelist.txt'
+baseUrl = 'http://data.gdeltproject.org/gdeltv2/'
+```
+
+# Parameters and Global Variables
+
+Section contains variables that will be `self.` objects in the classes.
+
+
+```python
+
+'''
+Listing of all GDELT 15 minute dumps. Code retrieves the list,
+splits it on the new line character, and then splits on the space. 
+We delete the last entry because it's empty.  
+'''
+directory = requests.get(masterListUrl)
+clean = directory.content.split('\n')
+clean = map(lambda x: x.split(' '),clean)
+del clean[-1]
+
+"""
+Setting up the master list as dataframe for querying
+this will be inside the class
+"""
+masterdf = pd.DataFrame(clean)
+masterdf.fillna('',inplace=True)
+```
 
 
 ```python
 # table type = tblType
+graph = 'gkg'
+events = 'events' # includes new GDELT 2.0 mentions table; merged on globaleventid
 
-all = "mentions", "eventsDatabase", "gdelt knowledge graph"
-gkg = ["gdelt knowledge graph"]
-events = "events" "database"
-mentions =  "mentions database"
-
-alls = ['gkg','events']
+tblType = events  # default to events db
 ```
 
-## Global variables
+
+## Date Parameters that will be entered
+
+Location to hold testing spot for all the different type of parameters that can be entered.
+
+
+```python
+defaultDateEntry = "" # string
+stringDateEntry = " 2016 09 18" # string
+historicalDateEntry = "2015 02 25" #string
+errorDate = "What in the heck" # error string
+listOfdates = ['Sep 1 2016','2016 09 24'] # list, len 2
+moreThanTwo= ['Sept 20 2016','June 3 2011','January 1, 2013'] # list, len greater than 2d
+
+date = defaultDateEntry
+time = ""
+```
+
+
+```python
+date
+```
+
+
+
+
+    ['Sep 1 2016', '2016 09 24']
+
+
+
+## Setting the values for the headers
+
+Headers are set based on `tblType` value passed in.  Will default to the events DB headers.  
 
 
 ```python
@@ -112,71 +180,153 @@ mentionsHeaders.tableId.tolist();
 
 ```
 
+**************************
+
+
+# Checking Inputs of functions and parameters
+
+We need to see how many dates are passed into the function.  Use the logic above. 
+
 
 ```python
-strings = ['http://data.gdeltproject.org/gdeltv2/20150225234500.gkg.csv.zip',
-          'http://data.gdeltproject.org/gdeltv2/20160919070000.mentions.CSV.zip',
-          'http://data.gdeltproject.org/gdeltv2/20160919070000.export.CSV.zip']
+import traceback
+import datetime
 
-dbType = re.search(
-            '(mentions|export|gkg)',
-            strings[2]
-        ).group()
-dbType
+def dateInputCheck(date):
+    if isinstance(date,str):
+        if date != "":
+            if parse(date) > datetime.datetime.now():
+                raise ValueError('Date input string greater than current date.')
+        
+
+
+    elif isinstance(date,list):
+        if len(date)==1:
+            try:
+                parse("".join(date))
+                
+            except:
+                raise ValueError("One or more of your input date strings does not parse to a date format. Check input.")
+      
+        if len(date)==2:
+            try:
+                map(parse,date)
+                
+            except Exception as exc:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
+                traceback.print_exception(exc_type, exc_value, exc_traceback,
+                                          limit=2, file=sys.stdout)
+                raise ValueError("One or more of your input date strings does not parse to a date format. Check input.")
+
+            if bool(parse(date[0])<parse(date[1])) == False:
+                raise ValueError('Start date greater than end date. Check date strings.')
+                
+            if np.all(np.logical_not(np.array(map(parse,date))> datetime.datetime.now())) == False:
+                raise ValueError("One of your dates is greater than the current date. Check input date strings.")
+
+            
+        elif len(date)>2:
+
+            try:
+                map(parse,date)
+            except Exception as exc:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
+                traceback.print_exception(exc_type, exc_value, exc_traceback,
+                                          limit=2, file=sys.stdout)
+                raise ValueError("One or more of your input date strings does not parse to a date format. Check input.")
+                
+            if np.all(np.logical_not(np.array(map(parse,date))> datetime.datetime.now())) == False:
+                raise ValueError("One or more of your input date strings does not parse to a date format. Check input.")
+
+        
+```
+
+
+```python
+date=['2016 9 12','2017 8 12']
+dateInputCheck(date)
+```
+
+
+    ---------------------------------------------------------------------------
+
+    ValueError                                Traceback (most recent call last)
+
+    <ipython-input-350-7519def08802> in <module>()
+          1 date=['2016 9 12','2017 8 12']
+    ----> 2 dateInputCheck(date)
+    
+
+    <ipython-input-348-8edabdb4fb7a> in dateInputCheck(date)
+         33 
+         34             if np.all(np.logical_not(np.array(map(parse,date))> datetime.datetime.now())) == False:
+    ---> 35                 raise ValueError("One of your dates is greater than the current date. Check input date strings.")
+         36 
+         37 
+
+
+    ValueError: One of your dates is greater than the current date. Check input date strings.
+
+
+
+```python
+map(parse,date)
 ```
 
 
 
 
-    'export'
+    [datetime.datetime(2016, 9, 25, 0, 0)]
 
 
+
+### Checking the tblType input
+
+
+```python
+
+# gets the urls from array
+# resultMaster = vectorizedUrlFinder(UrlFinder,datesToPull)
+
+
+def tblCheck(tbl):
+    '''Checking the input of tblType.'''
+    if tbl == 'events' or tbl == '' or tbl == 'mentions':
+        resultsUrlList = resultMaster[2][resultMaster[2].str.contains('export|mentions')]
+    elif tbl == 'gkg':
+        resultsUrlList = resultMaster[2][resultMaster[2].str.contains('gkg')]
+    else:
+        raise ValueError ("Incorrect parameter \'{0}\' entered.  Did you mean to use \'{0}\' as the parameter?\nPlease check your \'tblType\' parameters.".format(tblType))
+    return resultsUrlList
+```
+
+### Testing area for input
+
+*************
+
+# Date Functionality (Date ranges)
+
+Use the numpy date range functionality to create strings of dates between ranges in a list.  Then, use the dateutil tool to parse those strings into the correct format.  Then run a query for each date, return the dataframe, and concatenate into a single one.
+
+* Logic
+    * If length of passed in date less than zero, raise error
+    * If length is equal to one, find that one date's table or graph
+    * If length equal to two:
+        * if dates are chronological, covert to numpy range and pull all tables or graphs, but raise warning for long ranges
+        * if dates are not chronological, get individual dates
+    * If length greater than two, get the individual dates
+        * initially, return the latest time
+        * add option to return closest 15 minute interval to passed in time
 
 ## Code Pieces and Functions
 
 
 ```python
-defaultDateEntry = ""
-stringDateEntry = " 2016 09 18"
-historicalDateEntry = "2015 02 25"
-errorDate = "What in the heck"
+# numpy example of ranging the date
+np.arange('2016-08-01', '2016-09-16', dtype='datetime64[D]');
 ```
-
-
-```python
-date = defaultDateEntry
-time = ""
-```
-
-# Date Functionality (Date ranges)
-
-Use the numpy date range functionality to create strings of dates between ranges in a list.  Then, use the dateutil tool to parse those strings into the correct format.  Then run a query for each date, return the dataframe, and concatenate into a single one.  
-
-
-```python
-import numpy as np
-np.arange('2016-08-01', '2016-09-16', dtype='datetime64[D]')
-```
-
-
-
-
-    array(['2016-08-01', '2016-08-02', '2016-08-03', '2016-08-04',
-           '2016-08-05', '2016-08-06', '2016-08-07', '2016-08-08',
-           '2016-08-09', '2016-08-10', '2016-08-11', '2016-08-12',
-           '2016-08-13', '2016-08-14', '2016-08-15', '2016-08-16',
-           '2016-08-17', '2016-08-18', '2016-08-19', '2016-08-20',
-           '2016-08-21', '2016-08-22', '2016-08-23', '2016-08-24',
-           '2016-08-25', '2016-08-26', '2016-08-27', '2016-08-28',
-           '2016-08-29', '2016-08-30', '2016-08-31', '2016-09-01',
-           '2016-09-02', '2016-09-03', '2016-09-04', '2016-09-05',
-           '2016-09-06', '2016-09-07', '2016-09-08', '2016-09-09',
-           '2016-09-10', '2016-09-11', '2016-09-12', '2016-09-13',
-           '2016-09-14', '2016-09-15'], dtype='datetime64[D]')
-
-
-
-### Pulling Date information
 
 
 ```python
@@ -201,13 +351,6 @@ def parse_date(var):
                  parse(var),"Error")             
     except:
         return "You entered an incorrect date.  Check your date format."
-
-    
-def dateInputCheck(parse_DateVar):
-    """Check user input to retrieve date query."""
-    
-    return np.where(len(parse_DateVar)==0,datetime.datetime.now(),
-             parse_date(parse_DateVar)) 
 
 
 def gdelt_timeString(dateInputVar):
@@ -262,17 +405,134 @@ def match_date(dateString):
             )==True
         ]
     
+def dateformatter(datearray):
+    """Function to format strings for numpy arange"""
+    return parse(datearray).strftime("%Y-%m-%d")
+    
+def dateRanger(originalArray):
+    """Function to vectorize date formatting function.
+    Creates datetime.date objects for each day in the range
+    and stores in a numpy array.
+    
+    Example
+    
+    Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+            Input data, where ``n_samples`` is the number of samples and
+            ``n_features`` is the number of features.
+    Returns
+    -------
+    self : object
+        Returns self.
+    """
+    if isinstance(originalArray,str):
+        """Check user input to retrieve date query."""
+    
+        return np.where(len(originalArray)==0,np.array(datetime.datetime.now()),
+                 parse_date(originalArray))
+    
+    elif isinstance(originalArray,list):
+        if len(originalArray)==1:
+            return np.array(parse("".join(originalArray)))
+        elif len(originalArray)>2:
+            return np.array(map(parse,originalArray),dtype='datetime64[D]')
+        else:
+            cleaner = np.vectorize(dateformatter)
+            converted = cleaner(originalArray).tolist()
+            dates = np.arange(converted[0],converted[1],dtype='datetime64[D]')
+            dates = np.append(dates,np.datetime64(datetime.date.today())) # numpy range is not endpoint inclusive
+            return dates
 
+def gdeltRangeString(element):
+    if element == datetime.date.today():
+        multiplier = datetime.datetime.now().minute / 15
+        multiple = 15 * multiplier
+        converted = datetime.datetime.now().replace(minute=multiple,second=0)
+    else:
+        converted = (datetime.datetime.combine(element,datetime.time.min) + 
+            datetime.timedelta(
+                                minutes=45,hours=23
+                                )
+                               )
+    return converted.strftime('%Y%m%d%H%M%S')
+
+
+
+def vectorizer(function,dateArray):
+    helper = np.vectorize(function)
+    return helper(dateArray.tolist()).tolist()
+
+# Finds the urls from an array of dates
+
+def UrlFinder(targetDate):
+    return masterdf[masterdf[2].str.contains(targetDate)]
+
+def vectorizedUrlFinder(function,urlList):
+    helper=np.vectorize(function)
+    return pd.concat(helper(urlList).tolist())
+
+def downloadVectorizer(function,urlList):
+    '''
+    test2 = downloadVectorizer(downloadAndExtract,b)
+    test2.columns=gkgHeaders.tableId.tolist()
+    '''
+    helper=np.vectorize(function)
+    return pd.concat(helper(urlList).tolist())
+
+```
+
+### Working Examples for Single Date Functionality
+
+
+```python
+date = ['2016 9 12', '2013 08 12','2010 4 03']
+
+vectorizer(gdeltRangeString,dateRanger(date))
+```
+
+
+
+
+    ['20160912234500', '20130812234500', '20100403234500']
+
+
+
+### Working Examples of Date Range Functionality
+
+
+```python
+date=['2016 09 01','2016 09 24']
+(dateRanger(date))
+```
+
+
+
+
+    array(['2016-09-01', '2016-09-02', '2016-09-03', '2016-09-04',
+           '2016-09-05', '2016-09-06', '2016-09-07', '2016-09-08',
+           '2016-09-09', '2016-09-10', '2016-09-11', '2016-09-12',
+           '2016-09-13', '2016-09-14', '2016-09-15', '2016-09-16',
+           '2016-09-17', '2016-09-18', '2016-09-19', '2016-09-20',
+           '2016-09-21', '2016-09-22', '2016-09-23', '2016-09-25'], dtype='datetime64[D]')
+
+
+
+
+```python
+# converts to gd
+datesToPull = vectorizer(gdeltRangeString,dateRanger(date))
 ```
 
 
 ```python
-results = match_date(gdelt_timeString(dateInputCheck(date)))
+# gets the urls from array
+resultMaster = vectorizedUrlFinder(UrlFinder,datesToPull)
 ```
 
 
 ```python
-results
+masterdf[masterdf[2].str.contains('gdeltv2/2015')]
 ```
 
 
@@ -290,22 +550,414 @@ results
   </thead>
   <tbody>
     <tr>
-      <th>166641</th>
-      <td>174299</td>
-      <td>39ba2ff2f6324fc991c4e1a108156539</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201609212...</td>
+      <th>0</th>
+      <td>150383</td>
+      <td>297a16b493de7cf6ca809a7cc31d0b93</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
     </tr>
     <tr>
-      <th>166642</th>
-      <td>439023</td>
-      <td>2f07528e827198da2ef4d4edff1eb098</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201609212...</td>
+      <th>1</th>
+      <td>318084</td>
+      <td>bb27f78ba45f69a17ea6ed7755e9f8ff</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
     </tr>
     <tr>
-      <th>166643</th>
-      <td>16871119</td>
-      <td>2e923aa27d18fed741e9b03b4c5b2d2b</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201609212...</td>
+      <th>2</th>
+      <td>10768507</td>
+      <td>ea8dde0beb0ba98810a92db068c0ce99</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>149211</td>
+      <td>2a91041d7e72b0fc6a629e2ff867b240</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>339037</td>
+      <td>dec3f427076b716a8112b9086c342523</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>10269336</td>
+      <td>2f1a504a3c4558694ade0442e9a5ae6f</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>149723</td>
+      <td>12268e821823aae2da90882621feda18</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>357229</td>
+      <td>744acad14559f2781a8db67715d63872</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>11279827</td>
+      <td>66b03e2efd7d51dabf916b1666910053</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>158842</td>
+      <td>a5298ce3c6df1a8a759c61b5c0b6f8bb</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>374528</td>
+      <td>dd322c888f28311aca2c735468405551</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>11212939</td>
+      <td>cd20f295649b214dd16666ca451b9994</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>362610</td>
+      <td>c4268d558bb22c02b3c132c17818c68b</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>287807</td>
+      <td>e7f464a7a451ad2af6e9c8fa24f0ccea</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>9728953</td>
+      <td>8f4b26e134bd6605cce2d32e92e5d3d7</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>251605</td>
+      <td>7685a6c71f010918f3be0d4ed2be977e</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>263793</td>
+      <td>e23ee65a60a1577dc74b979a54da406e</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>9459370</td>
+      <td>6031464dfdcb331551d491916d400c18</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>255259</td>
+      <td>f41066efb05d4024fca9dc1c2c6b9112</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>308019</td>
+      <td>061133d1efd29c66c7ecba0d52063927</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>10705358</td>
+      <td>84685f907404b79e7978a06a441b9731</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>219398</td>
+      <td>555d808779fe5b3eaf0a9ebf212116a2</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>277207</td>
+      <td>0897fb7630ac913409c48345dca7565e</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>9555639</td>
+      <td>b02920524f0b48c07bdab6c6d354a789</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>225092</td>
+      <td>6b4e1d0421548dbba59754d0f164d2a1</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>286852</td>
+      <td>275a862fe0b27cdd3c3eabe2d05a964d</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>9754826</td>
+      <td>5a84073aaf4a588319da7a53a83b56f1</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>185226</td>
+      <td>36f14471b716d8b47c8f766507ab9adc</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>268121</td>
+      <td>c9a62b0fdf05e4ae79a1ad1d9824af12</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>9014001</td>
+      <td>8862c82cb3fdfac53d98f658b7f369bf</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>90390</th>
+      <td>83257</td>
+      <td>7f2e221ec63a3808253fd8f2f58d9085</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90391</th>
+      <td>194871</td>
+      <td>74d9310b77edf5c5a7c3a97ab62a9bb6</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90392</th>
+      <td>8818372</td>
+      <td>79555c3c0b8a235c448b51b2dc7049c1</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90393</th>
+      <td>100191</td>
+      <td>33aa8728815a4b348a3046a15ad54089</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90394</th>
+      <td>245153</td>
+      <td>88e390bd742f2f10281c4faa5eb3bb5d</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90395</th>
+      <td>9581136</td>
+      <td>dfcadafaea1e42d34425a31b0ee70439</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90396</th>
+      <td>101057</td>
+      <td>84e8492d45bd4aaea40e8b70b327ff43</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90397</th>
+      <td>201640</td>
+      <td>1dde29f44451bc9324c8bccf02c9faac</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90398</th>
+      <td>9663637</td>
+      <td>326da26cc1c6dd0196061d432aed5955</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90399</th>
+      <td>97249</td>
+      <td>7bad1f0a249f7bee2f146b31fbf0cb11</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90400</th>
+      <td>231654</td>
+      <td>cf94eeced0227e28c2f41190da13124d</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90401</th>
+      <td>9568781</td>
+      <td>7de907cc435cf93371c0b227ab0b42b7</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90402</th>
+      <td>90488</td>
+      <td>cdc7d23812f494e73ff3f3c365a0bef6</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90403</th>
+      <td>225026</td>
+      <td>2f6c690395aced64449846be3d25f32b</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90404</th>
+      <td>8995467</td>
+      <td>9b1f438536509abcb0c870603c0452cc</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90405</th>
+      <td>78168</td>
+      <td>ea64b9aa14532a113c3a5c9d0e8fffe6</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90406</th>
+      <td>193781</td>
+      <td>4f1059453967968809a12a1da9b3bfc0</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90407</th>
+      <td>9170488</td>
+      <td>43984253463caf47339397a521266529</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90408</th>
+      <td>93898</td>
+      <td>f8380f1a29427309ac440e19107cb617</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90409</th>
+      <td>204608</td>
+      <td>603c5c69059292b16bde4a983c04d55b</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90410</th>
+      <td>8295657</td>
+      <td>4b0134f4a58b531f9b27f10823c18a67</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90411</th>
+      <td>101897</td>
+      <td>2d64d0d91ab45a35f29234ad24b4cbfe</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90412</th>
+      <td>217511</td>
+      <td>365a65fc1eafbcd94a164828961923fa</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90413</th>
+      <td>8973555</td>
+      <td>b0857c5330e03a64f202c817a0c32e20</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90414</th>
+      <td>76999</td>
+      <td>33f345873ed8ffb41c13f63530b7f653</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90415</th>
+      <td>178393</td>
+      <td>d1a167db36ed4b662812f4012f737277</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90416</th>
+      <td>8474142</td>
+      <td>90c5e5d72e7732639578f2f3a46716c5</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90417</th>
+      <td>67506</td>
+      <td>8da2e8a6c2adc56ee48b85efe6c3be7f</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90418</th>
+      <td>174329</td>
+      <td>b75bae9dc91674ff20e56e1652c0afa7</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+    <tr>
+      <th>90419</th>
+      <td>7872205</td>
+      <td>8eab1d2d1185b872e9b1940ec41df62f</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
+    </tr>
+  </tbody>
+</table>
+<p>90420 rows × 3 columns</p>
+</div>
+
+
+
+
+```python
+resultMaster
+```
+
+
+
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>164058</th>
+      <td>124869</td>
+      <td>c2e64d50b4e40600280d08333ff0a6ad</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201609122...</td>
+    </tr>
+    <tr>
+      <th>164059</th>
+      <td>304638</td>
+      <td>71f27287bfffc9625526258339c00d1b</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201609122...</td>
+    </tr>
+    <tr>
+      <th>164060</th>
+      <td>13620647</td>
+      <td>4fb3cde6d887b437fce4262ee8aefef2</td>
+      <td>http://data.gdeltproject.org/gdeltv2/201609122...</td>
     </tr>
   </tbody>
 </table>
@@ -313,14 +965,1641 @@ results
 
 
 
-## Munging Data: Extracting Specific Datasets or all of them
-
-Work with the returned GDELT dataframe.  Specific whether we are pulling the `mentions`, `events`, or `gkg` date for the day or all.  
+## Testing Area for Dates; Above is good, below is experimental
 
 
 ```python
-zippie2 = results.reset_index().ix[1][2]
+tblCheck('gkg')
 ```
+
+
+
+
+    160895    http://data.gdeltproject.org/gdeltv2/201609012...
+    161183    http://data.gdeltproject.org/gdeltv2/201609022...
+    161471    http://data.gdeltproject.org/gdeltv2/201609032...
+    161756    http://data.gdeltproject.org/gdeltv2/201609042...
+    162044    http://data.gdeltproject.org/gdeltv2/201609052...
+    162332    http://data.gdeltproject.org/gdeltv2/201609062...
+    162620    http://data.gdeltproject.org/gdeltv2/201609072...
+    162908    http://data.gdeltproject.org/gdeltv2/201609082...
+    163196    http://data.gdeltproject.org/gdeltv2/201609092...
+    163484    http://data.gdeltproject.org/gdeltv2/201609102...
+    163772    http://data.gdeltproject.org/gdeltv2/201609112...
+    164060    http://data.gdeltproject.org/gdeltv2/201609122...
+    164348    http://data.gdeltproject.org/gdeltv2/201609132...
+    164639    http://data.gdeltproject.org/gdeltv2/201609142...
+    164924    http://data.gdeltproject.org/gdeltv2/201609152...
+    165212    http://data.gdeltproject.org/gdeltv2/201609162...
+    165500    http://data.gdeltproject.org/gdeltv2/201609172...
+    165788    http://data.gdeltproject.org/gdeltv2/201609182...
+    166076    http://data.gdeltproject.org/gdeltv2/201609192...
+    166364    http://data.gdeltproject.org/gdeltv2/201609202...
+    166652    http://data.gdeltproject.org/gdeltv2/201609212...
+    166937    http://data.gdeltproject.org/gdeltv2/201609222...
+    167222    http://data.gdeltproject.org/gdeltv2/201609232...
+    167423    http://data.gdeltproject.org/gdeltv2/201609241...
+    Name: 2, dtype: object
+
+
+
+
+```python
+for l in masterdf[2][masterdf[2].str.contains(datesToPull[20])]:
+    print l
+```
+
+    http://data.gdeltproject.org/gdeltv2/20160921234500.export.CSV.zip
+    http://data.gdeltproject.org/gdeltv2/20160921234500.mentions.CSV.zip
+    http://data.gdeltproject.org/gdeltv2/20160921234500.gkg.csv.zip
+
+
+
+```python
+
+    
+```
+
+
+```python
+
+```
+
+
+```python
+test2.reset_index(drop=True,inplace=True)
+```
+
+
+```python
+test2
+```
+
+
+
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>GKGRECORDID</th>
+      <th>DATE</th>
+      <th>SourceCollectionIdentifier</th>
+      <th>SourceCommonName</th>
+      <th>DocumentIdentifier</th>
+      <th>Counts</th>
+      <th>V2Counts</th>
+      <th>Themes</th>
+      <th>V2Themes</th>
+      <th>Locations</th>
+      <th>...</th>
+      <th>GCAM</th>
+      <th>SharingImage</th>
+      <th>RelatedImages</th>
+      <th>SocialImageEmbeds</th>
+      <th>SocialVideoEmbeds</th>
+      <th>Quotations</th>
+      <th>AllNames</th>
+      <th>Amounts</th>
+      <th>TranslationInfo</th>
+      <th>Extras</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>20160901234500-0</td>
+      <td>20160901234500</td>
+      <td>2</td>
+      <td>BBC Monitoring</td>
+      <td>Facebook in Russian and Uzbek /BBC Monitoring/...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>MEDIA_SOCIAL;GENERAL_HEALTH;MEDICAL;TAX_ETHNIC...</td>
+      <td>GENERAL_HEALTH,30;MEDICAL,30;MEDIA_SOCIAL,10;M...</td>
+      <td>1#Uzbekistan#UZ#UZ#41#64#UZ</td>
+      <td>...</td>
+      <td>wc:289,c12.1:32,c12.10:13,c12.12:7,c12.13:1,c1...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>487|265||Dear friends , I sincerely apologise ...</td>
+      <td>Uzbek President Islam Karimov,130;Islam Karimo...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>20160901234500-1</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>nigeriasun.com</td>
+      <td>http://www.nigeriasun.com/index.php/sid/247252977</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4#Mumbai, Maharashtra, India#IN#IN16#18.975#72...</td>
+      <td>...</td>
+      <td>wc:1024,c1.1:2,c1.3:1,c12.1:52,c12.10:103,c12....</td>
+      <td>http://www.nigeriasun.comhttp://cdn.bignewsnet...</td>
+      <td>http://cdn.bignewsnetwork.com/ani1472717432.jpg</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Hewlett Packard Enterprise,232;Country Directo...</td>
+      <td>8,introduces a unified architecture,267;8,prov...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>20160901234500-2</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>ecigintelligenceinfo.com</td>
+      <td>http://ecigintelligenceinfo.com/2016/09/01/how...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>ENV_SOLAR;WB_678_DIGITAL_GOVERNMENT;WB_694_BRO...</td>
+      <td>GENERAL_GOVERNMENT,1765;TAX_ETHNICITY_INDIAN,1...</td>
+      <td>1#United States#US#US#38#-97#US;1#Madagascar#M...</td>
+      <td>...</td>
+      <td>wc:301,c1.1:2,c12.1:16,c12.10:23,c12.12:7,c12....</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://youtube.com/watch?v=mIBTg7q9oNc;</td>
+      <td>1406|136||The annular eclipse is expected to o...</td>
+      <td>South Africam Madagascar,129;South Atlantic Oc...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://live.slooh.com/stadium/live...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>20160901234500-3</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>961theeagle.com</td>
+      <td>http://961theeagle.com/tags/geico/</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>WB_135_TRANSPORT;WB_1973_FINANCIAL_RISK_REDUCT...</td>
+      <td>WB_1973_FINANCIAL_RISK_REDUCTION,83;WB_1973_FI...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:165,c1.2:3,c12.1:16,c12.10:9,c12.12:4,c12.1...</td>
+      <td>http://961wodz.com/files/2015/01/wodzfmlogov2....</td>
+      <td>http://961theeagle.com/files/2013/02/pig-e1361...</td>
+      <td>NaN</td>
+      <td>https://youtube.com/subscribe_embed?bsv&amp;usegap...</td>
+      <td>NaN</td>
+      <td>New York State Department,32;Text Stop,111;New...</td>
+      <td>1000000,Moms,694;</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://961wodz.com/tags/geico/;htt...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>20160901234500-4</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>financialpost.com</td>
+      <td>http://business.financialpost.com/fp-comment/k...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>LEADER;TAX_FNCACT;TAX_FNCACT_POLITICIANS;MANMA...</td>
+      <td>ECON_FOREIGNINVEST,1166;ECON_FOREIGNINVEST,550...</td>
+      <td>1#United States#US#US#38#-97#US;1#India#IN#IN#...</td>
+      <td>...</td>
+      <td>wc:944,c1.2:10,c1.3:2,c12.1:78,c12.10:138,c12....</td>
+      <td>http://wpmedia.business.financialpost.com/2014...</td>
+      <td>http://wpmedia.business.financialpost.com/2014...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>5283|32||base erosion and profit shifting</td>
+      <td>Kevin Libin,12;Elon Musk,169;Silicon Valley,32...</td>
+      <td>13000000000,euros,814;19000000000,dollars ,835...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://business.financialpost.com/...</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>20160901234500-5</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>nvi.com.au</td>
+      <td>http://www.nvi.com.au/story/4137790/mel-gibson...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_ETHNICITY;TAX_ETHNICITY_AUSTRALIAN;TAX_FNC...</td>
+      <td>TAX_ETHNICITY_ENGLISH,543;TAX_WORLDLANGUAGES_E...</td>
+      <td>3#Hollywood, California, United States#US#USCA...</td>
+      <td>...</td>
+      <td>wc:400,c1.1:1,c1.2:1,c1.4:1,c12.1:31,c12.10:29...</td>
+      <td>http://nnimgt-a.akamaihd.net/transform/v1/crop...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2415|85||a common practice of the Holy Father ...</td>
+      <td>Mel Gibson,41;Lethal Weapon,216;Jesus Christ I...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.hollywoodreporter.com/n...</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>20160901234500-6</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>wsbtradio.com</td>
+      <td>http://wsbtradio.com/sting-wants-people-to-be-...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SECURITY_SERVICES;TAX_FNCACT;TAX_FNCACT_POLICE...</td>
+      <td>TAX_FNCACT_WOMAN,698;SECURITY_SERVICES,456;SEC...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:225,c1.1:2,c1.4:1,c12.1:26,c12.10:19,c12.12...</td>
+      <td>http://i2.wp.com/wsbtradio.com/wp-content/uplo...</td>
+      <td>http://i2.wp.com/wsbtradio.com/wp-content/uplo...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Wants People,21;His New,51;Stop Thinking About...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.sting.com/news/title/ho...</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>20160901234500-7</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>iheart.com</td>
+      <td>http://wnok.iheart.com/articles/trending-10465...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_FNCACT;TAX_FNCACT_SINGER;USPEC_POLITICS_GE...</td>
+      <td>TAX_RELIGION_CHRISTIAN,319;TAX_ETHNICITY_CHRIS...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:189,c12.1:12,c12.10:13,c12.12:4,c12.13:1,c1...</td>
+      <td>http://i.iheart.com/v3/url/aHR0cDovL2kuaWhlYXJ...</td>
+      <td>http://i.iheart.com/v3/re/new_assets/57c7469d0...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Chris Brown,35;Baylee Curran,65;Harvey Levin,796</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.iheart.com/artist/chris...</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>20160901234500-8</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>wvalways.com</td>
+      <td>http://www.wvalways.com/story/32964796/law-enf...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>CRIME_ILLEGAL_DRUGS;DRUG_TRADE;WB_1331_HEALTH_...</td>
+      <td>TAX_DISEASE_EPIDEMIC,1648;WB_635_PUBLIC_HEALTH...</td>
+      <td>3#Harrison County, West Virginia, United State...</td>
+      <td>...</td>
+      <td>wc:328,c12.1:21,c12.10:28,c12.11:1,c12.12:12,c...</td>
+      <td>http://WBOY.images.worldnow.com/images/1165234...</td>
+      <td>http://WBOY.images.worldnow.com/images/1165234...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Chief Deputy Jeff McAtee,311;Harrison County S...</td>
+      <td>300,cases reported,1012;</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_AUTHORS&gt;Marisa Matyola;Harrison County R...</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>20160901234500-9</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>schoolloop.com</td>
+      <td>http://anhs-capousd-ca.schoolloop.com/news/vie...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_FNCACT;TAX_FNCACT_PRINCIPAL;EDUCATION;SOC_...</td>
+      <td>TAX_FNCACT_EXECUTIVE_DIRECTOR,2383;TAX_FNCACT_...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:396,c12.1:29,c12.10:35,c12.12:9,c12.13:11,c...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://youtube.com/user/anhsasb;</td>
+      <td>NaN</td>
+      <td>About Aliso,12;Media Activities,140;Aliso Athl...</td>
+      <td>33122,Valle Road,2079;</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://anhs-capousd-ca.schoolloop....</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>20160901234500-10</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>iheart.com</td>
+      <td>http://thebreakfastclub.iheart.com/articles/en...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_FNCACT;TAX_FNCACT_CHILDREN;TAX_FNCACT_BABY;</td>
+      <td>TAX_FNCACT_CHILDREN,209;TAX_FNCACT_BABY,473;</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:120,c1.1:1,c12.1:15,c12.10:12,c12.12:2,c12....</td>
+      <td>http://i.iheart.com/v3/url/aHR0cDovL2kuaWhlYXJ...</td>
+      <td>http://i.iheart.com/v3/re/new_assets/57c89e110...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>New Saint West Pics Emerged,28;Want To Adopt H...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.iheart.com/artist/kanye...</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>20160901234500-11</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>galesburg.com</td>
+      <td>http://www.galesburg.com/entertainment/2016090...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>DELAY;TAX_FNCACT;TAX_FNCACT_MAIDS;</td>
+      <td>TAX_FNCACT_MAIDS,83;TAX_FNCACT_MAIDS,212;TAX_F...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:165,c12.1:13,c12.10:16,c12.12:7,c12.14:11,c...</td>
+      <td>http://www.galesburg.com/storyimage/ZZ/2016090...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Devious Maids,86;Desperate Housewive,170;Marc ...</td>
+      <td>4,finale now series finale,417;3,rating,449;2,...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://TVGuide.com;http://deadline...</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>20160901234500-12</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>latimes.com</td>
+      <td>http://www.latimes.com/local/lanow/la-me-holly...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_FNCACT;TAX_FNCACT_ARSONIST;CRM_ARSON;CRISI...</td>
+      <td>TAX_FNCACT_DEPUTY,706;TAX_FNCACT_DEPUTY,1618;T...</td>
+      <td>1#United States#US#US#38#-97#US;3#Hollywood, C...</td>
+      <td>...</td>
+      <td>wc:289,c12.1:17,c12.10:16,c12.12:9,c12.13:5,c1...</td>
+      <td>http://www.trbimg.com/img-56fd643a/turbine/la-...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>306|39||to harm and terrorize as many resident...</td>
+      <td>Harry Burkhart,186;Los Angeles,266;San Fernand...</td>
+      <td>47,counts,289;50,fires,321;3000000,dollars ,53...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_AUTHORS&gt;Los Angeles Times;Richard Winton...</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>20160901234500-13</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>dailydemocrat.com</td>
+      <td>http://www.dailydemocrat.com/government-and-po...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_POLITICAL_PARTY;TAX_POLITICAL_PARTY_DEMOCR...</td>
+      <td>ECON_HOUSING_PRICES,3886;TAX_POLITICAL_PARTY_R...</td>
+      <td>2#California, United States#US#USCA#36.17#-119...</td>
+      <td>...</td>
+      <td>wc:1023,c1.2:2,c1.3:10,c12.1:56,c12.10:97,c12....</td>
+      <td>http://local.dailydemocrat.com/common/dfm/asse...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Jerry Brown,236;Assembly Bill,2951;California ...</td>
+      <td>25,secs ago SACRAMENTO &gt;&gt;,48;1000000000,dollar...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>20160901234500-14</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>northerndailyleader.com.au</td>
+      <td>http://www.northerndailyleader.com.au/story/41...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4#Sydney, New South Wales, Australia#AS#AS02#-...</td>
+      <td>...</td>
+      <td>wc:246,c1.2:1,c12.1:18,c12.10:17,c12.12:7,c12....</td>
+      <td>http://nnimgt-a.akamaihd.net/transform/v1/crop...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Tamworth Basketball,20;State Championship,59;N...</td>
+      <td>3,qualified through their participation,282;8,...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_AUTHORS&gt;Australian Community Media - Fai...</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>20160901234500-15</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>ktep.org</td>
+      <td>http://ktep.org/post/making-clinton-and-trump</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_FNCACT;TAX_FNCACT_SUPPORTERS;TAX_FNCACT_CA...</td>
+      <td>TAX_FNCACT_CANDIDATES,216;TAX_FNCACT_CANDIDATE...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:122,c1.4:1,c12.1:11,c12.10:11,c12.12:3,c12....</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Rachel Martin,17;Hillary Clinton,173;Donald Tr...</td>
+      <td>2,candidates also inspire some,178;2,most unpo...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://ktep.org/people/rachel-mart...</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>20160901234500-16</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>iheart.com</td>
+      <td>http://640wgst.iheart.com/articles/national-ne...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>GENERAL_GOVERNMENT;TAX_WORLDLANGUAGES;TAX_WORL...</td>
+      <td>TAX_WORLDLANGUAGES_MASSACHUSETTS,425;GENERAL_G...</td>
+      <td>2#New York, United States#US#USNY#42.1497#-74....</td>
+      <td>...</td>
+      <td>wc:95,c12.1:2,c12.10:3,c12.12:3,c12.14:1,c12.3...</td>
+      <td>http://i.iheart.com/v3/url/aHR0cDovL2kuaWhlYXJ...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Maribel Martinez,156;Andy Martinez Mercado,204...</td>
+      <td>200,miles away,287;</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_ALTURL_MOBILE&gt;http://m.640wgst.iheart.co...</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>20160901234500-17</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>iheart.com</td>
+      <td>http://thebull1017.iheart.com/onair/colton-bra...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EPU_CATS_MIGRATION_FEAR_FEAR;EPU_CATS_NATIONAL...</td>
+      <td>WB_2937_SILVER,707;WB_507_ENERGY_AND_EXTRACTIV...</td>
+      <td>2#California, United States#US#USCA#36.17#-119...</td>
+      <td>...</td>
+      <td>wc:121,c1.1:2,c12.1:13,c12.10:9,c12.12:1,c12.1...</td>
+      <td>http://i.iheart.com/v3/url/aHR0cDovL2NvbnRlbnQ...</td>
+      <td>http://content.clearchannel.com/cc-common/mlib...</td>
+      <td>NaN</td>
+      <td>https://youtube.com/coltonbradfordTV/;</td>
+      <td>NaN</td>
+      <td>Getty Images,95;Twilight Zone Tower,165;Califo...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_ALTURL_MOBILE&gt;http://m.thebull1017.ihear...</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>20160901234500-18</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>asiaone.com</td>
+      <td>http://forums.asiaone.com/showthread.php?s=9ee...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EPU_CATS_REGULATION;WB_678_DIGITAL_GOVERNMENT;...</td>
+      <td>EPU_CATS_REGULATION,1112;CRISISLEX_CRISISLEXRE...</td>
+      <td>1#Singapore#SN#SN#1.3667#103.8#SN</td>
+      <td>...</td>
+      <td>wc:215,c12.1:47,c12.10:23,c12.12:3,c12.13:4,c1...</td>
+      <td>http://forums.asiaone.com/images/asiaone2011/a...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Press Holdings Ltd,1501;Data Protection,1549</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://forums.asiaone.com/;http://...</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>20160901234500-19</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>961theeagle.com</td>
+      <td>http://961theeagle.com/save-a-life-take-a-moha...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_WORLDLANGUAGES;TAX_WORLDLANGUAGES_MOHAWK;T...</td>
+      <td>TAX_WORLDLANGUAGES_MOHAWK,33;TAX_WORLDLANGUAGE...</td>
+      <td>1#United States#US#US#38#-97#US;2#New York, Un...</td>
+      <td>...</td>
+      <td>wc:110,c12.1:8,c12.10:12,c12.12:3,c12.13:6,c12...</td>
+      <td>http://lite987.com/files/2016/09/Red-Cross.jpg...</td>
+      <td>http://lite987.com/files/2016/09/Red-Cross.jpg</td>
+      <td>NaN</td>
+      <td>https://youtube.com/subscribe_embed?bsv&amp;usegap...</td>
+      <td>NaN</td>
+      <td>Mohawk Valley Red Cross,51;Mohawk Valley Chapt...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.redcross.org/take-a-cla...</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>20160901234500-20</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>wfsb.com</td>
+      <td>http://www.wfsb.com/story/32958618/strong-link...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_DISEASE;TAX_DISEASE_ZIKA;TAX_DISEASE_OUTBR...</td>
+      <td>TAX_POLITICAL_PARTY_REPUBLICANS,2721;UNGP_FORE...</td>
+      <td>3#Miami, Florida, United States#US#USFL#25.774...</td>
+      <td>...</td>
+      <td>wc:720,c12.1:24,c12.10:71,c12.12:34,c12.13:28,...</td>
+      <td>http://wncontent.images.worldnow.com/images/74...</td>
+      <td>http://images.worldnow.com/Revenue/images/2755...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>HealthDay News,73;Latin America,668;Dominican ...</td>
+      <td>500,cases of the Guillain,842;194000000,dollar...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.cdc.gov/niosh/topics/ou...</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>20160901234500-21</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>silive.com</td>
+      <td>http://www.silive.com/news/index.ssf/2016/09/p...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SECURITY_SERVICES;TAX_FNCACT;TAX_FNCACT_POLICE...</td>
+      <td>CRISISLEX_C08_TELECOM,1675;TAX_FNCACT_DEPUTY,6...</td>
+      <td>1#Spain#SP#SP#40#-4#SP</td>
+      <td>...</td>
+      <td>wc:302,c1.2:1,c1.3:1,c12.1:8,c12.10:12,c12.11:...</td>
+      <td>http://image.silive.com/home/silive-media/widt...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://youtube.com/channel/UC1KF4bZvT5iAbAHVv...</td>
+      <td>NaN</td>
+      <td>Curtis Hill Deli,469;Low Terrace,507;Deputy Co...</td>
+      <td>2,robberies,233;10,Daniel Low Terrace,395;579,...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.silive.com/news/index.s...</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>20160901234500-22</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>sfchronicle.com</td>
+      <td>http://www.sfchronicle.com/bayarea/article/Cal...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2#California, United States#US#USCA#36.17#-119...</td>
+      <td>...</td>
+      <td>wc:64,c12.1:2,c12.10:3,c12.12:2,c12.13:1,c12.1...</td>
+      <td>http://ww4.hdnux.com/photos/51/33/25/10859887/...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Obdulia Salinas,158</td>
+      <td>58000000,When Obdulia Salinas is,100;35,grandc...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_AUTHORS&gt;Kurtis Alexander&lt;/PAGE_AUTHORS&gt;&lt;...</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>20160901234500-23</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>medgadget.com</td>
+      <td>http://www.medgadget.com/2016/09/medtronics-en...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>WB_1156_MONITORING_AND_EVALUATION_SYSTEMS;WB_6...</td>
+      <td>WB_1156_MONITORING_AND_EVALUATION_SYSTEMS,89;W...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:132,c12.1:4,c12.10:18,c12.12:7,c12.13:6,c12...</td>
+      <td>http://www.medgadget.com/wp-content/uploads/20...</td>
+      <td>https://2nznub4x5d61ra4q12fyu67t-wpengine.netd...</td>
+      <td>NaN</td>
+      <td>https://youtube.com/embed/pL3BnwCHw_8?feature=...</td>
+      <td>NaN</td>
+      <td>Enlite Sensor Approved,43;Glucose Monitoring,84</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_AUTHORS&gt;https://www.facebook.com/Medgadg...</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>20160901234500-24</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>ruidosonews.com</td>
+      <td>http://www.ruidosonews.com/story/news/2016/09/...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>MEDIA_SOCIAL;TRIAL;RAPE;TAX_FNCACT;TAX_FNCACT_...</td>
+      <td>TAX_FNCACT_PROVOST,5311;TAX_FNCACT_WOMAN,113;M...</td>
+      <td>1#United States#US#US#38#-97#US;2#Ohio, United...</td>
+      <td>...</td>
+      <td>wc:853,c1.3:1,c12.1:84,c12.10:92,c12.12:37,c12...</td>
+      <td>http://www.gannett-cdn.com/-mm-/cdeb01ccaa11ff...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>5263|122||We definitely need to be doing some ...</td>
+      <td>Santa Clara County,423;Assemblymember Bill Dod...</td>
+      <td>48,CONNECT TWEET LINKEDIN 19,2;19,COMMENTEMAIL...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.retainjudgepersky.com/&lt;...</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>20160901234500-25</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>630wpro.com</td>
+      <td>http://www.630wpro.com/news/zika-found-in-mosq...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_DISEASE;TAX_DISEASE_ZIKA;TAX_DISEASE_ZIKA_...</td>
+      <td>TAX_DISEASE_ZIKA,41;TAX_FNCACT_COMMISSIONER,58...</td>
+      <td>1#United States#US#US#38#-97#US;2#Florida, Uni...</td>
+      <td>...</td>
+      <td>wc:97,c12.1:4,c12.10:2,c12.12:1,c12.14:1,c12.3...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Miami Beach,89;Florida Department,117;Consumer...</td>
+      <td>3,mosquito samples,225;</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>20160901234500-26</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>newyorkstatesman.com</td>
+      <td>http://www.newyorkstatesman.com/index.php/sid/...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SCANDAL;TAX_FNCACT;TAX_FNCACT_STATESMAN;LEADER...</td>
+      <td>SCANDAL,52;SCANDAL,126;SCANDAL,198;LEADER,145;...</td>
+      <td>2#New York, United States#US#USNY#42.1497#-74....</td>
+      <td>...</td>
+      <td>wc:152,c1.1:1,c12.1:11,c12.10:9,c12.12:6,c12.1...</td>
+      <td>http://static.midwestradionetwork.com/story_lo...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Anthony Weiner,38;Anthony Weiner,114;Anthony W...</td>
+      <td>28,at the UB Center,656;1,performances by the ...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>20160901234500-27</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>timesofisrael.com</td>
+      <td>http://jewishstandard.timesofisrael.com/israel...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>WB_286_TELECOMMUNICATIONS_AND_BROADBAND_ACCESS...</td>
+      <td>MEDIA_SOCIAL,834;MEDIA_SOCIAL,957;MEDIA_SOCIAL...</td>
+      <td>2#Florida, United States#US#USFL#27.8333#-81.7...</td>
+      <td>...</td>
+      <td>wc:282,c12.1:10,c12.10:15,c12.12:6,c12.13:7,c1...</td>
+      <td>http://cdn.timesofisrael.com/uploads/2016/09/r...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cape Canaveral,130;Associated Press,416;Israel...</td>
+      <td>6,satellite,532;300000000,dollars ,987;</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.jta.org/2015/10/06/news...</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>20160901234500-28</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>newsbusters.org</td>
+      <td>http://www.newsbusters.org/blogs/nb/matthew-ba...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>LEGALIZE;LGBT;UNGP_FREEDOM_FROM_DISCRIMINATION...</td>
+      <td>CRISISLEX_CRISISLEXREC,1066;LEGALIZE,214;TAX_E...</td>
+      <td>1#United States#US#US#38#-97#US</td>
+      <td>...</td>
+      <td>wc:252,c12.1:31,c12.10:14,c12.13:3,c12.14:11,c...</td>
+      <td>http://cdn.newsbusters.org/images/2016-09-01-m...</td>
+      <td>http://cdn.newsbusters.org/styles/author/s3/pi...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Supreme Court,219;Supreme Court,540;Tamron Hal...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.msnbc.com/msnbc/watch/t...</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>20160901234500-29</td>
+      <td>20160901234500</td>
+      <td>1</td>
+      <td>irishsun.com</td>
+      <td>http://www.irishsun.com/index.php/sid/247281507</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_FNCACT;TAX_FNCACT_BOXER;GENERAL_GOVERNMENT...</td>
+      <td>GENERAL_GOVERNMENT,54;GENERAL_GOVERNMENT,164;G...</td>
+      <td>1#Ireland#EI#EI#53#-8#EI;4#Dublin, Dublin, Ire...</td>
+      <td>...</td>
+      <td>wc:154,c12.1:10,c12.10:22,c12.12:4,c12.13:4,c1...</td>
+      <td>http://static.midwestradionetwork.com/story_lo...</td>
+      <td>NaN</td>
+      <td>http://pic.twitter.com/FWG3xVeVYc;</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Boxer' Moran,20;Boxer' Moran,135;Independent A...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>76917</th>
+      <td>20160924163000-2278</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>philstar.com</td>
+      <td>http://www.philstar.com/cebu-lifestyle/2016/09...</td>
+      <td>AFFECT#4000000##1#Philippines#RP#RP#13#122#RP;...</td>
+      <td>AFFECT#4000000##1#Philippines#RP#RP#13#122#RP#...</td>
+      <td>TAX_WORLDMAMMALS;TAX_WORLDMAMMALS_HUMAN;AFFECT...</td>
+      <td>MEDIA_SOCIAL,1813;TAX_AIDGROUPS_HABITAT_FOR_HU...</td>
+      <td>4#Bantayan Island, Cebu, Philippines#RP#RP21#1...</td>
+      <td>...</td>
+      <td>wc:287,c1.3:6,c12.1:21,c12.10:35,c12.12:9,c12....</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Saison Dampios,58;Updated September,106;Bantay...</td>
+      <td>1000000,living,289;</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.facebook.com/habitatphi...</td>
+    </tr>
+    <tr>
+      <th>76918</th>
+      <td>20160924163000-2279</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>wltx.com</td>
+      <td>http://www.wltx.com/news/crime/police-charge-o...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_FNCACT;TAX_FNCACT_OFFICER;SECURITY_SERVICE...</td>
+      <td>GENERAL_GOVERNMENT,627;EPU_POLICY_GOVERNMENT,6...</td>
+      <td>2#Georgia, United States#US#USGA#32.9866#-83.6...</td>
+      <td>...</td>
+      <td>wc:279,c12.1:15,c12.10:18,c12.12:10,c12.13:6,c...</td>
+      <td>http://content.11alive.com/photo/2016/09/13/Z_...</td>
+      <td>http://content.11alive.com/photo/2016/09/13/Z_...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Sherry Hall,249;Georgia Bureau,509;Scott Dutto...</td>
+      <td>600,work hours were spent,723;</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.11alive.com/news/local/...</td>
+    </tr>
+    <tr>
+      <th>76919</th>
+      <td>20160924163000-2280</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>muscatinejournal.com</td>
+      <td>http://muscatinejournal.com/news/state-and-reg...</td>
+      <td>KILL#2000000#bees#2#South Carolina, United Sta...</td>
+      <td>KILL#2000000#bees#2#South Carolina, United Sta...</td>
+      <td>AGRICULTURE;TAX_WORLDINSECTS;TAX_WORLDINSECTS_...</td>
+      <td>WB_178_PEST_MANAGEMENT,1038;WB_174_CROP_PRODUC...</td>
+      <td>3#Willow Creek, Wisconsin, United States#US#US...</td>
+      <td>...</td>
+      <td>wc:805,c12.1:50,c12.10:95,c12.11:1,c12.12:30,c...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Bill Johnson,123;Johnson Honey Farm,188;Telegr...</td>
+      <td>1000000,of bees,1021;60,pounds of surplus hone...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://bit.ly/2dexRBK;http://www.t...</td>
+    </tr>
+    <tr>
+      <th>76920</th>
+      <td>20160924163000-2281</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>edp24.co.uk</td>
+      <td>http://www.edp24.co.uk:80/news/politics/jeremy...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USPEC_POLITICS_GENERAL1;TAX_FNCACT;TAX_FNCACT_...</td>
+      <td>GENERAL_GOVERNMENT,1750;GENERAL_GOVERNMENT,203...</td>
+      <td>4#Islington, Islington, United Kingdom#UK#UKG3...</td>
+      <td>...</td>
+      <td>wc:882,c1.1:1,c1.3:1,c12.1:72,c12.10:71,c12.12...</td>
+      <td>http://www.edp24.co.uk:80/polopoly_fs/1.471008...</td>
+      <td>http://edition.pagesuite-professional.co.uk/ge...</td>
+      <td>NaN</td>
+      <td>https://youtube.com/user/EDP24TV;</td>
+      <td>855|29||passionate and often partisan#996|104|...</td>
+      <td>Jeremy Corbyn,14;Owen Smith,211;Jeremy Corbyn,...</td>
+      <td>1000000,votes cast,419;209,votes was more than...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.edp24.co.uk:80/topic/Or...</td>
+    </tr>
+    <tr>
+      <th>76921</th>
+      <td>20160924163000-2282</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>durangoherald.com</td>
+      <td>http://www.durangoherald.com/article/20160920/...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>PUBLIC_TRANSPORT;TAX_FNCACT;TAX_FNCACT_RAILROA...</td>
+      <td>WB_2937_SILVER,300;WB_507_ENERGY_AND_EXTRACTIV...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:111,c12.1:7,c12.10:9,c12.12:5,c12.13:1,c12....</td>
+      <td>http://durangoherald.com/storyimage/DU/2016092...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Article Last Updated,21;Silver San Juan Divisi...</td>
+      <td>1000000,A sound decoder,50;</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>76922</th>
+      <td>20160924163000-2283</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>boorowanewsonline.com.au</td>
+      <td>http://www.boorowanewsonline.com.au/story/4186...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_RELIGION;TAX_RELIGION_CHRISTIAN;TAX_ETHNIC...</td>
+      <td>BAN,1992;WB_2386_BROADCASTING_POLICY_AND_STRAT...</td>
+      <td>4#Perth, Western Australia, Australia#AS#AS08#...</td>
+      <td>...</td>
+      <td>wc:402,c1.1:1,c1.3:1,c12.1:18,c12.10:35,c12.12...</td>
+      <td>http://nnimgt-a.akamaihd.net/transform/v1/crop...</td>
+      <td>NaN</td>
+      <td>http://instagram.com/p/BKW7XCmj3_l;</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Channel Nine,44;Christian Wilkins,91;Kara Wils...</td>
+      <td>9,Willoughby bunker,37;7,rival #xC2,727;9,tale...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;https://www.instagram.com/channel9...</td>
+    </tr>
+    <tr>
+      <th>76923</th>
+      <td>20160924163000-2284</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>centralwesterndaily.com.au</td>
+      <td>http://www.centralwesterndaily.com.au/story/41...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_ETHNICITY;TAX_ETHNICITY_ITALIAN;TAX_WORLDL...</td>
+      <td>GENERAL_GOVERNMENT,1852;EPU_POLICY_GOVERNMENT,...</td>
+      <td>1#Australia#AS#AS#-27#133#AS;4#Leichhardt, New...</td>
+      <td>...</td>
+      <td>wc:722,c1.2:2,c12.1:47,c12.10:66,c12.11:1,c12....</td>
+      <td>http://nnimgt-a.akamaihd.net/transform/v1/crop...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>3943|169||what we refer to as the push down ef...</td>
+      <td>Nicholas Quaratiello,61;Italian Forum,132;Viol...</td>
+      <td>9000000,on Friday,7;2,Potato,478;2000000,stude...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_AUTHORS&gt;Eryk Bagshaw;Kelsey Munro;Austra...</td>
+    </tr>
+    <tr>
+      <th>76924</th>
+      <td>20160924163000-2285</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>khak.com</td>
+      <td>http://khak.com/tags/ole-lena-win-a-cruise/</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>MEDIA_SOCIAL;</td>
+      <td>MEDIA_SOCIAL,423;MEDIA_SOCIAL,1113;</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:213,c1.2:2,c12.1:14,c12.10:16,c12.12:3,c12....</td>
+      <td>http://wac.450F.edgecastcdn.net/80450F/khak.co...</td>
+      <td>http://kdat.com/files/2015/01/usdxkyxtmegsdxjr...</td>
+      <td>NaN</td>
+      <td>https://youtube.com/channel/;https://youtube.c...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://khak.com;http://khak.com/ta...</td>
+    </tr>
+    <tr>
+      <th>76925</th>
+      <td>20160924163000-2286</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>icenews.is</td>
+      <td>http://www.icenews.is/2011/06/21/icelandic-lan...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_WORLDLANGUAGES;TAX_WORLDLANGUAGES_ICELANDI...</td>
+      <td>GENERAL_GOVERNMENT,554;EPU_POLICY_GOVERNMENT,5...</td>
+      <td>4#Hverfjall, NorðAnd Eystra, Iceland#IC#IC40#6...</td>
+      <td>...</td>
+      <td>wc:99,c1.4:1,c12.1:8,c12.10:6,c12.13:2,c12.14:...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://youtube.com/watch?v=dw_T9pJ728U&lt;/a;htt...</td>
+      <td>NaN</td>
+      <td>Famous Icelandic,18;Lake Myvatn,497</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_AUTHORS&gt;Alex&lt;/PAGE_AUTHORS&gt;</td>
+    </tr>
+    <tr>
+      <th>76926</th>
+      <td>20160924163000-2287</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>stuff.co.nz</td>
+      <td>http://www.stuff.co.nz/world/americas/84592131...</td>
+      <td>KILL#1##1#United States#US#US#38#-97#US;CRISIS...</td>
+      <td>KILL#1##1#United States#US#US#38#-97#US#118;CR...</td>
+      <td>AFFECT;REFUGEES;EPU_CATS_MIGRATION_FEAR_MIGRAT...</td>
+      <td>WB_2467_TERRORISM,1876;WB_2433_CONFLICT_AND_VI...</td>
+      <td>1#United States#US#US#38#-97#US;1#Australia#AS...</td>
+      <td>...</td>
+      <td>wc:508,c1.2:1,c1.3:1,c12.1:62,c12.10:57,c12.12...</td>
+      <td>http://www.stuff.co.nz/content/dam/images/1/e/...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cato Institute,143;Donald Trump,1456;Pauline H...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.stuff.co.nz/world/ameri...</td>
+    </tr>
+    <tr>
+      <th>76927</th>
+      <td>20160924163000-2288</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>bereamail.co.za</td>
+      <td>http://bereamail.co.za/93570/zulus-celebrate-r...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_ETHNICITY;TAX_ETHNICITY_ZULUS;TAX_ETHNICIT...</td>
+      <td>TAX_ETHNICITY_ZULUS,6;UNGP_FORESTS_RIVERS_OCEA...</td>
+      <td>4#Berea, ?Alab, Syria#SY#SY09#36.2028#37.1586#...</td>
+      <td>...</td>
+      <td>wc:270,c1.4:7,c12.1:25,c12.10:9,c12.12:2,c12.1...</td>
+      <td>http://bereamail.co.za/wp-content/uploads/site...</td>
+      <td>http://bereamail.co.za/wp-content/themes/caxto...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>South Africa,35;Umkhosi WeLembe,90;South Afric...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_AUTHORS&gt;Lorna Charles;Springs Advertiser...</td>
+    </tr>
+    <tr>
+      <th>76928</th>
+      <td>20160924163000-2289</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>turnto10.com</td>
+      <td>http://turnto10.com/news/local/new-bedford-fir...</td>
+      <td>AFFECT#14##0######;POVERTY#14##0######;CRISISL...</td>
+      <td>AFFECT#14##0#######0;POVERTY#14##0#######0;CRI...</td>
+      <td>AFFECT;POVERTY;CRISISLEX_C05_NEED_OF_SHELTERS;...</td>
+      <td>DISASTER_FIRE,62;CRISISLEX_T01_CAUTION_ADVICE,...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:85,c12.1:2,c12.10:9,c12.12:7,c12.13:2,c12.3...</td>
+      <td>http://static-24.sinclairstoryline.com/resourc...</td>
+      <td>http://static-24.sinclairstoryline.com/resourc...</td>
+      <td>NaN</td>
+      <td>https://youtube.com/user/wjar10;</td>
+      <td>NaN</td>
+      <td>New Bedford,385;Rodney French,417</td>
+      <td>14,people,9;3,story house,70;29,Salisbury Stre...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_AUTHORS&gt;Richard Couto&lt;/PAGE_AUTHORS&gt;&lt;PAG...</td>
+    </tr>
+    <tr>
+      <th>76929</th>
+      <td>20160924163000-2290</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>mouthshut.com</td>
+      <td>http://www.mouthshut.com/review/Asus-Zenfone-5...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_ECON_PRICE;</td>
+      <td>TAX_ECON_PRICE,691;</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:136,c12.1:8,c12.10:11,c12.12:4,c12.13:5,c12...</td>
+      <td>http://image3.mouthshut.com/images/imagesp/l/9...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>5,is my 2nd android,22;1,prob occer u have,217...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_AUTHORS&gt;imrankhan2151&lt;/PAGE_AUTHORS&gt;&lt;PAG...</td>
+    </tr>
+    <tr>
+      <th>76930</th>
+      <td>20160924163000-2291</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>turnto23.com</td>
+      <td>http://www.turnto23.com/news/national/terroris...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TRAFFIC;TAX_FNCACT;TAX_FNCACT_MAN;CRISISLEX_CR...</td>
+      <td>TAX_FNCACT_GUIDE,3963;BORDER,2142;SOC_SUICIDE,...</td>
+      <td>2#Arizona, United States#US#USAZ#33.7712#-111....</td>
+      <td>...</td>
+      <td>wc:911,c12.1:66,c12.10:93,c12.12:25,c12.13:47,...</td>
+      <td>NaN</td>
+      <td>http://media2.scrippsnationalnews.com/image/st...</td>
+      <td>NaN</td>
+      <td>https://youtube.com/23ABCNews;</td>
+      <td>NaN</td>
+      <td>Ahmad Khan Rahami,790;Associated Press,1846;Bo...</td>
+      <td>10,months,4020;2,gunmen who attempted an,4473;</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.turnto23.com/news/natio...</td>
+    </tr>
+    <tr>
+      <th>76931</th>
+      <td>20160924163000-2292</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>seattletimes.com</td>
+      <td>http://www.seattletimes.com/nation-world/the-l...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_FNCACT;TAX_FNCACT_MINISTER;TAX_FNCACT_FORE...</td>
+      <td>GENERAL_GOVERNMENT,512;EPU_POLICY_GOVERNMENT,5...</td>
+      <td>1#Syria#SY#SY#35#38#SY;1#Lebanon#LE#LE#33.8333...</td>
+      <td>...</td>
+      <td>wc:140,c12.1:11,c12.10:14,c12.12:8,c12.13:2,c1...</td>
+      <td>http://www.seattletimes.com/wp-content/themes/...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>224|52||is making great strides in its war aga...</td>
+      <td>President Bashar Assad,510;Islamic State,981</td>
+      <td>2,parallel tracks,532;</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_AUTHORS&gt;The Associated Press&lt;/PAGE_AUTHO...</td>
+    </tr>
+    <tr>
+      <th>76932</th>
+      <td>20160924163000-2293</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>ghanastar.com</td>
+      <td>https://www.ghanastar.com/news/dr-mary-grants-...</td>
+      <td>KILL#88##1#Ghana#GH#GH#8#-2#GH;CRISISLEX_T03_D...</td>
+      <td>KILL#88##1#Ghana#GH#GH#8#-2#GH#394;CRISISLEX_T...</td>
+      <td>EPU_POLICY;EPU_POLICY_POLITICAL;GENERAL_HEALTH...</td>
+      <td>GENERAL_GOVERNMENT,905;GENERAL_GOVERNMENT,2755...</td>
+      <td>1#Ghana#GH#GH#8#-2#GH</td>
+      <td>...</td>
+      <td>wc:667,c12.1:63,c12.10:61,c12.12:12,c12.13:25,...</td>
+      <td>https://www.ghanastar.com/wp-content/uploads/2...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://youtube.com/channel/UCRhFrw1P0o5jvd4oa...</td>
+      <td>4101|63||wise and forthright counsel as a memb...</td>
+      <td>Provisional National Defence Council,318;Newsf...</td>
+      <td>2,main political parties,81;37,Military Hospit...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_AUTHORS&gt;Victor Owusu-Bediako&lt;/PAGE_AUTHO...</td>
+    </tr>
+    <tr>
+      <th>76933</th>
+      <td>20160924163000-2294</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>oigel.com</td>
+      <td>http://oigel.com/xiaomi-mi-band-2-specs-featur...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1#China#CH#CH#35#105#CH;1#India#IN#IN#20#77#IN</td>
+      <td>...</td>
+      <td>wc:244,c12.1:17,c12.10:13,c12.13:4,c12.14:9,c1...</td>
+      <td>http://cdn.isvisible.com/2016/09/Xiaomi-Mi-Ban...</td>
+      <td>http://cdn.isvisible.com/2016/07/logo-nav.png</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Xiaomi Mi Band,45;Xiaomi Mi Band,1370</td>
+      <td>2,Specifications Features,288;2,sports a 0 42-...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://oigel.com/tag/miband2;http:...</td>
+    </tr>
+    <tr>
+      <th>76934</th>
+      <td>20160924163000-2295</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>westport-news.com</td>
+      <td>http://www.westport-news.com/news/politics/art...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2#New York, United States#US#USNY#42.1497#-74....</td>
+      <td>...</td>
+      <td>wc:593,c12.1:60,c12.10:56,c12.12:20,c12.13:21,...</td>
+      <td>http://ww2.hdnux.com/photos/51/71/12/10982029/...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Donald Trump,88;New York,183;Brett O'Donnell,5...</td>
+      <td>16,mock debates,1420;</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.westport-news.com/searc...</td>
+    </tr>
+    <tr>
+      <th>76935</th>
+      <td>20160924163000-2296</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>ecolocalizer.com</td>
+      <td>http://ecolocalizer.com/2016/09/24/green-econo...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USPEC_POLICY1;EPU_ECONOMY;EPU_ECONOMY_HISTORIC...</td>
+      <td>WB_678_DIGITAL_GOVERNMENT,3097;WB_667_ICT_INFR...</td>
+      <td>2#Rhode Island, United States#US#USRI#41.6772#...</td>
+      <td>...</td>
+      <td>wc:543,c1.2:11,c1.3:7,c12.1:20,c12.10:51,c12.1...</td>
+      <td>http://ecolocalizer.com/wp-content/uploads/201...</td>
+      <td>http://reyr6216d262cozsk3t8r171b6y.wpengine.ne...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Green Economy Bond,167;Green Economy Bond,448;...</td>
+      <td>35000000,dollars ,162;25,Rhode Island nonprofi...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://ecolocalizer.com/author/car...</td>
+    </tr>
+    <tr>
+      <th>76936</th>
+      <td>20160924163000-2297</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>iheart.com</td>
+      <td>http://power107.iheart.com/articles/weird-news...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2#Arizona, United States#US#USAZ#33.7712#-111....</td>
+      <td>...</td>
+      <td>wc:125,c12.1:8,c12.10:12,c12.12:5,c12.13:6,c12...</td>
+      <td>http://i.iheart.com/v3/url/aHR0cDovL2NvbnRlbnQ...</td>
+      <td>http://content.clearchannel.com/cc-common/mlib...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Digital Homicide Studios,260;Arizona Republic,...</td>
+      <td>100,players for up,337;18000000,dollars for ch...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.azcentral.com/story/mon...</td>
+    </tr>
+    <tr>
+      <th>76937</th>
+      <td>20160924163000-2298</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>iheart.com</td>
+      <td>http://kix961.iheart.com/onair/bobby-bones-207...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:189,c12.1:9,c12.10:14,c12.12:3,c12.13:6,c12...</td>
+      <td>http://i.iheart.com/v3/url/aHR0cDovL2NvbnRlbnQ...</td>
+      <td>http://i.iheart.com/v3/url/aHR0cDovL2NvbnRlbnQ...</td>
+      <td>http://instagram.com/p/BKuIHQdjKgy;http://inst...</td>
+      <td>https://youtube.com/embed/XfUWRSjSPKE;</td>
+      <td>NaN</td>
+      <td>Billy Idol,140;Sam Hunt,154;Miley Cyrus,171;Bo...</td>
+      <td>17,hosting late night,215;</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.facebook.com/pages/Bobb...</td>
+    </tr>
+    <tr>
+      <th>76938</th>
+      <td>20160924163000-2299</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>kekbfm.com</td>
+      <td>http://kekbfm.com/keyes-field-trip-to-the-dino...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:94,c1.1:2,c1.4:2,c12.1:14,c12.10:6,c12.12:1...</td>
+      <td>http://wac.450F.edgecastcdn.net/80450F/kekbfm....</td>
+      <td>http://wac.450F.edgecastcdn.net/80450F/kekbfm....</td>
+      <td>NaN</td>
+      <td>https://youtube.com/channel/;https://youtube.c...</td>
+      <td>NaN</td>
+      <td>Dinosaur Museum,48</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_AUTHORS&gt;keyes&lt;/PAGE_AUTHORS&gt;</td>
+    </tr>
+    <tr>
+      <th>76939</th>
+      <td>20160924163000-2300</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>iheart.com</td>
+      <td>http://power107.iheart.com/articles/trending-1...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>ELECTION;MANMADE_DISASTER_IMPLIED;CRISISLEX_T1...</td>
+      <td>MANMADE_DISASTER_IMPLIED,328;MANMADE_DISASTER_...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:308,c1.1:1,c12.1:21,c12.10:26,c12.12:5,c12....</td>
+      <td>http://i.iheart.com/v3/url/aHR0cDovL2kuaWhlYXJ...</td>
+      <td>http://i.iheart.com/v3/re/new_assets/57e61ee33...</td>
+      <td>http://pic.twitter.com/X7XcCCb9RY;http://pic.t...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>HeartRadio Music Festival Friday,140;Jamie Fox...</td>
+      <td>16,just right at the,63;</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://news.iheart.com/features/ih...</td>
+    </tr>
+    <tr>
+      <th>76940</th>
+      <td>20160924163000-2301</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>ausbt.com.au</td>
+      <td>http://www.ausbt.com.au/community/view/18/5214...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>WB_2936_GOLD;WB_507_ENERGY_AND_EXTRACTIVES;WB_...</td>
+      <td>SOC_POINTSOFINTEREST_AIRPORTS,671;WB_135_TRANS...</td>
+      <td>4#Sao Paulo, SãPaulo, Brazil#BR#BR27#-23.5333#...</td>
+      <td>...</td>
+      <td>wc:442,c1.2:3,c12.1:30,c12.10:31,c12.12:5,c12....</td>
+      <td>http://media.ausbt.com.au/260,210-ausbt.png</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1793|38||I'm VA Gold , do I get lounge access?</td>
+      <td>Erin Beck,13;Velocity Gold,84;Singapore AirJoi...</td>
+      <td>12,AMLounge access for Velocity,27;32,AMwww au...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.ausbt.com.au/forums/use...</td>
+    </tr>
+    <tr>
+      <th>76941</th>
+      <td>20160924163000-2302</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>somersetcountygazette.co.uk</td>
+      <td>http://www.somersetcountygazette.co.uk/news/na...</td>
+      <td>ARREST#3#suspected migrants#4#English Channel,...</td>
+      <td>ARREST#3#suspected migrants#4#English Channel,...</td>
+      <td>TAX_ETHNICITY;TAX_ETHNICITY_ENGLISH;TAX_WORLDL...</td>
+      <td>SOC_POINTSOFINTEREST_JAIL,632;TAX_ETHNICITY_EN...</td>
+      <td>4#English Channel, United Kingdom (General), U...</td>
+      <td>...</td>
+      <td>wc:202,c12.1:6,c12.10:11,c12.12:4,c12.13:1,c12...</td>
+      <td>http://www.somersetcountygazette.co.uk/resourc...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>English Channel,82;Kent Police,241;Kingsdown R...</td>
+      <td>3,suspected migrants were detained,78;3,men we...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>76942</th>
+      <td>20160924163000-2303</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>yahoo.com</td>
+      <td>https://www.yahoo.com/news/17-cats-definitely-...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TAX_WORLDMAMMALS;TAX_WORLDMAMMALS_CATS;GENERAL...</td>
+      <td>CRISISLEX_CRISISLEXREC,239;CRISISLEX_CRISISLEX...</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>wc:62,c12.1:11,c12.10:16,c12.12:8,c12.13:7,c12...</td>
+      <td>https://s.yimg.com/uu/api/res/1.2/g3K3P02dX91_...</td>
+      <td>https://s.yimg.com/uu/api/res/1.2/g3K3P02dX91_...</td>
+      <td>NaN</td>
+      <td>https://youtube.com/embed/bi6rKIYYA20?enablejs...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://mashable.com/2016/09/19/hea...</td>
+    </tr>
+    <tr>
+      <th>76943</th>
+      <td>20160924163000-2304</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>alltechnews.org</td>
+      <td>http://alltechnews.org/2016/09/24/u-s-lifts-my...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1#Myanmar#BM#BM#22#98#BM;2#Arkansas, United St...</td>
+      <td>...</td>
+      <td>wc:1347,c1.1:2,c1.2:8,c1.3:3,c1.4:1,c12.1:81,c...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>486|63||Domestically , it will also mean more ...</td>
+      <td>United Nations,218;Suu Kyi,330;North Korea,592...</td>
+      <td>135,ethnic groups,278;2,nations closely,3274;3...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;;http://abcnews.go.com/topics/news...</td>
+    </tr>
+    <tr>
+      <th>76944</th>
+      <td>20160924163000-2305</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>romseyadvertiser.co.uk</td>
+      <td>http://www.romseyadvertiser.co.uk/news/nationa...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TRIAL;SOC_GENERALCRIME;SECURITY_SERVICES;TAX_F...</td>
+      <td>TAX_FNCACT_MAGISTRATES,841;TAX_FNCACT_MAGISTRA...</td>
+      <td>4#West Midlands, United Kingdom (General), Uni...</td>
+      <td>...</td>
+      <td>wc:230,c12.1:9,c12.10:8,c12.12:5,c12.13:3,c12....</td>
+      <td>http://www.romseyadvertiser.co.uk/resources/im...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>United Kingdom,90;Intu Potteries Shopping,402;...</td>
+      <td>5,men have been charged,4;5,men charged,424;5,...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>76945</th>
+      <td>20160924163000-2306</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>margaretrivermail.com.au</td>
+      <td>http://www.margaretrivermail.com.au/story/4186...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USPEC_POLITICS_GENERAL1;TAX_POLITICAL_PARTY;TA...</td>
+      <td>UNGP_FORESTS_RIVERS_OCEANS,1971;TAX_FNCACT_PRI...</td>
+      <td>1#Australia#AS#AS#-27#133#AS;4#Sydney, New Sou...</td>
+      <td>...</td>
+      <td>wc:490,c1.4:3,c12.1:40,c12.10:64,c12.12:15,c12...</td>
+      <td>http://nnimgt-a.akamaihd.net/transform/v1/crop...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>335|55||Children are our greatest treasure. Th...</td>
+      <td>Nelson Mandela Foundation,30;Liberal Party,59;...</td>
+      <td>3,directors of the group,416;9,of the Bill of,...</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_AUTHORS&gt;Adam Gartrell;National Political...</td>
+    </tr>
+    <tr>
+      <th>76946</th>
+      <td>20160924163000-2307</td>
+      <td>20160924163000</td>
+      <td>1</td>
+      <td>myndnow.com</td>
+      <td>http://www.myndnow.com/news/clinton-ally-playi...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EPU_CATS_REGULATION;WB_678_DIGITAL_GOVERNMENT;...</td>
+      <td>TAX_FNCACT_CANDIDATES,1526;TAX_RELIGION_SHAKER...</td>
+      <td>2#New York, United States#US#USNY#42.1497#-74....</td>
+      <td>...</td>
+      <td>wc:323,c12.1:44,c12.10:26,c12.12:10,c12.13:8,c...</td>
+      <td>http://static.lakana.com/nxsglobal/feedsite/ph...</td>
+      <td>http://s3.amazonaws.com/nxsglobal/myndnow/them...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Jeff Zeleny,134;Eugene Scott,151;Turner Broadc...</td>
+      <td>2,people familiar with the,329;</td>
+      <td>NaN</td>
+      <td>&lt;PAGE_LINKS&gt;http://www.myndnow.com/about-us/me...</td>
+    </tr>
+  </tbody>
+</table>
+<p>76947 rows × 27 columns</p>
+</div>
+
+
+
+
+```python
+datesToPull
+```
+
+
+
+
+    ['20160901234500',
+     '20160902234500',
+     '20160903234500',
+     '20160904234500',
+     '20160905234500',
+     '20160906234500',
+     '20160907234500',
+     '20160908234500',
+     '20160909234500',
+     '20160910234500',
+     '20160911234500',
+     '20160912234500',
+     '20160913234500',
+     '20160914234500',
+     '20160915234500',
+     '20160916234500',
+     '20160917234500',
+     '20160918234500',
+     '20160919234500',
+     '20160920234500',
+     '20160921234500',
+     '20160922234500',
+     '20160923234500',
+     '20160924153000']
+
+
+
+*****************
+
+## Munging Data: Extracting Specific Datasets or all of them
+
+Work with the returned GDELT data.  Specific whether we are pulling the `mentions`, `events`, or `gkg` date for the day or all.  
+
+
+```python
+results = match_date(gdelt_timeString(dateInputCheck(date)))
+```
+
+
+```python
+target = results[2][results[2].str.contains('export')].reset_index(drop=True).ix[0]
+```
+
+
+```python
+target
+```
+
+
+
+
+    'http://data.gdeltproject.org/gdeltv2/20160924150000.export.CSV.zip'
+
+
 
 
 ```python
@@ -370,31 +2649,1602 @@ def add_header(gdeltUrl):
 
 
 ```python
-zippie2
+target
 ```
 
 
 
 
-    'http://data.gdeltproject.org/gdeltv2/20160921230000.mentions.CSV.zip'
+    'http://data.gdeltproject.org/gdeltv2/20160924150000.export.CSV.zip'
 
 
 
 
 ```python
-gdelt_df = downloadAndExtract(zippie)
-gdelt_df.columns = add_header(zippie)
+gdelt_df = downloadAndExtract(target)
+gdelt_df.columns = add_header(target)
+gdelt_df.info()
+```
+
+    <class 'pandas.core.frame.DataFrame'>
+    RangeIndex: 1362 entries, 0 to 1361
+    Data columns (total 61 columns):
+    GLOBALEVENTID            1362 non-null int64
+    SQLDATE                  1362 non-null int64
+    MonthYear                1362 non-null int64
+    Year                     1362 non-null int64
+    FractionDate             1362 non-null float64
+    Actor1Code               1245 non-null object
+    Actor1Name               1245 non-null object
+    Actor1CountryCode        803 non-null object
+    Actor1KnownGroupCode     24 non-null object
+    Actor1EthnicCode         4 non-null object
+    Actor1Religion1Code      28 non-null object
+    Actor1Religion2Code      8 non-null object
+    Actor1Type1Code          621 non-null object
+    Actor1Type2Code          45 non-null object
+    Actor1Type3Code          1 non-null object
+    Actor2Code               1016 non-null object
+    Actor2Name               1016 non-null object
+    Actor2CountryCode        635 non-null object
+    Actor2KnownGroupCode     21 non-null object
+    Actor2EthnicCode         8 non-null object
+    Actor2Religion1Code      56 non-null object
+    Actor2Religion2Code      5 non-null object
+    Actor2Type1Code          484 non-null object
+    Actor2Type2Code          27 non-null object
+    Actor2Type3Code          0 non-null float64
+    IsRootEvent              1362 non-null int64
+    EventCode                1362 non-null int64
+    EventBaseCode            1362 non-null int64
+    EventRootCode            1362 non-null int64
+    QuadClass                1362 non-null int64
+    GoldsteinScale           1362 non-null float64
+    NumMentions              1362 non-null int64
+    NumSources               1362 non-null int64
+    NumArticles              1362 non-null int64
+    AvgTone                  1362 non-null float64
+    Actor1Geo_Type           1362 non-null int64
+    Actor1Geo_FullName       1224 non-null object
+    Actor1Geo_CountryCode    1224 non-null object
+    Actor1Geo_ADM1Code       1224 non-null object
+    Actor1Geo_ADM2Code       798 non-null object
+    Actor1Geo_Lat            1224 non-null float64
+    Actor1Geo_Long           1224 non-null float64
+    Actor1Geo_FeatureID      1224 non-null object
+    Actor2Geo_Type           1362 non-null int64
+    Actor2Geo_FullName       997 non-null object
+    Actor2Geo_CountryCode    997 non-null object
+    Actor2Geo_ADM1Code       997 non-null object
+    Actor2Geo_ADM2Code       594 non-null object
+    Actor2Geo_Lat            997 non-null float64
+    Actor2Geo_Long           997 non-null float64
+    Actor2Geo_FeatureID      997 non-null object
+    ActionGeo_Type           1362 non-null int64
+    ActionGeo_FullName       1337 non-null object
+    ActionGeo_CountryCode    1337 non-null object
+    ActionGeo_ADM1Code       1337 non-null object
+    ActionGeo_ADM2Code       792 non-null object
+    ActionGeo_Lat            1337 non-null float64
+    ActionGeo_Long           1337 non-null float64
+    ActionGeo_FeatureID      1337 non-null object
+    DATEADDED                1362 non-null int64
+    SOURCEURL                1362 non-null object
+    dtypes: float64(10), int64(16), object(35)
+    memory usage: 649.1+ KB
+
+
+
+```python
+gdelt_df
 ```
 
 
-```python
-gdelt_df2 = downloadAndExtract(zippie2)
-gdelt_df2.columns = add_header(zippie2)
-```
+
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>GLOBALEVENTID</th>
+      <th>SQLDATE</th>
+      <th>MonthYear</th>
+      <th>Year</th>
+      <th>FractionDate</th>
+      <th>Actor1Code</th>
+      <th>Actor1Name</th>
+      <th>Actor1CountryCode</th>
+      <th>Actor1KnownGroupCode</th>
+      <th>Actor1EthnicCode</th>
+      <th>...</th>
+      <th>ActionGeo_Type</th>
+      <th>ActionGeo_FullName</th>
+      <th>ActionGeo_CountryCode</th>
+      <th>ActionGeo_ADM1Code</th>
+      <th>ActionGeo_ADM2Code</th>
+      <th>ActionGeo_Lat</th>
+      <th>ActionGeo_Long</th>
+      <th>ActionGeo_FeatureID</th>
+      <th>DATEADDED</th>
+      <th>SOURCEURL</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>582343584</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Jiquilillo, Chinandega, Nicaragua</td>
+      <td>NU</td>
+      <td>NU03</td>
+      <td>22430</td>
+      <td>12.731900</td>
+      <td>-87.44170</td>
+      <td>-1112100</td>
+      <td>20160924150000</td>
+      <td>http://azdailysun.com/news/local/community/fla...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>582343585</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>AFR</td>
+      <td>AFRICA</td>
+      <td>AFR</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Osaka, Osaka, Japan</td>
+      <td>JA</td>
+      <td>JA32</td>
+      <td>35840</td>
+      <td>34.666700</td>
+      <td>135.50000</td>
+      <td>-240905</td>
+      <td>20160924150000</td>
+      <td>http://www.whio.com/news/world/burundi-thousan...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>582343586</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>BRN</td>
+      <td>BRUNEIAN</td>
+      <td>BRN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Singapore</td>
+      <td>SN</td>
+      <td>SN</td>
+      <td>NaN</td>
+      <td>1.366700</td>
+      <td>103.80000</td>
+      <td>SN</td>
+      <td>20160924150000</td>
+      <td>http://health.asiaone.com/health/health-news/s...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>582343587</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>CRM</td>
+      <td>TRAFFICKER</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>2</td>
+      <td>Indiana, United States</td>
+      <td>US</td>
+      <td>USIN</td>
+      <td>NaN</td>
+      <td>39.864700</td>
+      <td>-86.26040</td>
+      <td>IN</td>
+      <td>20160924150000</td>
+      <td>https://www.indianagazette.com/news/reg-nation...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>582343588</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>CVL</td>
+      <td>COMMUNITY</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Canada</td>
+      <td>CA</td>
+      <td>CA</td>
+      <td>NaN</td>
+      <td>60.000000</td>
+      <td>-95.00000</td>
+      <td>CA</td>
+      <td>20160924150000</td>
+      <td>http://www.thecarillon.com/local/Community-can...</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>582343589</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>DOM</td>
+      <td>DOMINICAN REPUBLIC</td>
+      <td>DOM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Loma Miranda, Dominican Republic (general), Do...</td>
+      <td>DR</td>
+      <td>DR00</td>
+      <td>36939</td>
+      <td>19.101100</td>
+      <td>-70.46460</td>
+      <td>-3362810</td>
+      <td>20160924150000</td>
+      <td>https://www.ncronline.org/preview/mining-our-m...</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>582343590</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>DOM</td>
+      <td>DOMINICAN REPUBLIC</td>
+      <td>DOM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Vega Real, Duarte, Dominican Republic</td>
+      <td>DR</td>
+      <td>DR06</td>
+      <td>36897</td>
+      <td>19.250000</td>
+      <td>-70.25000</td>
+      <td>-3367035</td>
+      <td>20160924150000</td>
+      <td>https://www.ncronline.org/preview/mining-our-m...</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>582343591</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>FRA</td>
+      <td>FRANCE</td>
+      <td>FRA</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Paris, France (general), France</td>
+      <td>FR</td>
+      <td>FR00</td>
+      <td>16282</td>
+      <td>48.866700</td>
+      <td>2.33333</td>
+      <td>-1456928</td>
+      <td>20160924150000</td>
+      <td>http://ipolitics.ca/2016/09/24/can-trudeau-kee...</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>582343592</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>FRA</td>
+      <td>PARIS</td>
+      <td>FRA</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Ottawa, Ontario, Canada</td>
+      <td>CA</td>
+      <td>CA08</td>
+      <td>12755</td>
+      <td>45.416700</td>
+      <td>-75.70000</td>
+      <td>-570760</td>
+      <td>20160924150000</td>
+      <td>http://ipolitics.ca/2016/09/24/can-trudeau-kee...</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>582343593</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>GOV</td>
+      <td>INTERIOR MINIST</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Paris, France (general), France</td>
+      <td>FR</td>
+      <td>FR00</td>
+      <td>16282</td>
+      <td>48.866700</td>
+      <td>2.33333</td>
+      <td>-1456928</td>
+      <td>20160924150000</td>
+      <td>http://www.mfs-theothernews.com/search?updated...</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>582343594</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>IRNCOP</td>
+      <td>IRAN</td>
+      <td>IRN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Tehran, Tehran, Iran</td>
+      <td>IR</td>
+      <td>IR26</td>
+      <td>41130</td>
+      <td>35.750000</td>
+      <td>51.51480</td>
+      <td>10074674</td>
+      <td>20160924150000</td>
+      <td>http://theiranproject.com/blog/2016/09/24/iran...</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>582343595</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>IRNCOP</td>
+      <td>IRAN</td>
+      <td>IRN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Saudi Arabia</td>
+      <td>SA</td>
+      <td>SA</td>
+      <td>NaN</td>
+      <td>25.000000</td>
+      <td>45.00000</td>
+      <td>SA</td>
+      <td>20160924150000</td>
+      <td>http://theiranproject.com/blog/2016/09/24/iran...</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>582343596</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>NIC</td>
+      <td>NICARAGUA</td>
+      <td>NIC</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Jiquilillo, Chinandega, Nicaragua</td>
+      <td>NU</td>
+      <td>NU03</td>
+      <td>22430</td>
+      <td>12.731900</td>
+      <td>-87.44170</td>
+      <td>-1112100</td>
+      <td>20160924150000</td>
+      <td>http://azdailysun.com/news/local/community/fla...</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>582343597</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>SGP</td>
+      <td>SINGAPORE</td>
+      <td>SGP</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Singapore</td>
+      <td>SN</td>
+      <td>SN</td>
+      <td>NaN</td>
+      <td>1.366700</td>
+      <td>103.80000</td>
+      <td>SN</td>
+      <td>20160924150000</td>
+      <td>http://health.asiaone.com/health/health-news/s...</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>582343598</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>SGP</td>
+      <td>SINGAPORE</td>
+      <td>SGP</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Singapore</td>
+      <td>SN</td>
+      <td>SN</td>
+      <td>NaN</td>
+      <td>1.366700</td>
+      <td>103.80000</td>
+      <td>SN</td>
+      <td>20160924150000</td>
+      <td>http://health.asiaone.com/health/health-news/s...</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>582343599</td>
+      <td>20150925</td>
+      <td>201509</td>
+      <td>2015</td>
+      <td>2015.7260</td>
+      <td>SGP</td>
+      <td>SINGAPORE</td>
+      <td>SGP</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Singapore</td>
+      <td>SN</td>
+      <td>SN</td>
+      <td>NaN</td>
+      <td>1.366700</td>
+      <td>103.80000</td>
+      <td>SN</td>
+      <td>20160924150000</td>
+      <td>http://health.asiaone.com/health/health-news/s...</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>582343600</td>
+      <td>20160825</td>
+      <td>201608</td>
+      <td>2016</td>
+      <td>2016.6438</td>
+      <td>LEG</td>
+      <td>SENATE</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>3</td>
+      <td>Visalia, California, United States</td>
+      <td>US</td>
+      <td>USCA</td>
+      <td>CA107</td>
+      <td>36.330200</td>
+      <td>-119.29200</td>
+      <td>1652807</td>
+      <td>20160924150000</td>
+      <td>http://www.sacbee.com/opinion/op-ed/soapbox/ar...</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>582343601</td>
+      <td>20160917</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7041</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Libreville, Estuaire, Gabon</td>
+      <td>GB</td>
+      <td>GB01</td>
+      <td>18585</td>
+      <td>0.383333</td>
+      <td>9.45000</td>
+      <td>-1326612</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/gabon-opp...</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>582343602</td>
+      <td>20160917</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7041</td>
+      <td>BWAGOV</td>
+      <td>IAN KHAMA</td>
+      <td>BWA</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Zimbabwe</td>
+      <td>ZI</td>
+      <td>ZI</td>
+      <td>NaN</td>
+      <td>-20.000000</td>
+      <td>30.00000</td>
+      <td>ZI</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/zimbabwe-...</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>582343603</td>
+      <td>20160917</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7041</td>
+      <td>CAN</td>
+      <td>VANCOUVER</td>
+      <td>CAN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Rideau Canal, Quebec, Canada</td>
+      <td>CA</td>
+      <td>CA10</td>
+      <td>12755</td>
+      <td>45.433300</td>
+      <td>-75.70000</td>
+      <td>-572256</td>
+      <td>20160924150000</td>
+      <td>http://ipolitics.ca/2016/09/24/leave-the-lauri...</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>582343604</td>
+      <td>20160917</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7041</td>
+      <td>COP</td>
+      <td>PRISON</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Libreville, Estuaire, Gabon</td>
+      <td>GB</td>
+      <td>GB01</td>
+      <td>18585</td>
+      <td>0.383333</td>
+      <td>9.45000</td>
+      <td>-1326612</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/gabon-opp...</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>582343605</td>
+      <td>20160917</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7041</td>
+      <td>COP</td>
+      <td>PRISON</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Libreville, Estuaire, Gabon</td>
+      <td>GB</td>
+      <td>GB01</td>
+      <td>18585</td>
+      <td>0.383333</td>
+      <td>9.45000</td>
+      <td>-1326612</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/gabon-opp...</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>582343606</td>
+      <td>20160917</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7041</td>
+      <td>COP</td>
+      <td>PRISON</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Libreville, Estuaire, Gabon</td>
+      <td>GB</td>
+      <td>GB01</td>
+      <td>18585</td>
+      <td>0.383333</td>
+      <td>9.45000</td>
+      <td>-1326612</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/gabon-opp...</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>582343607</td>
+      <td>20160917</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7041</td>
+      <td>COP</td>
+      <td>PRISON</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Libreville, Estuaire, Gabon</td>
+      <td>GB</td>
+      <td>GB01</td>
+      <td>18585</td>
+      <td>0.383333</td>
+      <td>9.45000</td>
+      <td>-1326612</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/gabon-opp...</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>582343608</td>
+      <td>20160917</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7041</td>
+      <td>COP</td>
+      <td>PRISON</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Libreville, Estuaire, Gabon</td>
+      <td>GB</td>
+      <td>GB01</td>
+      <td>18585</td>
+      <td>0.383333</td>
+      <td>9.45000</td>
+      <td>-1326612</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/gabon-opp...</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>582343609</td>
+      <td>20160917</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7041</td>
+      <td>COP</td>
+      <td>PRISON</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Libreville, Estuaire, Gabon</td>
+      <td>GB</td>
+      <td>GB01</td>
+      <td>18585</td>
+      <td>0.383333</td>
+      <td>9.45000</td>
+      <td>-1326612</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/gabon-opp...</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>582343610</td>
+      <td>20160917</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7041</td>
+      <td>GAB</td>
+      <td>GABON</td>
+      <td>GAB</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Libreville, Estuaire, Gabon</td>
+      <td>GB</td>
+      <td>GB01</td>
+      <td>18585</td>
+      <td>0.383333</td>
+      <td>9.45000</td>
+      <td>-1326612</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/gabon-opp...</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>582343611</td>
+      <td>20160917</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7041</td>
+      <td>JUD</td>
+      <td>STATE SUPREME COURT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>2</td>
+      <td>Arkansas, United States</td>
+      <td>US</td>
+      <td>USAR</td>
+      <td>NaN</td>
+      <td>34.951300</td>
+      <td>-92.38090</td>
+      <td>AR</td>
+      <td>20160924150000</td>
+      <td>http://www.chron.com/news/article/Analysis-Ark...</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>582343612</td>
+      <td>20160917</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7041</td>
+      <td>LAB</td>
+      <td>WORKER</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Libreville, Estuaire, Gabon</td>
+      <td>GB</td>
+      <td>GB01</td>
+      <td>18585</td>
+      <td>0.383333</td>
+      <td>9.45000</td>
+      <td>-1326612</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/gabon-opp...</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>582343613</td>
+      <td>20160917</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7041</td>
+      <td>LAB</td>
+      <td>WORKER</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Libreville, Estuaire, Gabon</td>
+      <td>GB</td>
+      <td>GB01</td>
+      <td>18585</td>
+      <td>0.383333</td>
+      <td>9.45000</td>
+      <td>-1326612</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/gabon-opp...</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>1332</th>
+      <td>582344916</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>USAMIL</td>
+      <td>NORTH CAROLINA</td>
+      <td>USA</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>3</td>
+      <td>Charlotte, North Carolina, United States</td>
+      <td>US</td>
+      <td>USNC</td>
+      <td>NC119</td>
+      <td>35.227100</td>
+      <td>-80.84310</td>
+      <td>1019610</td>
+      <td>20160924150000</td>
+      <td>http://hosted.ap.org/dynamic/stories/U/US_CHAR...</td>
+    </tr>
+    <tr>
+      <th>1333</th>
+      <td>582344917</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>USAMIL</td>
+      <td>UNITED STATES</td>
+      <td>USA</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>2</td>
+      <td>North Carolina, United States</td>
+      <td>US</td>
+      <td>USNC</td>
+      <td>NaN</td>
+      <td>35.641100</td>
+      <td>-79.84310</td>
+      <td>NC</td>
+      <td>20160924150000</td>
+      <td>http://hosted.ap.org/dynamic/stories/U/US_CHAR...</td>
+    </tr>
+    <tr>
+      <th>1334</th>
+      <td>582344918</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>USAOPP</td>
+      <td>CHARLOTTE</td>
+      <td>USA</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>3</td>
+      <td>Charlotte, North Carolina, United States</td>
+      <td>US</td>
+      <td>USNC</td>
+      <td>NC119</td>
+      <td>35.227100</td>
+      <td>-80.84310</td>
+      <td>1019610</td>
+      <td>20160924150000</td>
+      <td>http://hosted.ap.org/dynamic/stories/U/US_CHAR...</td>
+    </tr>
+    <tr>
+      <th>1335</th>
+      <td>582344919</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>VAT</td>
+      <td>VATICAN</td>
+      <td>VAT</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Rome, Lazio, Italy</td>
+      <td>IT</td>
+      <td>IT07</td>
+      <td>18350</td>
+      <td>41.900000</td>
+      <td>12.48330</td>
+      <td>-126693</td>
+      <td>20160924150000</td>
+      <td>http://www.thetablet.co.uk/news/6169/0/francis...</td>
+    </tr>
+    <tr>
+      <th>1336</th>
+      <td>582344920</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>VNM</td>
+      <td>VIETNAM</td>
+      <td>VNM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Ho Chi Minh City, H? Chíinh, Vietnam, Republic Of</td>
+      <td>VM</td>
+      <td>VM20</td>
+      <td>74101</td>
+      <td>10.750000</td>
+      <td>106.66700</td>
+      <td>-3730078</td>
+      <td>20160924150000</td>
+      <td>http://tuoitrenews.vn/post?id=37234&amp;slug=debat...</td>
+    </tr>
+    <tr>
+      <th>1337</th>
+      <td>582344921</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>YEM</td>
+      <td>ADEN</td>
+      <td>YEM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>20160924150000</td>
+      <td>http://www.the-star.co.ke/news/2016/09/24/jubi...</td>
+    </tr>
+    <tr>
+      <th>1338</th>
+      <td>582344922</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>YEM</td>
+      <td>YEMEN</td>
+      <td>YEM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Syria</td>
+      <td>SY</td>
+      <td>SY</td>
+      <td>NaN</td>
+      <td>35.000000</td>
+      <td>38.00000</td>
+      <td>SY</td>
+      <td>20160924150000</td>
+      <td>http://www.mfs-theothernews.com/search/label/S...</td>
+    </tr>
+    <tr>
+      <th>1339</th>
+      <td>582344923</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>YEM</td>
+      <td>YEMEN</td>
+      <td>YEM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Syria</td>
+      <td>SY</td>
+      <td>SY</td>
+      <td>NaN</td>
+      <td>35.000000</td>
+      <td>38.00000</td>
+      <td>SY</td>
+      <td>20160924150000</td>
+      <td>http://www.mfs-theothernews.com/search/label/S...</td>
+    </tr>
+    <tr>
+      <th>1340</th>
+      <td>582344924</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>YEMCVL</td>
+      <td>YEMENI</td>
+      <td>YEM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Syria</td>
+      <td>SY</td>
+      <td>SY</td>
+      <td>NaN</td>
+      <td>35.000000</td>
+      <td>38.00000</td>
+      <td>SY</td>
+      <td>20160924150000</td>
+      <td>http://www.mfs-theothernews.com/search/label/S...</td>
+    </tr>
+    <tr>
+      <th>1341</th>
+      <td>582344925</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>YEMCVL</td>
+      <td>YEMEN</td>
+      <td>YEM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Syria</td>
+      <td>SY</td>
+      <td>SY</td>
+      <td>NaN</td>
+      <td>35.000000</td>
+      <td>38.00000</td>
+      <td>SY</td>
+      <td>20160924150000</td>
+      <td>http://www.mfs-theothernews.com/search/label/S...</td>
+    </tr>
+    <tr>
+      <th>1342</th>
+      <td>582344926</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZAF</td>
+      <td>JOHANNESBURG</td>
+      <td>ZAF</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Mabhida, KwaZulu-Natal, South Africa</td>
+      <td>SF</td>
+      <td>SF02</td>
+      <td>77334</td>
+      <td>-28.167500</td>
+      <td>31.59980</td>
+      <td>-1255196</td>
+      <td>20160924150000</td>
+      <td>http://ewn.co.za/2016/09/24/Zuma-congratulates...</td>
+    </tr>
+    <tr>
+      <th>1343</th>
+      <td>582344927</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZAF</td>
+      <td>JOHANNESBURG</td>
+      <td>ZAF</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Johannesburg, Gauteng, South Africa</td>
+      <td>SF</td>
+      <td>SF06</td>
+      <td>77364</td>
+      <td>-26.200000</td>
+      <td>28.08330</td>
+      <td>-1240261</td>
+      <td>20160924150000</td>
+      <td>http://www.iol.co.za/weekend-argus/spier-murde...</td>
+    </tr>
+    <tr>
+      <th>1344</th>
+      <td>582344928</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZAF</td>
+      <td>JOHANNESBURG</td>
+      <td>ZAF</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Stellenbosch, Western Cape, South Africa</td>
+      <td>SF</td>
+      <td>SF11</td>
+      <td>77338</td>
+      <td>-33.934600</td>
+      <td>18.86680</td>
+      <td>-1287082</td>
+      <td>20160924150000</td>
+      <td>http://www.iol.co.za/weekend-argus/spier-murde...</td>
+    </tr>
+    <tr>
+      <th>1345</th>
+      <td>582344929</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZAF</td>
+      <td>JOHANNESBURG</td>
+      <td>ZAF</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Stellenbosch, Western Cape, South Africa</td>
+      <td>SF</td>
+      <td>SF11</td>
+      <td>77338</td>
+      <td>-33.934600</td>
+      <td>18.86680</td>
+      <td>-1287082</td>
+      <td>20160924150000</td>
+      <td>http://www.iol.co.za/weekend-argus/spier-murde...</td>
+    </tr>
+    <tr>
+      <th>1346</th>
+      <td>582344930</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZAF</td>
+      <td>JOHANNESBURG</td>
+      <td>ZAF</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Johannesburg, Gauteng, South Africa</td>
+      <td>SF</td>
+      <td>SF06</td>
+      <td>77364</td>
+      <td>-26.200000</td>
+      <td>28.08330</td>
+      <td>-1240261</td>
+      <td>20160924150000</td>
+      <td>http://www.iol.co.za/weekend-argus/spier-murde...</td>
+    </tr>
+    <tr>
+      <th>1347</th>
+      <td>582344931</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZAF</td>
+      <td>JOHANNESBURG</td>
+      <td>ZAF</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Durban, KwaZulu-Natal, South Africa</td>
+      <td>SF</td>
+      <td>SF02</td>
+      <td>77363</td>
+      <td>-29.850000</td>
+      <td>31.01670</td>
+      <td>-1224926</td>
+      <td>20160924150000</td>
+      <td>http://ewn.co.za/2016/09/24/Zuma-congratulates...</td>
+    </tr>
+    <tr>
+      <th>1348</th>
+      <td>582344932</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZAFGOV</td>
+      <td>JOHANNESBURG</td>
+      <td>ZAF</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Mabhida, KwaZulu-Natal, South Africa</td>
+      <td>SF</td>
+      <td>SF02</td>
+      <td>77334</td>
+      <td>-28.167500</td>
+      <td>31.59980</td>
+      <td>-1255196</td>
+      <td>20160924150000</td>
+      <td>http://ewn.co.za/2016/09/24/Zuma-congratulates...</td>
+    </tr>
+    <tr>
+      <th>1349</th>
+      <td>582344933</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZAFGOV</td>
+      <td>JOHANNESBURG</td>
+      <td>ZAF</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Durban, KwaZulu-Natal, South Africa</td>
+      <td>SF</td>
+      <td>SF02</td>
+      <td>77363</td>
+      <td>-29.850000</td>
+      <td>31.01670</td>
+      <td>-1224926</td>
+      <td>20160924150000</td>
+      <td>http://ewn.co.za/2016/09/24/Zuma-congratulates...</td>
+    </tr>
+    <tr>
+      <th>1350</th>
+      <td>582344934</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZWE</td>
+      <td>ZIMBABWE</td>
+      <td>ZWE</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Mapungubwe, Limpopo, South Africa</td>
+      <td>SF</td>
+      <td>SF09</td>
+      <td>77343</td>
+      <td>-22.207100</td>
+      <td>29.37250</td>
+      <td>-1257139</td>
+      <td>20160924150000</td>
+      <td>http://www.timeslive.co.za/local/2016/09/24/Bu...</td>
+    </tr>
+    <tr>
+      <th>1351</th>
+      <td>582344935</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZWE</td>
+      <td>ZIMBABWE</td>
+      <td>ZWE</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Mapungubwe, Limpopo, South Africa</td>
+      <td>SF</td>
+      <td>SF09</td>
+      <td>77343</td>
+      <td>-22.207100</td>
+      <td>29.37250</td>
+      <td>-1257139</td>
+      <td>20160924150000</td>
+      <td>http://www.timeslive.co.za/local/2016/09/24/Bu...</td>
+    </tr>
+    <tr>
+      <th>1352</th>
+      <td>582344936</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZWE</td>
+      <td>ZIMBABWE</td>
+      <td>ZWE</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Zimbabwe</td>
+      <td>ZI</td>
+      <td>ZI</td>
+      <td>NaN</td>
+      <td>-20.000000</td>
+      <td>30.00000</td>
+      <td>ZI</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/zimbabwe-...</td>
+    </tr>
+    <tr>
+      <th>1353</th>
+      <td>582344937</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZWE</td>
+      <td>ZIMBABWE</td>
+      <td>ZWE</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Zimbabwe</td>
+      <td>ZI</td>
+      <td>ZI</td>
+      <td>NaN</td>
+      <td>-20.000000</td>
+      <td>30.00000</td>
+      <td>ZI</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/zimbabwe-...</td>
+    </tr>
+    <tr>
+      <th>1354</th>
+      <td>582344938</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZWE</td>
+      <td>ZIMBABWE</td>
+      <td>ZWE</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Zimbabwe</td>
+      <td>ZI</td>
+      <td>ZI</td>
+      <td>NaN</td>
+      <td>-20.000000</td>
+      <td>30.00000</td>
+      <td>ZI</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/zimbabwe-...</td>
+    </tr>
+    <tr>
+      <th>1355</th>
+      <td>582344939</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZWE</td>
+      <td>ZIMBABWEAN</td>
+      <td>ZWE</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Botswana</td>
+      <td>BC</td>
+      <td>BC</td>
+      <td>NaN</td>
+      <td>-22.000000</td>
+      <td>24.00000</td>
+      <td>BC</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/zimbabwe-...</td>
+    </tr>
+    <tr>
+      <th>1356</th>
+      <td>582344940</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZWEGOV</td>
+      <td>ZIMBABWEAN</td>
+      <td>ZWE</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Zimbabwe</td>
+      <td>ZI</td>
+      <td>ZI</td>
+      <td>NaN</td>
+      <td>-20.000000</td>
+      <td>30.00000</td>
+      <td>ZI</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/zimbabwe-...</td>
+    </tr>
+    <tr>
+      <th>1357</th>
+      <td>582344941</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ZWEGOV</td>
+      <td>ZIMBABWEAN</td>
+      <td>ZWE</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1</td>
+      <td>Botswana</td>
+      <td>BC</td>
+      <td>BC</td>
+      <td>NaN</td>
+      <td>-22.000000</td>
+      <td>24.00000</td>
+      <td>BC</td>
+      <td>20160924150000</td>
+      <td>http://www.africanews.com/2016/09/24/zimbabwe-...</td>
+    </tr>
+    <tr>
+      <th>1358</th>
+      <td>582344942</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ijo</td>
+      <td>IJAW</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>ijo</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Adua, Jigawa, Nigeria</td>
+      <td>NI</td>
+      <td>NI39</td>
+      <td>190996</td>
+      <td>12.478400</td>
+      <td>9.63655</td>
+      <td>-1997446</td>
+      <td>20160924150000</td>
+      <td>http://www.ladunliadinews.com/2016/09/patience...</td>
+    </tr>
+    <tr>
+      <th>1359</th>
+      <td>582344943</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>ijo</td>
+      <td>IJAW</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>ijo</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Niger Delta, Nigeria (general), Nigeria</td>
+      <td>NI</td>
+      <td>NI00</td>
+      <td>23074</td>
+      <td>4.833330</td>
+      <td>6.00000</td>
+      <td>-2020890</td>
+      <td>20160924150000</td>
+      <td>http://www.ladunliadinews.com/2016/09/patience...</td>
+    </tr>
+    <tr>
+      <th>1360</th>
+      <td>582344944</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>kas</td>
+      <td>KASHMIRI</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>kas</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Beijing, Beijing, China</td>
+      <td>CH</td>
+      <td>CH22</td>
+      <td>13001</td>
+      <td>39.928900</td>
+      <td>116.38800</td>
+      <td>-1898541</td>
+      <td>20160924150000</td>
+      <td>http://www.thenewsminute.com/article/china-wil...</td>
+    </tr>
+    <tr>
+      <th>1361</th>
+      <td>582344945</td>
+      <td>20160924</td>
+      <td>201609</td>
+      <td>2016</td>
+      <td>2016.7233</td>
+      <td>tam</td>
+      <td>TAMIL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>tam</td>
+      <td>...</td>
+      <td>4</td>
+      <td>Bakhtiyarpur, Bihar, India</td>
+      <td>IN</td>
+      <td>IN34</td>
+      <td>17619</td>
+      <td>25.466700</td>
+      <td>85.51670</td>
+      <td>-2089823</td>
+      <td>20160924150000</td>
+      <td>http://indiatoday.intoday.in/story/tamils-stag...</td>
+    </tr>
+  </tbody>
+</table>
+<p>1362 rows × 61 columns</p>
+</div>
+
+
 
 
 ```python
-combined = gdelt_df.merge(gdelt_df2,how='right',on='GLOBALEVENTID')
+combined = gdelt_df.merge(gdelt_df2,how='outer',on='GLOBALEVENTID')
 ```
 
 
@@ -487,172 +4337,43 @@ combined.info()
 
 
 ```python
-combined.tail()
+combined.columns
 ```
 
 
 
 
-<div>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>GLOBALEVENTID</th>
-      <th>SQLDATE</th>
-      <th>MonthYear</th>
-      <th>Year</th>
-      <th>FractionDate</th>
-      <th>Actor1Code</th>
-      <th>Actor1Name</th>
-      <th>Actor1CountryCode</th>
-      <th>Actor1KnownGroupCode</th>
-      <th>Actor1EthnicCode</th>
-      <th>...</th>
-      <th>SentenceID</th>
-      <th>Actor1CharOffset</th>
-      <th>Actor2CharOffset</th>
-      <th>ActionCharOffset</th>
-      <th>InRawText</th>
-      <th>Confidence</th>
-      <th>MentionDocLen</th>
-      <th>MentionDocTone</th>
-      <th>MentionDocTranslationInfo</th>
-      <th>Extras</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>11762</th>
-      <td>581379923.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>4</td>
-      <td>879</td>
-      <td>929</td>
-      <td>901</td>
-      <td>1</td>
-      <td>100</td>
-      <td>1547</td>
-      <td>0.000000</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>11763</th>
-      <td>581387463.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>1</td>
-      <td>499</td>
-      <td>477</td>
-      <td>521</td>
-      <td>1</td>
-      <td>100</td>
-      <td>1547</td>
-      <td>0.000000</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>11764</th>
-      <td>581408219.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>2</td>
-      <td>687</td>
-      <td>630</td>
-      <td>665</td>
-      <td>1</td>
-      <td>20</td>
-      <td>813</td>
-      <td>-9.929078</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>11765</th>
-      <td>581408220.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>2</td>
-      <td>704</td>
-      <td>617</td>
-      <td>682</td>
-      <td>0</td>
-      <td>20</td>
-      <td>813</td>
-      <td>-9.929078</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>11766</th>
-      <td>581408221.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>2</td>
-      <td>683</td>
-      <td>596</td>
-      <td>661</td>
-      <td>0</td>
-      <td>20</td>
-      <td>813</td>
-      <td>-9.929078</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-<p>5 rows × 76 columns</p>
-</div>
+    Index([u'GLOBALEVENTID', u'SQLDATE', u'MonthYear', u'Year', u'FractionDate',
+           u'Actor1Code', u'Actor1Name', u'Actor1CountryCode',
+           u'Actor1KnownGroupCode', u'Actor1EthnicCode', u'Actor1Religion1Code',
+           u'Actor1Religion2Code', u'Actor1Type1Code', u'Actor1Type2Code',
+           u'Actor1Type3Code', u'Actor2Code', u'Actor2Name', u'Actor2CountryCode',
+           u'Actor2KnownGroupCode', u'Actor2EthnicCode', u'Actor2Religion1Code',
+           u'Actor2Religion2Code', u'Actor2Type1Code', u'Actor2Type2Code',
+           u'Actor2Type3Code', u'IsRootEvent', u'EventCode', u'EventBaseCode',
+           u'EventRootCode', u'QuadClass', u'GoldsteinScale', u'NumMentions',
+           u'NumSources', u'NumArticles', u'AvgTone', u'Actor1Geo_Type',
+           u'Actor1Geo_FullName', u'Actor1Geo_CountryCode', u'Actor1Geo_ADM1Code',
+           u'Actor1Geo_ADM2Code', u'Actor1Geo_Lat', u'Actor1Geo_Long',
+           u'Actor1Geo_FeatureID', u'Actor2Geo_Type', u'Actor2Geo_FullName',
+           u'Actor2Geo_CountryCode', u'Actor2Geo_ADM1Code', u'Actor2Geo_ADM2Code',
+           u'Actor2Geo_Lat', u'Actor2Geo_Long', u'Actor2Geo_FeatureID',
+           u'ActionGeo_Type', u'ActionGeo_FullName', u'ActionGeo_CountryCode',
+           u'ActionGeo_ADM1Code', u'ActionGeo_ADM2Code', u'ActionGeo_Lat',
+           u'ActionGeo_Long', u'ActionGeo_FeatureID', u'DATEADDED', u'SOURCEURL',
+           u'EventTimeDate', u'MentionTimeDate', u'MentionType',
+           u'MentionSourceName', u'MentionIdentifier', u'SentenceID',
+           u'Actor1CharOffset', u'Actor2CharOffset', u'ActionCharOffset',
+           u'InRawText', u'Confidence', u'MentionDocLen', u'MentionDocTone',
+           u'MentionDocTranslationInfo', u'Extras'],
+          dtype='object')
 
 
 
 
 ```python
 # combined.[(combined.Confidence != None) & (combined.MonthYear != None)]
-combined.fillna('')[combined.GoldsteinScale <= -5.2]
+combined[['Actor1Code','Actor1Name']][(combined.GoldsteinScale <= -5.2) & (combined.Actor1Code != "")].fillna('')
 ```
 
 
@@ -663,4857 +4384,1019 @@ combined.fillna('')[combined.GoldsteinScale <= -5.2]
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>GLOBALEVENTID</th>
-      <th>SQLDATE</th>
-      <th>MonthYear</th>
-      <th>Year</th>
-      <th>FractionDate</th>
       <th>Actor1Code</th>
       <th>Actor1Name</th>
-      <th>Actor1CountryCode</th>
-      <th>Actor1KnownGroupCode</th>
-      <th>Actor1EthnicCode</th>
-      <th>...</th>
-      <th>SentenceID</th>
-      <th>Actor1CharOffset</th>
-      <th>Actor2CharOffset</th>
-      <th>ActionCharOffset</th>
-      <th>InRawText</th>
-      <th>Confidence</th>
-      <th>MentionDocLen</th>
-      <th>MentionDocTone</th>
-      <th>MentionDocTranslationInfo</th>
-      <th>Extras</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>36</th>
-      <td>581409211.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.7</td>
       <td>LBNGOV</td>
       <td>TYRE</td>
-      <td>LBN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>5</td>
-      <td>1600</td>
-      <td>1641</td>
-      <td>1661</td>
-      <td>0</td>
-      <td>10</td>
-      <td>3229</td>
-      <td>-4.060914</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>37</th>
-      <td>581409212.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.7</td>
       <td>LBNGOV</td>
       <td>TYRE</td>
-      <td>LBN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>5</td>
-      <td>1600</td>
-      <td>1636</td>
-      <td>1647</td>
-      <td>1</td>
-      <td>30</td>
-      <td>3229</td>
-      <td>-4.060914</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>46</th>
-      <td>581409221.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.7</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>5</td>
-      <td>1600</td>
-      <td>-1</td>
-      <td>1694</td>
-      <td>0</td>
-      <td>10</td>
-      <td>3229</td>
-      <td>-4.060914</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>55</th>
-      <td>581409230.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.71</td>
       <td>LBN</td>
       <td>TYRE</td>
-      <td>LBN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>842</td>
-      <td>791</td>
-      <td>829</td>
-      <td>1</td>
-      <td>60</td>
-      <td>2749</td>
-      <td>-7.922912</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>56</th>
-      <td>581409231.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.71</td>
       <td>LBN</td>
       <td>TYRE</td>
-      <td>LBN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>842</td>
-      <td>854</td>
-      <td>829</td>
-      <td>0</td>
-      <td>40</td>
-      <td>2749</td>
-      <td>-7.922912</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>67</th>
-      <td>581409242.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.71</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>192</td>
-      <td>499</td>
-      <td>342</td>
-      <td>0</td>
-      <td>20</td>
-      <td>1777</td>
-      <td>-9.003215</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>81</th>
-      <td>581409255.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>6</td>
-      <td>-1</td>
-      <td>1943</td>
-      <td>2012</td>
-      <td>1</td>
-      <td>100</td>
-      <td>2229</td>
-      <td>-3.140097</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>111</th>
-      <td>581409284.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>-1</td>
-      <td>29</td>
-      <td>39</td>
-      <td>1</td>
-      <td>50</td>
-      <td>3242</td>
-      <td>-4.504505</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>137</th>
-      <td>581409305.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>-1</td>
-      <td>3980</td>
-      <td>4010</td>
-      <td>0</td>
-      <td>20</td>
-      <td>7521</td>
-      <td>-0.867508</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>138</th>
-      <td>581409305.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>9</td>
-      <td>-1</td>
-      <td>3719</td>
-      <td>3741</td>
-      <td>1</td>
-      <td>100</td>
-      <td>6763</td>
-      <td>-1.218451</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>151</th>
-      <td>581409318.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>-1</td>
-      <td>1192</td>
-      <td>1236</td>
-      <td>1</td>
-      <td>30</td>
-      <td>3229</td>
-      <td>-4.060914</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>152</th>
-      <td>581409319.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>-1</td>
-      <td>126</td>
-      <td>192</td>
-      <td>1</td>
-      <td>10</td>
-      <td>5543</td>
-      <td>-2.723312</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>159</th>
-      <td>581409326.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>-1</td>
-      <td>59</td>
-      <td>8</td>
-      <td>1</td>
-      <td>30</td>
-      <td>2405</td>
-      <td>-1.913876</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>160</th>
-      <td>581409327.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>-1</td>
-      <td>59</td>
-      <td>8</td>
-      <td>0</td>
-      <td>20</td>
-      <td>2405</td>
-      <td>-1.913876</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>206</th>
-      <td>581409366.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>-1</td>
-      <td>471</td>
-      <td>550</td>
-      <td>0</td>
-      <td>30</td>
-      <td>2685</td>
-      <td>-6.060606</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>207</th>
-      <td>581409367.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>-1</td>
-      <td>471</td>
-      <td>566</td>
-      <td>1</td>
-      <td>60</td>
-      <td>2685</td>
-      <td>-6.060606</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>231</th>
-      <td>581409386.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>-1</td>
-      <td>388</td>
-      <td>369</td>
-      <td>1</td>
-      <td>100</td>
-      <td>3571</td>
-      <td>-6.260297</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>232</th>
-      <td>581409387.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>-1</td>
-      <td>388</td>
-      <td>403</td>
-      <td>1</td>
-      <td>100</td>
-      <td>3571</td>
-      <td>-6.260297</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>234</th>
-      <td>581409389.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>-1</td>
-      <td>1819</td>
-      <td>1805</td>
-      <td>1</td>
-      <td>100</td>
-      <td>2947</td>
-      <td>6.108202</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>279</th>
-      <td>581409427.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>-1</td>
-      <td>567</td>
-      <td>391</td>
-      <td>1</td>
-      <td>30</td>
-      <td>5801</td>
-      <td>-2.300110</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>281</th>
-      <td>581409429.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>6</td>
-      <td>-1</td>
-      <td>1547</td>
-      <td>1596</td>
-      <td>1</td>
-      <td>100</td>
-      <td>3722</td>
-      <td>-1.712329</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>282</th>
-      <td>581409430.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>-1</td>
-      <td>401</td>
-      <td>419</td>
-      <td>0</td>
-      <td>40</td>
-      <td>1270</td>
-      <td>-11.872146</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>283</th>
-      <td>581409431.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>-1</td>
-      <td>77</td>
-      <td>256</td>
-      <td>0</td>
-      <td>60</td>
-      <td>5543</td>
-      <td>-2.723312</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>284</th>
-      <td>581409432.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>28</td>
-      <td>-1</td>
-      <td>7204</td>
-      <td>7222</td>
-      <td>0</td>
-      <td>30</td>
-      <td>7190</td>
-      <td>-6.610169</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>285</th>
-      <td>581409433.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>27</td>
-      <td>-1</td>
-      <td>10011</td>
-      <td>10165</td>
-      <td>0</td>
-      <td>10</td>
-      <td>11927</td>
-      <td>1.317790</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>290</th>
-      <td>581409438.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>-1</td>
-      <td>128</td>
-      <td>240</td>
-      <td>1</td>
-      <td>30</td>
-      <td>10235</td>
-      <td>-2.095460</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>291</th>
-      <td>581409439.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>-1</td>
-      <td>178</td>
-      <td>256</td>
-      <td>0</td>
-      <td>20</td>
-      <td>5543</td>
-      <td>-2.723312</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>297</th>
-      <td>581409445.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>13</td>
-      <td>-1</td>
-      <td>2749</td>
-      <td>2763</td>
-      <td>0</td>
-      <td>30</td>
-      <td>5372</td>
-      <td>-4.966887</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>299</th>
-      <td>581409447.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>-1</td>
-      <td>1159</td>
-      <td>1172</td>
-      <td>0</td>
-      <td>30</td>
-      <td>1435</td>
-      <td>-8.433735</td>
       <td></td>
       <td></td>
     </tr>
     <tr>
       <th>365</th>
-      <td>581409500.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>AUS</td>
       <td>AUSTRALIA</td>
-      <td>AUS</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>240</td>
-      <td>350</td>
-      <td>306</td>
-      <td>0</td>
-      <td>40</td>
-      <td>2152</td>
-      <td>-0.787402</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>392</th>
-      <td>581409524.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>BRA</td>
       <td>BRAZIL</td>
-      <td>BRA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>2231</td>
-      <td>2208</td>
-      <td>2322</td>
-      <td>1</td>
-      <td>50</td>
-      <td>3140</td>
-      <td>-7.952286</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>448</th>
-      <td>581409576.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>BUS</td>
       <td>BANK</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>20</td>
-      <td>6936</td>
-      <td>-1</td>
-      <td>6980</td>
-      <td>1</td>
-      <td>60</td>
-      <td>12032</td>
-      <td>-2.600996</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>449</th>
-      <td>581409577.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>BUS</td>
       <td>BANK</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>20</td>
-      <td>6936</td>
-      <td>-1</td>
-      <td>6980</td>
-      <td>0</td>
-      <td>40</td>
-      <td>12032</td>
-      <td>-2.600996</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>452</th>
-      <td>581409580.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>BUS</td>
       <td>COMPANIES</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>5</td>
-      <td>992</td>
-      <td>-1</td>
-      <td>1032</td>
-      <td>1</td>
-      <td>100</td>
-      <td>3203</td>
-      <td>-1.792829</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>458</th>
-      <td>581409586.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>BUS</td>
       <td>AIRLINE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>68</td>
-      <td>106</td>
-      <td>87</td>
-      <td>1</td>
-      <td>100</td>
-      <td>2967</td>
-      <td>0.795229</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>478</th>
-      <td>581409602.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>BUS</td>
       <td>COMPANIES</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>13</td>
-      <td>2823</td>
-      <td>2694</td>
-      <td>2833</td>
-      <td>1</td>
-      <td>80</td>
-      <td>3191</td>
-      <td>-2.994012</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>505</th>
-      <td>581409628.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>BUS</td>
       <td>COMPANIES</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>13</td>
-      <td>2843</td>
-      <td>2700</td>
-      <td>2847</td>
-      <td>0</td>
-      <td>20</td>
-      <td>3191</td>
-      <td>-2.994012</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>524</th>
-      <td>581409645.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CAN</td>
       <td>CANADA</td>
-      <td>CAN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>13</td>
-      <td>2103</td>
-      <td>-1</td>
-      <td>2139</td>
-      <td>1</td>
-      <td>100</td>
-      <td>3290</td>
-      <td>-4.419890</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>525</th>
-      <td>581409646.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CAN</td>
       <td>CANADA</td>
-      <td>CAN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>13</td>
-      <td>2094</td>
-      <td>-1</td>
-      <td>2130</td>
-      <td>0</td>
-      <td>10</td>
-      <td>3290</td>
-      <td>-4.419890</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>526</th>
-      <td>581409647.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CAN</td>
       <td>CANADA</td>
-      <td>CAN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>2653</td>
-      <td>2677</td>
-      <td>2660</td>
-      <td>0</td>
-      <td>40</td>
-      <td>6742</td>
-      <td>1.115880</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>527</th>
-      <td>581409648.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CAN</td>
       <td>CANADA</td>
-      <td>CAN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>2552</td>
-      <td>2576</td>
-      <td>2559</td>
-      <td>0</td>
-      <td>20</td>
-      <td>5668</td>
-      <td>1.368421</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>529</th>
-      <td>581409650.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CAN</td>
       <td>CANADA</td>
-      <td>CAN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>1773</td>
-      <td>1815</td>
-      <td>1866</td>
-      <td>0</td>
-      <td>40</td>
-      <td>2452</td>
-      <td>6.913580</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>537</th>
-      <td>581409658.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CAN</td>
       <td>CANADA</td>
-      <td>CAN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>2425</td>
-      <td>2460</td>
-      <td>2432</td>
-      <td>0</td>
-      <td>20</td>
-      <td>5329</td>
-      <td>1.325178</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>539</th>
-      <td>581409660.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CAN</td>
       <td>CANADA</td>
-      <td>CAN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>14</td>
-      <td>2975</td>
-      <td>2987</td>
-      <td>2982</td>
-      <td>0</td>
-      <td>10</td>
-      <td>5372</td>
-      <td>-4.966887</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>540</th>
-      <td>581409661.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CAN</td>
       <td>CANADA</td>
-      <td>CAN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>14</td>
-      <td>2993</td>
-      <td>3021</td>
-      <td>3000</td>
-      <td>0</td>
-      <td>10</td>
-      <td>5372</td>
-      <td>-4.966887</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>554</th>
-      <td>581409675.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CHN</td>
       <td>CHINA</td>
-      <td>CHN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>522</td>
-      <td>546</td>
-      <td>528</td>
-      <td>1</td>
-      <td>80</td>
-      <td>686</td>
-      <td>3.252033</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>555</th>
-      <td>581409676.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CHN</td>
       <td>CHINA</td>
-      <td>CHN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>522</td>
-      <td>546</td>
-      <td>528</td>
-      <td>0</td>
-      <td>20</td>
-      <td>686</td>
-      <td>3.252033</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>572</th>
-      <td>581409693.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CHRCTH</td>
       <td>CATHOLIC</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>759</td>
-      <td>-1</td>
-      <td>798</td>
-      <td>0</td>
-      <td>10</td>
-      <td>6114</td>
-      <td>-4.872881</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>573</th>
-      <td>581409694.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CHRCTH</td>
       <td>CATHOLIC</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>759</td>
-      <td>-1</td>
-      <td>798</td>
-      <td>0</td>
-      <td>10</td>
-      <td>6114</td>
-      <td>-4.872881</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>584</th>
-      <td>581409703.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COG</td>
       <td>CONGO</td>
-      <td>COG</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>0</td>
-      <td>-1</td>
-      <td>17</td>
-      <td>1</td>
-      <td>100</td>
-      <td>2567</td>
-      <td>-14.492754</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>585</th>
-      <td>581409703.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COG</td>
       <td>CONGO</td>
-      <td>COG</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>0</td>
-      <td>-1</td>
-      <td>17</td>
-      <td>1</td>
-      <td>100</td>
-      <td>2672</td>
-      <td>-14.251208</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>608</th>
-      <td>581409723.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>12</td>
-      <td>2631</td>
-      <td>-1</td>
-      <td>2591</td>
-      <td>1</td>
-      <td>20</td>
-      <td>5249</td>
-      <td>-7.407407</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>609</th>
-      <td>581409724.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>1823</td>
-      <td>-1</td>
-      <td>1877</td>
-      <td>1</td>
-      <td>60</td>
-      <td>2452</td>
-      <td>6.913580</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>610</th>
-      <td>581409725.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>342</td>
-      <td>-1</td>
-      <td>424</td>
-      <td>1</td>
-      <td>100</td>
-      <td>2710</td>
-      <td>-3.794643</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>615</th>
-      <td>581409730.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>SECURITY FORCE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>15</td>
-      <td>4507</td>
-      <td>-1</td>
-      <td>4523</td>
-      <td>1</td>
-      <td>100</td>
-      <td>10652</td>
-      <td>-4.256804</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>616</th>
-      <td>581409731.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>315</td>
-      <td>-1</td>
-      <td>363</td>
-      <td>1</td>
-      <td>100</td>
-      <td>608</td>
-      <td>-10.714286</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>617</th>
-      <td>581409732.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>306</td>
-      <td>-1</td>
-      <td>315</td>
-      <td>1</td>
-      <td>100</td>
-      <td>1806</td>
-      <td>-3.594771</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>619</th>
-      <td>581409734.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>2358</td>
-      <td>2378</td>
-      <td>2365</td>
-      <td>1</td>
-      <td>100</td>
-      <td>2964</td>
-      <td>-3.821656</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>627</th>
-      <td>581409742.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>304</td>
-      <td>313</td>
-      <td>322</td>
-      <td>1</td>
-      <td>50</td>
-      <td>2710</td>
-      <td>-3.794643</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>640</th>
-      <td>581409753.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>159</td>
-      <td>64</td>
-      <td>80</td>
-      <td>1</td>
-      <td>50</td>
-      <td>548</td>
-      <td>-7.692308</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>641</th>
-      <td>581409754.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>484</td>
-      <td>442</td>
-      <td>460</td>
-      <td>1</td>
-      <td>100</td>
-      <td>2518</td>
-      <td>-7.226107</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>647</th>
-      <td>581409760.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>SECURITY FORCE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>14</td>
-      <td>4403</td>
-      <td>4388</td>
-      <td>4340</td>
-      <td>0</td>
-      <td>10</td>
-      <td>10652</td>
-      <td>-4.256804</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>649</th>
-      <td>581409762.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>SECURITY FORCE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>5</td>
-      <td>1235</td>
-      <td>1089</td>
-      <td>1216</td>
-      <td>1</td>
-      <td>50</td>
-      <td>3736</td>
-      <td>-0.860585</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>670</th>
-      <td>581409780.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>-1</td>
-      <td>-1</td>
-      <td>-1</td>
-      <td>0</td>
-      <td>10</td>
-      <td>1864</td>
-      <td>-4.666667</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>671</th>
-      <td>581409780.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>1083</td>
-      <td>980</td>
-      <td>1070</td>
-      <td>1</td>
-      <td>100</td>
-      <td>2730</td>
-      <td>-4.017857</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>672</th>
-      <td>581409781.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE OFFICER</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>412</td>
-      <td>367</td>
-      <td>400</td>
-      <td>0</td>
-      <td>20</td>
-      <td>1273</td>
-      <td>-4.017857</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>673</th>
-      <td>581409782.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE OFFICER</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>181</td>
-      <td>45</td>
-      <td>162</td>
-      <td>0</td>
-      <td>20</td>
-      <td>594</td>
-      <td>-7.547170</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>674</th>
-      <td>581409783.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>510</td>
-      <td>440</td>
-      <td>498</td>
-      <td>0</td>
-      <td>20</td>
-      <td>3015</td>
-      <td>-3.543307</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>675</th>
-      <td>581409784.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>531</td>
-      <td>461</td>
-      <td>519</td>
-      <td>0</td>
-      <td>20</td>
-      <td>3015</td>
-      <td>-3.543307</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>676</th>
-      <td>581409785.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE OFFICER</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>2687</td>
-      <td>2616</td>
-      <td>2662</td>
-      <td>1</td>
-      <td>70</td>
-      <td>9235</td>
-      <td>-3.241491</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>677</th>
-      <td>581409786.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE OFFICER</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>412</td>
-      <td>367</td>
-      <td>391</td>
-      <td>0</td>
-      <td>20</td>
-      <td>1273</td>
-      <td>-4.017857</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>678</th>
-      <td>581409787.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>143</td>
-      <td>162</td>
-      <td>150</td>
-      <td>1</td>
-      <td>100</td>
-      <td>4250</td>
-      <td>-4.526749</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>679</th>
-      <td>581409788.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>POLICE OFFICER</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>-1</td>
-      <td>2667</td>
-      <td>2714</td>
-      <td>0</td>
-      <td>10</td>
-      <td>9235</td>
-      <td>-3.241491</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>681</th>
-      <td>581409790.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>COP</td>
       <td>DEPUTY</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>1217</td>
-      <td>1182</td>
-      <td>1195</td>
-      <td>0</td>
-      <td>10</td>
-      <td>1435</td>
-      <td>-8.433735</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>700</th>
-      <td>581409809.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CRM</td>
       <td>CRIMINAL</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>6</td>
-      <td>1787</td>
-      <td>1960</td>
-      <td>1928</td>
-      <td>0</td>
-      <td>10</td>
-      <td>2828</td>
-      <td>-7.822410</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>744</th>
-      <td>581409851.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CVL</td>
       <td>VILLAGE</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>2818</td>
-      <td>-1</td>
-      <td>2749</td>
-      <td>1</td>
-      <td>30</td>
-      <td>3971</td>
-      <td>-1.401051</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>745</th>
-      <td>581409852.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CVL</td>
       <td>COMMUNITY</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>29</td>
-      <td>-1</td>
-      <td>39</td>
-      <td>1</td>
-      <td>50</td>
-      <td>3242</td>
-      <td>-4.504505</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>765</th>
-      <td>581409872.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>CVL</td>
       <td>NEIGHBORHOOD</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>418</td>
-      <td>261</td>
-      <td>349</td>
-      <td>1</td>
-      <td>100</td>
-      <td>1155</td>
-      <td>-7.619048</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>816</th>
-      <td>581409920.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>EDU</td>
       <td>SCHOOL</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>2058</td>
-      <td>-1</td>
-      <td>2027</td>
-      <td>1</td>
-      <td>100</td>
-      <td>3579</td>
-      <td>-4.232804</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>818</th>
-      <td>581409922.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>EDU</td>
       <td>STUDENT</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>8</td>
-      <td>-1</td>
-      <td>34</td>
-      <td>1</td>
-      <td>100</td>
-      <td>883</td>
-      <td>-3.311258</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>819</th>
-      <td>581409923.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>EDU</td>
       <td>STUDENT</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>59</td>
-      <td>-1</td>
-      <td>85</td>
-      <td>1</td>
-      <td>100</td>
-      <td>883</td>
-      <td>-3.311258</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>826</th>
-      <td>581409930.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>EDU</td>
       <td>UNIVERSITY</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>132</td>
-      <td>236</td>
-      <td>270</td>
-      <td>1</td>
-      <td>100</td>
-      <td>3579</td>
-      <td>-4.232804</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>861</th>
-      <td>581409965.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>EDU</td>
       <td>STUDENT</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>1062</td>
-      <td>1132</td>
-      <td>1071</td>
-      <td>0</td>
-      <td>20</td>
-      <td>2744</td>
-      <td>-4.291845</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>862</th>
-      <td>581409966.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>EDU</td>
       <td>STUDENT</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>5</td>
-      <td>700</td>
-      <td>737</td>
-      <td>709</td>
-      <td>1</td>
-      <td>100</td>
-      <td>955</td>
-      <td>-6.666667</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>863</th>
-      <td>581409967.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>EDU</td>
       <td>STUDENT</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>1877</td>
-      <td>1937</td>
-      <td>1886</td>
-      <td>0</td>
-      <td>20</td>
-      <td>11363</td>
-      <td>-6.850054</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>865</th>
-      <td>581409969.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>EDUEDU</td>
       <td>SCHOOL</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>132</td>
-      <td>277</td>
-      <td>262</td>
-      <td>1</td>
-      <td>100</td>
-      <td>883</td>
-      <td>-3.311258</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>886</th>
-      <td>581409983.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>ESP</td>
       <td>BARCELONA</td>
-      <td>ESP</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>86</td>
-      <td>-1</td>
-      <td>153</td>
-      <td>1</td>
-      <td>50</td>
-      <td>3232</td>
-      <td>-4.609929</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>887</th>
-      <td>581409984.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>ESP</td>
       <td>BARCELONA</td>
-      <td>ESP</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>0</td>
-      <td>-1</td>
-      <td>67</td>
-      <td>1</td>
-      <td>70</td>
-      <td>3232</td>
-      <td>-4.609929</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>974</th>
-      <td>581410049.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>GBR</td>
       <td>BRITAIN</td>
-      <td>GBR</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>12</td>
-      <td>2293</td>
-      <td>2430</td>
-      <td>2504</td>
-      <td>0</td>
-      <td>20</td>
-      <td>5595</td>
-      <td>-6.992231</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>1030</th>
-      <td>581410104.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>GOV</td>
       <td>FIREFIGHTER</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>2208</td>
-      <td>2231</td>
-      <td>2322</td>
-      <td>1</td>
-      <td>50</td>
-      <td>3140</td>
-      <td>-7.952286</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>1038</th>
-      <td>581410112.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>GOV</td>
       <td>KING</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>172</td>
-      <td>97</td>
-      <td>123</td>
-      <td>1</td>
-      <td>100</td>
-      <td>331</td>
-      <td>-4.761905</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>1039</th>
-      <td>581410113.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>GOV</td>
       <td>GOVERNMENT</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>596</td>
-      <td>654</td>
-      <td>553</td>
-      <td>1</td>
-      <td>60</td>
-      <td>1190</td>
-      <td>-0.500000</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>1056</th>
-      <td>581410130.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>GOV</td>
       <td>PRIME MINISTER</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>2860</td>
-      <td>2926</td>
-      <td>2931</td>
-      <td>0</td>
-      <td>20</td>
-      <td>3843</td>
-      <td>0.975610</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>1057</th>
-      <td>581410131.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>GOV</td>
       <td>PRIME MINISTER</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>2860</td>
-      <td>2926</td>
-      <td>2931</td>
-      <td>1</td>
-      <td>40</td>
-      <td>3843</td>
-      <td>0.975610</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>1065</th>
-      <td>581410138.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>GOV</td>
       <td>DESPOT</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>97</td>
-      <td>221</td>
-      <td>203</td>
-      <td>1</td>
-      <td>30</td>
-      <td>5722</td>
-      <td>-2.558854</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>1066</th>
-      <td>581410139.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>GOV</td>
       <td>DESPOT</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>97</td>
-      <td>227</td>
-      <td>209</td>
-      <td>0</td>
-      <td>20</td>
-      <td>5722</td>
-      <td>-2.558854</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>1090</th>
-      <td>581410163.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>GOV</td>
       <td>GOVERNMENT</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>964</td>
-      <td>931</td>
-      <td>938</td>
-      <td>0</td>
-      <td>20</td>
-      <td>1714</td>
-      <td>-6.756757</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>1098</th>
-      <td>581410171.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>GOV</td>
       <td>INTERIOR MINIST</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>5</td>
-      <td>817</td>
-      <td>866</td>
-      <td>835</td>
-      <td>1</td>
-      <td>100</td>
-      <td>1192</td>
-      <td>-8.490566</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>1118</th>
-      <td>581410188.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>GOV</td>
       <td>MINIST</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>18</td>
-      <td>3593</td>
-      <td>3637</td>
-      <td>3603</td>
-      <td>1</td>
-      <td>100</td>
-      <td>6245</td>
-      <td>-6.086957</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>1131</th>
-      <td>581410200.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>GOVHLH</td>
       <td>HEALTH DEPARTMENT</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>126</td>
-      <td>-1</td>
-      <td>192</td>
-      <td>1</td>
-      <td>10</td>
-      <td>5543</td>
-      <td>-2.723312</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>...</th>
       <td>...</td>
       <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
     </tr>
     <tr>
       <th>2050</th>
-      <td>581411023.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>SYRMIL</td>
       <td>SYRIA</td>
-      <td>SYR</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>12</td>
-      <td>1833</td>
-      <td>1899</td>
-      <td>1890</td>
-      <td>0</td>
-      <td>20</td>
-      <td>3290</td>
-      <td>-4.419890</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2057</th>
-      <td>581411030.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>TUN</td>
       <td>TUNISIA</td>
-      <td>TUN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>17</td>
-      <td>-1</td>
-      <td>5</td>
-      <td>0</td>
-      <td>20</td>
-      <td>9566</td>
-      <td>-4.032766</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2058</th>
-      <td>581411031.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>TUN</td>
       <td>TUNISIA</td>
-      <td>TUN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>17</td>
-      <td>-1</td>
-      <td>5</td>
-      <td>1</td>
-      <td>80</td>
-      <td>9566</td>
-      <td>-4.032766</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2059</th>
-      <td>581411032.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>TUN</td>
       <td>TUNISIA</td>
-      <td>TUN</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>829</td>
-      <td>934</td>
-      <td>787</td>
-      <td>1</td>
-      <td>100</td>
-      <td>9566</td>
-      <td>-4.032766</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2061</th>
-      <td>581411034.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>TUR</td>
       <td>TURKISH</td>
-      <td>TUR</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>480</td>
-      <td>396</td>
-      <td>429</td>
-      <td>0</td>
-      <td>10</td>
-      <td>3716</td>
-      <td>-2.500000</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2062</th>
-      <td>581411035.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>TUR</td>
       <td>ISTANBUL</td>
-      <td>TUR</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>19</td>
-      <td>3036</td>
-      <td>2983</td>
-      <td>2996</td>
-      <td>1</td>
-      <td>80</td>
-      <td>3716</td>
-      <td>-2.500000</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2063</th>
-      <td>581411036.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>TUR</td>
       <td>ISTANBUL</td>
-      <td>TUR</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>19</td>
-      <td>3067</td>
-      <td>3010</td>
-      <td>3020</td>
-      <td>0</td>
-      <td>20</td>
-      <td>3716</td>
-      <td>-2.500000</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2066</th>
-      <td>581411039.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>TUR</td>
       <td>TURKISH</td>
-      <td>TUR</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>1459</td>
-      <td>1368</td>
-      <td>1445</td>
-      <td>0</td>
-      <td>10</td>
-      <td>3716</td>
-      <td>-2.500000</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2067</th>
-      <td>581411040.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>TUR</td>
       <td>TURKISH</td>
-      <td>TUR</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>1459</td>
-      <td>1368</td>
-      <td>1445</td>
-      <td>0</td>
-      <td>10</td>
-      <td>3716</td>
-      <td>-2.500000</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2072</th>
-      <td>581411045.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>TURCOP</td>
       <td>TURKISH</td>
-      <td>TUR</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>1442</td>
-      <td>1368</td>
-      <td>1432</td>
-      <td>1</td>
-      <td>30</td>
-      <td>3716</td>
-      <td>-2.500000</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2086</th>
-      <td>581411059.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>UAF</td>
       <td>TERRORIST</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>15</td>
-      <td>3663</td>
-      <td>3687</td>
-      <td>3673</td>
-      <td>0</td>
-      <td>20</td>
-      <td>3943</td>
-      <td>-5.376344</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2087</th>
-      <td>581411060.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>UAF</td>
       <td>MILITANT</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>17</td>
-      <td>4749</td>
-      <td>4766</td>
-      <td>4759</td>
-      <td>1</td>
-      <td>30</td>
-      <td>10652</td>
-      <td>-4.256804</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2088</th>
-      <td>581411061.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>UAF</td>
       <td>FIGHTER</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>1231</td>
-      <td>1256</td>
-      <td>1244</td>
-      <td>1</td>
-      <td>30</td>
-      <td>4593</td>
-      <td>-1.859230</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2089</th>
-      <td>581411062.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>UAF</td>
       <td>TERRORIST</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>1990</td>
-      <td>2014</td>
-      <td>2000</td>
-      <td>1</td>
-      <td>100</td>
-      <td>2272</td>
-      <td>2.298851</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2090</th>
-      <td>581411063.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>UAF</td>
       <td>TERRORIST</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>2166</td>
-      <td>2190</td>
-      <td>2176</td>
-      <td>0</td>
-      <td>20</td>
-      <td>2413</td>
-      <td>-4.116223</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2091</th>
-      <td>581411064.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>UAF</td>
       <td>TERRORIST</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>2166</td>
-      <td>2190</td>
-      <td>2176</td>
-      <td>0</td>
-      <td>20</td>
-      <td>2413</td>
-      <td>-4.116223</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2092</th>
-      <td>581411065.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>UAF</td>
       <td>TERRORIST</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>2166</td>
-      <td>2190</td>
-      <td>2176</td>
-      <td>1</td>
-      <td>60</td>
-      <td>2413</td>
-      <td>-4.116223</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2093</th>
-      <td>581411066.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>UAF</td>
       <td>FIGHTER</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>123</td>
-      <td>163</td>
-      <td>98</td>
-      <td>0</td>
-      <td>40</td>
-      <td>4593</td>
-      <td>-1.859230</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2094</th>
-      <td>581411067.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>UAF</td>
       <td>FIGHTER</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>123</td>
-      <td>163</td>
-      <td>98</td>
-      <td>0</td>
-      <td>40</td>
-      <td>4593</td>
-      <td>-1.859230</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2265</th>
-      <td>581411221.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>160</td>
-      <td>-1</td>
-      <td>209</td>
-      <td>0</td>
-      <td>10</td>
-      <td>1273</td>
-      <td>-4.017857</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2266</th>
-      <td>581411222.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>179</td>
-      <td>-1</td>
-      <td>241</td>
-      <td>0</td>
-      <td>30</td>
-      <td>1273</td>
-      <td>-4.017857</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2267</th>
-      <td>581411223.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>OHIO</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>173</td>
-      <td>-1</td>
-      <td>197</td>
-      <td>1</td>
-      <td>10</td>
-      <td>1273</td>
-      <td>-4.017857</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2268</th>
-      <td>581411224.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>NEW YORK</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>12</td>
-      <td>3471</td>
-      <td>-1</td>
-      <td>3526</td>
-      <td>0</td>
-      <td>20</td>
-      <td>9235</td>
-      <td>-3.241491</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2269</th>
-      <td>581411225.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>16</td>
-      <td>3565</td>
-      <td>-1</td>
-      <td>3589</td>
-      <td>0</td>
-      <td>40</td>
-      <td>4250</td>
-      <td>-4.526749</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2270</th>
-      <td>581411226.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>488</td>
-      <td>-1</td>
-      <td>502</td>
-      <td>0</td>
-      <td>40</td>
-      <td>1481</td>
-      <td>-12.015504</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2276</th>
-      <td>581411232.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>95</td>
-      <td>-1</td>
-      <td>191</td>
-      <td>0</td>
-      <td>20</td>
-      <td>2633</td>
-      <td>-5.870445</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2277</th>
-      <td>581411233.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>21</td>
-      <td>5828</td>
-      <td>-1</td>
-      <td>5846</td>
-      <td>0</td>
-      <td>20</td>
-      <td>6627</td>
-      <td>-8.340728</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2278</th>
-      <td>581411234.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>339</td>
-      <td>-1</td>
-      <td>427</td>
-      <td>0</td>
-      <td>40</td>
-      <td>1481</td>
-      <td>-12.015504</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2279</th>
-      <td>581411235.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>68</td>
-      <td>-1</td>
-      <td>140</td>
-      <td>0</td>
-      <td>40</td>
-      <td>1116</td>
-      <td>-13.440860</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2280</th>
-      <td>581411236.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>61</td>
-      <td>-1</td>
-      <td>206</td>
-      <td>0</td>
-      <td>40</td>
-      <td>5543</td>
-      <td>-2.723312</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2281</th>
-      <td>581411237.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>77</td>
-      <td>-1</td>
-      <td>256</td>
-      <td>0</td>
-      <td>10</td>
-      <td>5543</td>
-      <td>-2.723312</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2282</th>
-      <td>581411238.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>77</td>
-      <td>-1</td>
-      <td>256</td>
-      <td>0</td>
-      <td>10</td>
-      <td>5543</td>
-      <td>-2.723312</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2283</th>
-      <td>581411239.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>27</td>
-      <td>10011</td>
-      <td>-1</td>
-      <td>10165</td>
-      <td>0</td>
-      <td>10</td>
-      <td>11927</td>
-      <td>1.317790</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2284</th>
-      <td>581411240.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>452</td>
-      <td>-1</td>
-      <td>466</td>
-      <td>0</td>
-      <td>20</td>
-      <td>2053</td>
-      <td>-8.955224</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2285</th>
-      <td>581411241.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>AMERICAN</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>75</td>
-      <td>-1</td>
-      <td>21</td>
-      <td>1</td>
-      <td>100</td>
-      <td>483</td>
-      <td>0.000000</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2288</th>
-      <td>581411244.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>9</td>
-      <td>2554</td>
-      <td>2785</td>
-      <td>2596</td>
-      <td>0</td>
-      <td>10</td>
-      <td>5570</td>
-      <td>-4.596413</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2289</th>
-      <td>581411245.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>9</td>
-      <td>2533</td>
-      <td>2764</td>
-      <td>2575</td>
-      <td>0</td>
-      <td>10</td>
-      <td>5570</td>
-      <td>-4.596413</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2350</th>
-      <td>581411297.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>ARKANSAS</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>586</td>
-      <td>646</td>
-      <td>653</td>
-      <td>1</td>
-      <td>100</td>
-      <td>1687</td>
-      <td>-4.332130</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2351</th>
-      <td>581411298.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>440</td>
-      <td>510</td>
-      <td>498</td>
-      <td>0</td>
-      <td>20</td>
-      <td>3015</td>
-      <td>-3.543307</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2352</th>
-      <td>581411299.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>461</td>
-      <td>531</td>
-      <td>519</td>
-      <td>0</td>
-      <td>20</td>
-      <td>3015</td>
-      <td>-3.543307</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2353</th>
-      <td>581411300.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>6</td>
-      <td>1799</td>
-      <td>1899</td>
-      <td>1891</td>
-      <td>0</td>
-      <td>10</td>
-      <td>3229</td>
-      <td>-4.060914</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2359</th>
-      <td>581411306.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>5</td>
-      <td>1976</td>
-      <td>2065</td>
-      <td>1992</td>
-      <td>0</td>
-      <td>20</td>
-      <td>3323</td>
-      <td>1.711027</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2364</th>
-      <td>581411311.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>6</td>
-      <td>1055</td>
-      <td>-1</td>
-      <td>1162</td>
-      <td>0</td>
-      <td>20</td>
-      <td>1368</td>
-      <td>-0.429185</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2365</th>
-      <td>581411312.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>6</td>
-      <td>1070</td>
-      <td>-1</td>
-      <td>1177</td>
-      <td>0</td>
-      <td>20</td>
-      <td>1368</td>
-      <td>-0.429185</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2366</th>
-      <td>581411313.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>TEXAS</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>6</td>
-      <td>1097</td>
-      <td>1208</td>
-      <td>1115</td>
-      <td>1</td>
-      <td>60</td>
-      <td>1368</td>
-      <td>-0.429185</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2381</th>
-      <td>581411325.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>ORLANDO</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>2358</td>
-      <td>2426</td>
-      <td>2405</td>
-      <td>0</td>
-      <td>20</td>
-      <td>2828</td>
-      <td>-7.822410</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2382</th>
-      <td>581411326.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>ORLANDO</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>2301</td>
-      <td>2368</td>
-      <td>2349</td>
-      <td>1</td>
-      <td>60</td>
-      <td>2828</td>
-      <td>-7.822410</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2383</th>
-      <td>581411327.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>ORLANDO</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>2343</td>
-      <td>2411</td>
-      <td>2390</td>
-      <td>0</td>
-      <td>20</td>
-      <td>2828</td>
-      <td>-7.822410</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2384</th>
-      <td>581411328.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>NEW YORK</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>2220</td>
-      <td>2368</td>
-      <td>2337</td>
-      <td>1</td>
-      <td>80</td>
-      <td>2828</td>
-      <td>-7.822410</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2385</th>
-      <td>581411329.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>2195</td>
-      <td>2411</td>
-      <td>2381</td>
-      <td>0</td>
-      <td>20</td>
-      <td>2828</td>
-      <td>-7.822410</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2386</th>
-      <td>581411330.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>2210</td>
-      <td>2426</td>
-      <td>2303</td>
-      <td>0</td>
-      <td>20</td>
-      <td>2828</td>
-      <td>-7.822410</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2387</th>
-      <td>581411331.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>NEW YORK</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>7</td>
-      <td>2220</td>
-      <td>2368</td>
-      <td>2244</td>
-      <td>1</td>
-      <td>80</td>
-      <td>2828</td>
-      <td>-7.822410</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2408</th>
-      <td>581411352.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>351</td>
-      <td>256</td>
-      <td>290</td>
-      <td>0</td>
-      <td>60</td>
-      <td>3895</td>
-      <td>-6.707317</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2411</th>
-      <td>581411355.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>1282</td>
-      <td>1342</td>
-      <td>1369</td>
-      <td>0</td>
-      <td>20</td>
-      <td>7318</td>
-      <td>-6.020942</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2412</th>
-      <td>581411356.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>15</td>
-      <td>5104</td>
-      <td>5164</td>
-      <td>5191</td>
-      <td>0</td>
-      <td>40</td>
-      <td>7318</td>
-      <td>-6.020942</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2413</th>
-      <td>581411357.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>1261</td>
-      <td>1321</td>
-      <td>1348</td>
-      <td>0</td>
-      <td>20</td>
-      <td>7318</td>
-      <td>-6.020942</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2415</th>
-      <td>581411359.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>6</td>
-      <td>4497</td>
-      <td>4528</td>
-      <td>4573</td>
-      <td>0</td>
-      <td>40</td>
-      <td>9461</td>
-      <td>2.437538</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2436</th>
-      <td>581411380.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>TEXAS</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>19</td>
-      <td>4715</td>
-      <td>4569</td>
-      <td>4658</td>
-      <td>0</td>
-      <td>20</td>
-      <td>5327</td>
-      <td>-6.064073</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2475</th>
-      <td>581411415.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>16</td>
-      <td>6331</td>
-      <td>6483</td>
-      <td>6345</td>
-      <td>0</td>
-      <td>10</td>
-      <td>11927</td>
-      <td>1.317790</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2476</th>
-      <td>581411416.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>16</td>
-      <td>6316</td>
-      <td>6468</td>
-      <td>6330</td>
-      <td>0</td>
-      <td>10</td>
-      <td>11927</td>
-      <td>1.317790</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2508</th>
-      <td>581411441.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>ARIZONA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>82</td>
-      <td>329</td>
-      <td>259</td>
-      <td>1</td>
-      <td>60</td>
-      <td>1269</td>
-      <td>-7.359307</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2509</th>
-      <td>581411442.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>ARIZONA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>82</td>
-      <td>368</td>
-      <td>300</td>
-      <td>0</td>
-      <td>40</td>
-      <td>1269</td>
-      <td>-7.359307</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2514</th>
-      <td>581411447.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>KANSAS CITY</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>5</td>
-      <td>185</td>
-      <td>139</td>
-      <td>1</td>
-      <td>100</td>
-      <td>2619</td>
-      <td>-1.869159</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2536</th>
-      <td>581411461.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>20</td>
-      <td>4118</td>
-      <td>3970</td>
-      <td>4134</td>
-      <td>0</td>
-      <td>10</td>
-      <td>7468</td>
-      <td>-2.489960</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2589</th>
-      <td>581411513.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>NEW YORK</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>3071</td>
-      <td>3173</td>
-      <td>3058</td>
-      <td>1</td>
-      <td>30</td>
-      <td>9235</td>
-      <td>-3.241491</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2590</th>
-      <td>581411514.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>115</td>
-      <td>129</td>
-      <td>242</td>
-      <td>0</td>
-      <td>20</td>
-      <td>10235</td>
-      <td>-2.095460</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2605</th>
-      <td>581411527.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USA</td>
       <td>ATLANTA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>8</td>
-      <td>2091</td>
-      <td>2071</td>
-      <td>2048</td>
-      <td>0</td>
-      <td>20</td>
-      <td>2168</td>
-      <td>-5.817175</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2615</th>
-      <td>581411537.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USACOP</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>12</td>
-      <td>2619</td>
-      <td>-1</td>
-      <td>2591</td>
-      <td>0</td>
-      <td>40</td>
-      <td>5249</td>
-      <td>-7.407407</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2616</th>
-      <td>581411538.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USACOP</td>
       <td>PHILADELPHIA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>79</td>
-      <td>-1</td>
-      <td>99</td>
-      <td>1</td>
-      <td>80</td>
-      <td>3247</td>
-      <td>-8.436214</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2617</th>
-      <td>581411539.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USACOP</td>
       <td>CHARLOTTE</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>105</td>
-      <td>295</td>
-      <td>223</td>
-      <td>0</td>
-      <td>20</td>
-      <td>6245</td>
-      <td>-6.086957</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2618</th>
-      <td>581411540.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USACOP</td>
       <td>CHARLOTTE</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>105</td>
-      <td>247</td>
-      <td>181</td>
-      <td>1</td>
-      <td>60</td>
-      <td>6245</td>
-      <td>-6.086957</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2619</th>
-      <td>581411541.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USACOP</td>
       <td>CHARLOTTE</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>105</td>
-      <td>295</td>
-      <td>223</td>
-      <td>0</td>
-      <td>20</td>
-      <td>6245</td>
-      <td>-6.086957</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2620</th>
-      <td>581411542.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USACOP</td>
       <td>CHARLOTTE</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>105</td>
-      <td>247</td>
-      <td>232</td>
-      <td>1</td>
-      <td>100</td>
-      <td>6245</td>
-      <td>-6.086957</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2622</th>
-      <td>581411544.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USACOP</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>12</td>
-      <td>2639</td>
-      <td>2705</td>
-      <td>2591</td>
-      <td>0</td>
-      <td>20</td>
-      <td>5249</td>
-      <td>-7.407407</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2623</th>
-      <td>581411545.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USACOP</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>12</td>
-      <td>2639</td>
-      <td>2687</td>
-      <td>2591</td>
-      <td>0</td>
-      <td>20</td>
-      <td>5249</td>
-      <td>-7.407407</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2634</th>
-      <td>581411556.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAEDU</td>
       <td>MARYLAND</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>3</td>
-      <td>620</td>
-      <td>-1</td>
-      <td>534</td>
-      <td>1</td>
-      <td>50</td>
-      <td>4949</td>
-      <td>1.210654</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2639</th>
-      <td>581411561.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAEDU</td>
       <td>CALIFORNIA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>1283</td>
-      <td>1302</td>
-      <td>1330</td>
-      <td>1</td>
-      <td>60</td>
-      <td>7318</td>
-      <td>-6.020942</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2640</th>
-      <td>581411562.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAEDU</td>
       <td>CALIFORNIA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>15</td>
-      <td>5126</td>
-      <td>5145</td>
-      <td>5173</td>
-      <td>1</td>
-      <td>60</td>
-      <td>7318</td>
-      <td>-6.020942</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2662</th>
-      <td>581411584.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOV</td>
       <td>NASA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>215</td>
-      <td>-1</td>
-      <td>64</td>
-      <td>1</td>
-      <td>50</td>
-      <td>2110</td>
-      <td>-1.162791</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2663</th>
-      <td>581411585.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOV</td>
       <td>HILLARY CLINTON</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>128</td>
-      <td>-1</td>
-      <td>240</td>
-      <td>1</td>
-      <td>30</td>
-      <td>10235</td>
-      <td>-2.095460</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2664</th>
-      <td>581411586.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOV</td>
       <td>HILLARY CLINTON</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>2</td>
-      <td>209</td>
-      <td>-1</td>
-      <td>190</td>
-      <td>1</td>
-      <td>100</td>
-      <td>532</td>
-      <td>-1.754386</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2669</th>
-      <td>581411591.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOV</td>
       <td>OBAMA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>46</td>
-      <td>191</td>
-      <td>82</td>
-      <td>1</td>
-      <td>30</td>
-      <td>11363</td>
-      <td>-6.850054</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2670</th>
-      <td>581411592.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOV</td>
       <td>OBAMA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>46</td>
-      <td>191</td>
-      <td>82</td>
-      <td>0</td>
-      <td>10</td>
-      <td>11363</td>
-      <td>-6.850054</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2671</th>
-      <td>581411593.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOV</td>
       <td>OBAMA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>46</td>
-      <td>191</td>
-      <td>82</td>
-      <td>0</td>
-      <td>10</td>
-      <td>11363</td>
-      <td>-6.850054</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2683</th>
-      <td>581411605.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOV</td>
       <td>OBAMA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>8</td>
-      <td>1758</td>
-      <td>1799</td>
-      <td>1768</td>
-      <td>1</td>
-      <td>100</td>
-      <td>6609</td>
-      <td>-1.092896</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2684</th>
-      <td>581411606.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOV</td>
       <td>OBAMA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>22</td>
-      <td>5499</td>
-      <td>5557</td>
-      <td>5545</td>
-      <td>0</td>
-      <td>20</td>
-      <td>18076</td>
-      <td>-4.946012</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2685</th>
-      <td>581411606.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOV</td>
       <td>OBAMA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>22</td>
-      <td>5499</td>
-      <td>5557</td>
-      <td>5545</td>
-      <td>0</td>
-      <td>20</td>
-      <td>18076</td>
-      <td>-4.946012</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2686</th>
-      <td>581411607.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOV</td>
       <td>OBAMA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>22</td>
-      <td>5499</td>
-      <td>5557</td>
-      <td>5545</td>
-      <td>1</td>
-      <td>80</td>
-      <td>18076</td>
-      <td>-4.946012</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2687</th>
-      <td>581411607.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOV</td>
       <td>OBAMA</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>22</td>
-      <td>5499</td>
-      <td>5557</td>
-      <td>5545</td>
-      <td>1</td>
-      <td>80</td>
-      <td>18076</td>
-      <td>-4.946012</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2699</th>
-      <td>581411618.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOV</td>
       <td>HILLARY CLINTON</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>13</td>
-      <td>2583</td>
-      <td>2672</td>
-      <td>2629</td>
-      <td>0</td>
-      <td>20</td>
-      <td>6245</td>
-      <td>-6.086957</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2700</th>
-      <td>581411619.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOV</td>
       <td>HILLARY CLINTON</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>13</td>
-      <td>2583</td>
-      <td>2672</td>
-      <td>2629</td>
-      <td>1</td>
-      <td>60</td>
-      <td>6245</td>
-      <td>-6.086957</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2701</th>
-      <td>581411620.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOV</td>
       <td>HILLARY CLINTON</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>13</td>
-      <td>2583</td>
-      <td>2672</td>
-      <td>2629</td>
-      <td>0</td>
-      <td>20</td>
-      <td>6245</td>
-      <td>-6.086957</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2706</th>
-      <td>581411625.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAGOVHLH</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>1</td>
-      <td>178</td>
-      <td>-1</td>
-      <td>256</td>
-      <td>0</td>
-      <td>20</td>
-      <td>5543</td>
-      <td>-2.723312</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2711</th>
-      <td>581411629.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAJUD</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>10</td>
-      <td>2682</td>
-      <td>-1</td>
-      <td>2811</td>
-      <td>0</td>
-      <td>20</td>
-      <td>3247</td>
-      <td>-8.436214</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2740</th>
-      <td>581411653.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>USAPTY</td>
       <td>UNITED STATES</td>
-      <td>USA</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>24</td>
-      <td>5224</td>
-      <td>5339</td>
-      <td>5291</td>
-      <td>0</td>
-      <td>10</td>
-      <td>6245</td>
-      <td>-6.086957</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2751</th>
-      <td>581411664.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>ZWE</td>
       <td>ZIMBABWE</td>
-      <td>ZWE</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>1510</td>
-      <td>-1</td>
-      <td>1495</td>
-      <td>1</td>
-      <td>80</td>
-      <td>5442</td>
-      <td>-4.434590</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2752</th>
-      <td>581411665.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>ZWE</td>
       <td>ZIMBABWE</td>
-      <td>ZWE</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>4</td>
-      <td>1510</td>
-      <td>-1</td>
-      <td>1495</td>
-      <td>0</td>
-      <td>20</td>
-      <td>5442</td>
-      <td>-4.434590</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2753</th>
-      <td>581411666.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>ZWE</td>
       <td>ZIMBABWE</td>
-      <td>ZWE</td>
-      <td></td>
-      <td></td>
-      <td>...</td>
-      <td>9</td>
-      <td>2875</td>
-      <td>2927</td>
-      <td>2922</td>
-      <td>0</td>
-      <td>40</td>
-      <td>3994</td>
-      <td>-3.698225</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2755</th>
-      <td>581411668.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>bte</td>
       <td>BETI</td>
-      <td></td>
-      <td></td>
-      <td>bte</td>
-      <td>...</td>
-      <td>8</td>
-      <td>2303</td>
-      <td>-1</td>
-      <td>2422</td>
-      <td>0</td>
-      <td>20</td>
-      <td>3971</td>
-      <td>-1.401051</td>
-      <td></td>
-      <td></td>
     </tr>
     <tr>
       <th>2756</th>
-      <td>581411669.0</td>
-      <td>2.01609e+07</td>
-      <td>201609</td>
-      <td>2016</td>
-      <td>2016.72</td>
       <td>bte</td>
       <td>BETI</td>
-      <td></td>
-      <td></td>
-      <td>bte</td>
-      <td>...</td>
-      <td>8</td>
-      <td>2303</td>
-      <td>-1</td>
-      <td>2433</td>
-      <td>0</td>
-      <td>20</td>
-      <td>3971</td>
-      <td>-1.401051</td>
-      <td></td>
-      <td></td>
     </tr>
   </tbody>
 </table>
-<p>308 rows × 76 columns</p>
+<p>308 rows × 2 columns</p>
 </div>
 
 
@@ -5535,18 +5418,13 @@ conda install feather-format -c conda-forge
 
 
 ```python
-
-```
-
-
-```python
 import feather
 path = 'my_data.feather'
 feather.api.write_dataframe(testdf, path)
 newtestdf = feather.api.read_dataframe(path)
 ```
 
-# Leftovers; Junkyard below here
+# Leftovers; Junkyard below (stuff to work on)
 
 
 ```python
@@ -5869,9 +5747,4 @@ headers.to_csv('GDELT_2.0_Events_Column_Labels_Header_Row_Sep2016.csv', index=Fa
 import pandas as pd
 mentionsdf = pd.read_csv(StringIO(text),delimiter='\t',header=None)
 mentionsdf.columns=headers.columns.tolist()
-```
-
-
-```python
-
 ```

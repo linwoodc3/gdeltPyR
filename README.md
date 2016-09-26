@@ -7,3 +7,15 @@ The GDELT Project is the largest, most comprehensive, and highest resolution ope
   <img src="https://twistedsifter.files.wordpress.com/2015/06/people-tweeting-about-sunrises-over-a-24-hour-period.gif?w=700&h=453">
 </p>
 
+
+### Installation
+
+```bash
+git clone git@github.com:linwoodc3/gdeltPyR.git
+```
+
+
+```python
+python setup.py install
+```
+

@@ -29,7 +29,7 @@ setup(
     version=extract_metaitem('version'),
     license=extract_metaitem('license'),
     description=extract_metaitem('description'),
-    long_description=(read('README.rst') + '\n\n' +
+    long_description=(read('README.md') + '\n\n' +
                       read('AUTHORS.rst') + '\n\n' +
                       read('CHANGES')),
     author=extract_metaitem('author'),
@@ -37,7 +37,7 @@ setup(
     maintainer=extract_metaitem('author'),
     maintainer_email=extract_metaitem('email'),
     url=extract_metaitem('url'),
-    download_url=extract_metaitem('download_url'),
+    #download_url=extract_metaitem('download_url'),
     platforms=['Any'],
     install_requires=['numpy', 'pandas', 'requests','python-dateutil'],
     keywords='gdelt pandas tidy data api',

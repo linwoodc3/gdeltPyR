@@ -3,8 +3,6 @@
 
 Will have to integrate this into GDELT 2.0.  Headers are different.  GDELT 1.0 goes back to 1979.  2.0 only goes back to Feb 2015
 
-![GDELT spinning Globe: Monitoring the World][alice]
-
 
 ```python
 from IPython.display import Image
@@ -100,6 +98,233 @@ return it as a python or R dataframe
 *********************
 
 
+
+```python
+import traceback,sys
+import datetime
+from dateutil.parser import parse
+import numpy as np
+
+
+class gdeltSearch(object):
+    """Placeholder string"""
+    
+    def __init__(self,
+                 gdelt2MasterUrl='http://data.gdeltproject.org/gdeltv2/masterfilelist.txt',
+                 gdelt1MasterUrl='http://data.gdeltproject.org/events/index.html',
+                 tblType=None,
+                 headers=None,
+                 masterdf=None,
+                 clean = None,
+                 ):
+        self.gdelt2MasterUrl=gdelt2MasterUrl
+        self.gdelt1MasterUrl=gdelt1MasterUrl
+        self.clean = map(lambda x: x.split(' '),requests.get(self.gdelt2MasterUrl).content.split('\n'))
+        del self.clean[-1]
+        self.masterdf = pd.DataFrame(self.clean)
+        self.masterdf.fillna('',inplace=True)
+        self.
+        
+        
+    @staticmethod
+    def dateInputCheck(date):
+        """Function to check date entered by user.
+
+        Example
+
+        Parameters
+            ----------
+            date : {string or list}, 
+                Input data, where ``date`` is a single date string, 
+                two dates representing a range, or several dates \
+                that represent individual days of interest.
+        Returns
+        -------
+        self : None
+            Returns self.
+        """
+
+        if isinstance(date,str):
+            if date != "":
+                if parse(date) > datetime.datetime.now():
+                    raise ValueError('Your date is greater than the current date.\
+                    Please enter a relevant date.')
+                elif parse(date)<parse('Feb 18 2015'):
+                    raise ValueError('GDELT 2.0 only supports \'Feb 18 2015 - Present\'\
+                    queries currently. Try another date.')
+
+        elif isinstance(date,list):
+            if len(date)==1:
+                try:
+                    if parse("".join(date)) > datetime.datetime.now():
+                        raise ValueError('Your date is greater than the current\
+                        date.  Please enter a relevant date.')
+                    elif parse("".join(date)) < parse('Feb 18 2015'):
+                        raise ValueError('GDELT 2.0 only supports \'Feb 18 2015 - Present\' \
+                        queries currently. Try another date.')
+                except:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
+                    traceback.print_exception(exc_type, exc_value, exc_traceback,
+                                              limit=2, file=sys.stdout)
+                    raise ValueError("One or more of your input date strings does \
+                    not parse to a date format. Check input.")
+
+
+            elif len(date)==2:
+                try:
+                    map(parse,date)
+                except Exception as exc:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
+                    traceback.print_exception(exc_type, exc_value, exc_traceback,
+                                              limit=2, file=sys.stdout)
+                    raise ValueError("One or more of your input date strings \
+                    does not parse to a date format. Check input.")
+
+                if bool(parse(date[0])<parse(date[1])) == False:
+                    raise ValueError('Start date greater than end date. Check date \
+                    strings.')
+
+                if np.all(
+                        np.logical_not(np.array(map(parse,date))> datetime.datetime.now())
+                        ) == False:
+                    raise ValueError("One of your dates is greater than the current \
+                    date. Check input date strings.")
+
+
+            elif len(date)>2:
+
+                try:
+                    map(parse,date)
+                except Exception as exc:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
+                    traceback.print_exception(exc_type, exc_value, exc_traceback,
+                                              limit=2, file=sys.stdout)
+                    raise ValueError("One or more of your input date strings does \
+                    not parse to a date format. Check input.")
+
+                if np.all(
+                        np.logical_not(np.array(map(parse,date))> datetime.datetime.now())
+                        ) == False:
+                    raise ValueError("One or more of your input date strings does not \
+                    parse to a date format. Check input.")
+                    
+            self.date=date
+            
+    @staticmethod        
+    def parse_date(var):
+        """Return datetime object from string."""
+
+        try:
+            return np.where(isinstance(parse(var),datetime.datetime),
+                     parse(var),"Error")             
+        except:
+            return "You entered an incorrect date.  Check your date format."
+
+    @staticmethod
+    def dateformatter(datearray):
+        """Function to format strings for numpy arange"""
+        return parse(datearray).strftime("%Y-%m-%d")
+
+    @staticmethod
+    def dateRanger(originalArray):
+        """Function to vectorize date formatting function.
+        Creates datetime.date objects for each day in the range
+        and stores in a numpy array.
+
+        Example
+
+        Parameters
+            ----------
+            originalArray : {array-like}, List of date strings \
+            to query.
+        Returns
+        -------
+        self : object
+            Returns array.
+        """
+        if isinstance(originalArray,str):
+            """Check user input to retrieve date query."""
+
+            return np.where(len(originalArray)==0,np.array(datetime.datetime.now()),
+                     parse_date(originalArray))
+
+        elif isinstance(originalArray,list):
+            if len(originalArray)==1:
+                return np.array(parse("".join(originalArray)))
+            elif len(originalArray)>2:
+                return np.array(map(parse,originalArray),dtype='datetime64[D]')
+            else:
+                cleaner = np.vectorize(dateformatter)
+                converted = cleaner(originalArray).tolist()
+                dates = np.arange(converted[0],converted[1],dtype='datetime64[D]')
+                dates = np.append(dates,np.datetime64(datetime.date.today())) 
+                return dates
+    @staticmethod
+    def gdeltRangeString(element):
+        if element == datetime.date.today():
+            multiplier = datetime.datetime.now().minute / 15
+            multiple = 15 * multiplier
+            converted = datetime.datetime.now().replace(minute=multiple,second=0)
+        else:
+            converted = (datetime.datetime.combine(element,datetime.time.min) + 
+                datetime.timedelta(
+                                    minutes=45,hours=23
+                                    )
+                                   )
+        return converted.strftime('%Y%m%d%H%M%S')
+
+
+    @staticmethod
+    def vectorizer(function,dateArray):
+        helper = np.vectorize(function)
+        return helper(dateArray.tolist()).tolist()
+
+    # Finds the urls from an array of dates
+
+    @staticmethod
+    def UrlFinder(targetDate):
+        return masterdf[masterdf[2].str.contains(targetDate)]
+
+    @staticmethod
+    def vectorizedUrlFinder(function,urlList):
+        helper=np.vectorize(function)
+        return pd.concat(helper(urlList).tolist())
+
+    @staticmethod
+    def downloadVectorizer(function,urlList):
+        '''
+        test2 = downloadVectorizer(downloadAndExtract,b)
+        test2.columns=gkgHeaders.tableId.tolist()
+        '''
+        helper=np.vectorize(function)
+        return pd.concat(helper(urlList).tolist())
+
+        
+        
+        
+        
+```
+
+
+```python
+gdelt = gdeltSearch()
+```
+
+
+```python
+gdelt.
+```
+
+
+
+
+    array(datetime.datetime(2016, 9, 12, 0, 0), dtype=object)
+
+
+
 # URLS
 
 The main urls that we need to hit to return data.
@@ -113,6 +338,11 @@ baseUrl = 'http://data.gdeltproject.org/gdeltv2/'
 # Parameters and Global Variables
 
 Section contains variables that will be `self.` objects in the classes.
+
+
+```python
+
+```
 
 
 ```python
@@ -197,6 +427,18 @@ mentionsHeaders.tableId.tolist();
 
 ```
 
+
+```python
+datetime.datetime.now().strftime('%m-%d-%Y')
+```
+
+
+
+
+    '09-26-2016'
+
+
+
 **************************
 
 
@@ -212,26 +454,47 @@ from dateutil.parser import parse
 import numpy as np
 
 def dateInputCheck(date):
+    """Function to check date entered by user.
+    
+    Example
+    
+    Parameters
+        ----------
+        date : {string or list}, 
+            Input data, where ``date`` is a single date string, 
+            two dates representing a range, or several dates \
+            that represent individual days of interest.
+    Returns
+    -------
+    self : None
+        Returns self.
+    """
+    
     if isinstance(date,str):
         if date != "":
             if parse(date) > datetime.datetime.now():
-                raise ValueError('Your date is greater than the current date.  Please enter a relevant date.')
+                raise ValueError('Your date is greater than the current date.\
+                Please enter a relevant date.')
             elif parse(date)<parse('Feb 18 2015'):
-                raise ValueError('GDELT 2.0 only supports \'Feb 18 2015 - Present\' queries currently. Try another date.')
+                raise ValueError('GDELT 2.0 only supports \'Feb 18 2015 - Present\'\
+                queries currently. Try another date.')
 
     elif isinstance(date,list):
         if len(date)==1:
             try:
                 if parse("".join(date)) > datetime.datetime.now():
-                    raise ValueError('Your date is greater than the current date.  Please enter a relevant date.')
+                    raise ValueError('Your date is greater than the current\
+                    date.  Please enter a relevant date.')
                 elif parse("".join(date)) < parse('Feb 18 2015'):
-                    raise ValueError('GDELT 2.0 only supports \'Feb 18 2015 - Present\' queries currently. Try another date.')
+                    raise ValueError('GDELT 2.0 only supports \'Feb 18 2015 - Present\' \
+                    queries currently. Try another date.')
             except:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
                 traceback.print_exception(exc_type, exc_value, exc_traceback,
                                           limit=2, file=sys.stdout)
-                raise ValueError("One or more of your input date strings does not parse to a date format. Check input.")
+                raise ValueError("One or more of your input date strings does \
+                not parse to a date format. Check input.")
 
         
         elif len(date)==2:
@@ -242,13 +505,18 @@ def dateInputCheck(date):
                 traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
                 traceback.print_exception(exc_type, exc_value, exc_traceback,
                                           limit=2, file=sys.stdout)
-                raise ValueError("One or more of your input date strings does not parse to a date format. Check input.")
+                raise ValueError("One or more of your input date strings \
+                does not parse to a date format. Check input.")
 
             if bool(parse(date[0])<parse(date[1])) == False:
-                raise ValueError('Start date greater than end date. Check date strings.')
+                raise ValueError('Start date greater than end date. Check date \
+                strings.')
                 
-            if np.all(np.logical_not(np.array(map(parse,date))> datetime.datetime.now())) == False:
-                raise ValueError("One of your dates is greater than the current date. Check input date strings.")
+            if np.all(
+                    np.logical_not(np.array(map(parse,date))> datetime.datetime.now())
+                    ) == False:
+                raise ValueError("One of your dates is greater than the current \
+                date. Check input date strings.")
 
             
         elif len(date)>2:
@@ -260,10 +528,14 @@ def dateInputCheck(date):
                 traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
                 traceback.print_exception(exc_type, exc_value, exc_traceback,
                                           limit=2, file=sys.stdout)
-                raise ValueError("One or more of your input date strings does not parse to a date format. Check input.")
+                raise ValueError("One or more of your input date strings does \
+                not parse to a date format. Check input.")
                 
-            if np.all(np.logical_not(np.array(map(parse,date))> datetime.datetime.now())) == False:
-                raise ValueError("One or more of your input date strings does not parse to a date format. Check input.")
+            if np.all(
+                    np.logical_not(np.array(map(parse,date))> datetime.datetime.now())
+                    ) == False:
+                raise ValueError("One or more of your input date strings does not \
+                parse to a date format. Check input.")
 
         
 ```
@@ -343,62 +615,11 @@ def parse_date(var):
         return "You entered an incorrect date.  Check your date format."
 
 
-# def gdelt_timeString(dateInputVar):
-#     """Convert date to GDELT string file format for query."""
-    
-#     multiplier = dateInputVar.tolist().minute / 15
-#     multiple = 15 * multiplier
-#     queryDate = np.where(
-#             multiplier > 1,dateInputVar.tolist().replace(
-#             minute=0, second=0) + datetime.timedelta(
-#             minutes=multiple),
-#             dateInputVar.tolist().replace(
-#             minute=0, second=0,microsecond=0000)
-#             )
-    
-#     # Check for date equality on historical query
-#     modifierTip = datetime.datetime.now().replace(
-#         hour=0,minute=0,second=0,microsecond=0
-#         ) == queryDate.tolist().replace(
-#         hour=0,minute=0,second=0,microsecond=0
-#         )
-    
-#     # Based on modifier, get oldest file for historical query
-#     queryDate = np.where(
-#         modifierTip==False,
-#         queryDate.tolist().replace(
-#             hour=23,
-#             minute=45,
-#             second=00,
-#             microsecond=0000
-#             ),queryDate
-#         )
-    
-# #     print modifierTip
-#     return queryDate.tolist().strftime("%Y%m%d%H%M%S")
-
-#############################################
-# Match parsed date to GDELT master list
-#############################################
-
-# def match_date(dateString):
-#     """Return dataframe with GDELT data for matching date"""
-    
-#     masterListUrl = 'http://data.gdeltproject.org/gdeltv2/masterfilelist.txt'
-#     directory = requests.get(masterListUrl)
-#     results = directory.content.split('\n')
-#     results = map(lambda x: x.split(' '),results)
-#     masterListdf = pd.DataFrame(results)
-#     return masterListdf[
-#         masterListdf[2].str.contains(
-#             dateString
-#             )==True
-#         ]
-    
 def dateformatter(datearray):
     """Function to format strings for numpy arange"""
     return parse(datearray).strftime("%Y-%m-%d")
     
+
 def dateRanger(originalArray):
     """Function to vectorize date formatting function.
     Creates datetime.date objects for each day in the range
@@ -455,12 +676,15 @@ def vectorizer(function,dateArray):
 
 # Finds the urls from an array of dates
 
+
 def UrlFinder(targetDate):
     return masterdf[masterdf[2].str.contains(targetDate)]
+
 
 def vectorizedUrlFinder(function,urlList):
     helper=np.vectorize(function)
     return pd.concat(helper(urlList).tolist())
+
 
 def downloadVectorizer(function,urlList):
     '''
@@ -470,6 +694,61 @@ def downloadVectorizer(function,urlList):
     helper=np.vectorize(function)
     return pd.concat(helper(urlList).tolist())
 
+
+
+
+# def gdelt_timeString(dateInputVar):
+#     """Convert date to GDELT string file format for query."""
+    
+#     multiplier = dateInputVar.tolist().minute / 15
+#     multiple = 15 * multiplier
+#     queryDate = np.where(
+#             multiplier > 1,dateInputVar.tolist().replace(
+#             minute=0, second=0) + datetime.timedelta(
+#             minutes=multiple),
+#             dateInputVar.tolist().replace(
+#             minute=0, second=0,microsecond=0000)
+#             )
+    
+#     # Check for date equality on historical query
+#     modifierTip = datetime.datetime.now().replace(
+#         hour=0,minute=0,second=0,microsecond=0
+#         ) == queryDate.tolist().replace(
+#         hour=0,minute=0,second=0,microsecond=0
+#         )
+    
+#     # Based on modifier, get oldest file for historical query
+#     queryDate = np.where(
+#         modifierTip==False,
+#         queryDate.tolist().replace(
+#             hour=23,
+#             minute=45,
+#             second=00,
+#             microsecond=0000
+#             ),queryDate
+#         )
+    
+# #     print modifierTip
+#     return queryDate.tolist().strftime("%Y%m%d%H%M%S")
+
+#############################################
+# Match parsed date to GDELT master list
+#############################################
+
+# def match_date(dateString):
+#     """Return dataframe with GDELT data for matching date"""
+    
+#     masterListUrl = 'http://data.gdeltproject.org/gdeltv2/masterfilelist.txt'
+#     directory = requests.get(masterListUrl)
+#     results = directory.content.split('\n')
+#     results = map(lambda x: x.split(' '),results)
+#     masterListdf = pd.DataFrame(results)
+#     return masterListdf[
+#         masterListdf[2].str.contains(
+#             dateString
+#             )==True
+#         ]
+    
 ```
 
 ### Working Examples for Single Date Functionality
@@ -5374,7 +5653,8 @@ mentionsdf = pd.read_csv(StringIO(text),delimiter='\t',header=None)
 mentionsdf.columns=headers.columns.tolist()
 ```
 
-[alice]: http://data.gdeltproject.org/dailymaps_noaasos/spinningglobe.gif
+*********************
+# Building the classes
 
 
 ```python

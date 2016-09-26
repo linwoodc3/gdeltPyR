@@ -5,4 +5,4 @@ gdeltPyR is a light Python based framework to access GDELT 2.0 data (Events Data
 ![GDELT spinning Globe: Monitoring the World][spinningglobe]
 
 
-[spinningglobe]: http://data.gdeltproject.org/dailymaps_noaasos/spinningglobe.gif
+[spinningglobe]: http://bestanimations.com/Earth&Space/Earth/earth-spinning-rotating-animation-24.gif

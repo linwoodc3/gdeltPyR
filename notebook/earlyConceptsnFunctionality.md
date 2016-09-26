@@ -3,7 +3,7 @@
 
 Will have to integrate this into GDELT 2.0.  Headers are different.  GDELT 1.0 goes back to 1979.  2.0 only goes back to Feb 2015
 
-![](http://data.gdeltproject.org/dailymaps_noaasos/spinningglobe.gif)
+![GDELT spinning Globe: Monitoring the World][alice]
 
 
 ```python
@@ -5372,4 +5372,11 @@ headers.to_csv('GDELT_2.0_Events_Column_Labels_Header_Row_Sep2016.csv', index=Fa
 import pandas as pd
 mentionsdf = pd.read_csv(StringIO(text),delimiter='\t',header=None)
 mentionsdf.columns=headers.columns.tolist()
+```
+
+[alice]: http://data.gdeltproject.org/dailymaps_noaasos/spinningglobe.gif
+
+
+```python
+
 ```

@@ -1,0 +1,28 @@
+	tableId	dataType	Empty	Description
+0	GKGRECORDID	STRING	NULLABLE	GKG record ID takes the form “YYYYMMDDHHMMSS-X” or “YYYYMMDDHHMMSS-TX” in which the first portion of the ID is the full date+time of the 15 minute update batch that this record was created in
+1	DATE	INTEGER	NULLABLE	Date in YYYYMMDDHHMMSS format on which the news media used to construct this GKG file was published. 
+2	SourceCollectionIdentifier	INTEGER	NULLABLE	Numeric identifier that refers to the source collection the document came from and is used to interpret the DocumentIdentifier in the next column. In essence
+3	SourceCommonName	STRING	NULLABLE	A human-friendly identifier of the source of the document. For material originating from the open web with a URL this field will contain the toplevel domain the page was from
+4	DocumentIdentifier	STRING	NULLABLE	This is the unique external identifier for the source document. It can be used to uniquely identify the document and access it if you have the necessary subscriptions or authorizations and/or the document is public access. This field can contain a range of values
+5	Counts	STRING	NULLABLE	This is the list of Counts found in this document. Each Count found is separated with a semicolon
+6	V2Counts	STRING	NULLABLE	This field is identical to the V1COUNTS field except that it adds a final additional field to the end of each entry that records its approximate character offset in the document
+7	Themes	STRING	NULLABLE	This is the list of all Themes found in the document. For the complete list of possible themes
+8	V2Themes	STRING	NULLABLE	This contains a list of all GKG themes referenced in the document
+9	Locations	STRING	NULLABLE	This is a list of all locations found in the text
+10	V2Locations	STRING	NULLABLE	This field is identical to the V1LOCATIONS field with the primary exception of an extra field appended to the end of each location block after its FeatureID that lists the approximate character offset of the reference to that location in the text. In addition
+11	Persons	STRING	NULLABLE	This is the list of all person names found in the text
+12	V2Persons	STRING	NULLABLE	This contains a list of all person names referenced in the document
+13	Organizations	STRING	NULLABLE	This is the list of all company and organization names found in the text
+14	V2Organizations	STRING	NULLABLE	This contains a list of all organizations/companies referenced in the document
+15	V2Tone	STRING	NULLABLE	This field contains a comma-delimited list of six core emotional dimensions
+16	Dates	STRING	NULLABLE	This contains a list of all date references in the document
+17	GCAM	STRING	NULLABLE	The Global Content Analysis Measures (GCAM) system runs an array of content analysis systems over each document and compiles their results into this field. New content analysis systems will be constantly added to the GCAM pipeline over time
+18	SharingImage	STRING	NULLABLE	Many news websites specify a so-called “sharing image” for each article in which the news outlet manually specifies a particular image to be displayed when that article is shared via social media or other formats. 
+19	RelatedImages	STRING	NULLABLE	News articles frequently include photographs
+20	SocialImageEmbeds	STRING	NULLABLE	News websites are increasingly embedding image-based social media posts inline in their articles to illustrate them with realtime reaction or citizen reporting from the ground. GDELT currently recognizes embedded image-based Twitter and Instagram posts and records their URLs in this field. Only those posts containing imagery are included in this field. 
+21	SocialVideoEmbeds	STRING	NULLABLE	News websites are increasingly embedding videos inline in their articles to illustrate them with realtime reaction or citizen reporting from the ground. Some news outlets that also have television properties may crosslink their television reporting into their web-based presentation. 
+22	Quotations	STRING	NULLABLE	News coverage frequently features excerpted statements from participants in an event and/or those affected by it and these quotations can offer critical insights into differing perspectives and emotions surrounding that event. GDELT identifies and extracts all quoted statements from each article and additionally attempts to identify the verb introducing the quote to help lend additional context
+23	AllNames	STRING	NULLABLE	This field contains a list of all proper names referenced in the document
+24	Amounts	STRING	NULLABLE	This field contains a list of all precise numeric amounts referenced in the document
+25	TranslationInfo	STRING	NULLABLE	This field is used to record provenance information for machine translated documents indicating the original source language and the citation of the translation system used to translate the document for processing. It will be blank for documents originally in English. At this time the field will also be blank for documents translated by a human translator and provided to GDELT in English (such as BBC Monitoring materials) – in future this field may be expanded to include information on human translation pipelines
+26	Extras	STRING	NULLABLE	This field is reserved to hold special non-standard data applicable to special subsets of the GDELT collection. 

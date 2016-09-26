@@ -1,6 +1,16 @@
 
 # GDELT 1.0 Code (skip)
 
+Will have to integrate this into GDELT 2.0.  Headers are different.  GDELT 1.0 goes back to 1979.  2.0 only goes back to Feb 2015
+
+![](http://data.gdeltproject.org/dailymaps_noaasos/spinningglobe.gif)
+
+
+```python
+from IPython.display import Image
+Image(url='../utils/images/spinningglobe.gif')
+```
+
 
 ```python
 import requests
@@ -64,7 +74,7 @@ from dateutil.parser import parse
 
 # Logic for GDELT module
 
-Enter a date or date range.
+Enter a date or date range.  GDELT 2.0 only goes to Feb 18 2015.  GDELT 1.0 goes back to 1979.  
 
 Convert the entered date or date range to string, search for string in the master df list.  Use the tblType parameter to pull the correct table(s).  
 
@@ -189,29 +199,37 @@ We need to see how many dates are passed into the function.  Use the logic above
 
 
 ```python
-import traceback
+import traceback,sys
 import datetime
+from dateutil.parser import parse
+import numpy as np
 
 def dateInputCheck(date):
     if isinstance(date,str):
         if date != "":
             if parse(date) > datetime.datetime.now():
-                raise ValueError('Date input string greater than current date.')
-        
-
+                raise ValueError('Your date is greater than the current date.  Please enter a relevant date.')
+            elif parse(date)<parse('Feb 18 2015'):
+                raise ValueError('GDELT 2.0 only supports \'Feb 18 2015 - Present\' queries currently. Try another date.')
 
     elif isinstance(date,list):
         if len(date)==1:
             try:
-                parse("".join(date))
-                
+                if parse("".join(date)) > datetime.datetime.now():
+                    raise ValueError('Your date is greater than the current date.  Please enter a relevant date.')
+                elif parse("".join(date)) < parse('Feb 18 2015'):
+                    raise ValueError('GDELT 2.0 only supports \'Feb 18 2015 - Present\' queries currently. Try another date.')
             except:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
+                traceback.print_exception(exc_type, exc_value, exc_traceback,
+                                          limit=2, file=sys.stdout)
                 raise ValueError("One or more of your input date strings does not parse to a date format. Check input.")
-      
-        if len(date)==2:
+
+        
+        elif len(date)==2:
             try:
                 map(parse,date)
-                
             except Exception as exc:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
@@ -245,42 +263,9 @@ def dateInputCheck(date):
 
 
 ```python
-date=['2016 9 12','2017 8 12']
+date=['2016 9 12']
 dateInputCheck(date)
 ```
-
-
-    ---------------------------------------------------------------------------
-
-    ValueError                                Traceback (most recent call last)
-
-    <ipython-input-350-7519def08802> in <module>()
-          1 date=['2016 9 12','2017 8 12']
-    ----> 2 dateInputCheck(date)
-    
-
-    <ipython-input-348-8edabdb4fb7a> in dateInputCheck(date)
-         33 
-         34             if np.all(np.logical_not(np.array(map(parse,date))> datetime.datetime.now())) == False:
-    ---> 35                 raise ValueError("One of your dates is greater than the current date. Check input date strings.")
-         36 
-         37 
-
-
-    ValueError: One of your dates is greater than the current date. Check input date strings.
-
-
-
-```python
-map(parse,date)
-```
-
-
-
-
-    [datetime.datetime(2016, 9, 25, 0, 0)]
-
-
 
 ### Checking the tblType input
 
@@ -301,8 +286,6 @@ def tblCheck(tbl):
         raise ValueError ("Incorrect parameter \'{0}\' entered.  Did you mean to use \'{0}\' as the parameter?\nPlease check your \'tblType\' parameters.".format(tblType))
     return resultsUrlList
 ```
-
-### Testing area for input
 
 *************
 
@@ -353,57 +336,57 @@ def parse_date(var):
         return "You entered an incorrect date.  Check your date format."
 
 
-def gdelt_timeString(dateInputVar):
-    """Convert date to GDELT string file format for query."""
+# def gdelt_timeString(dateInputVar):
+#     """Convert date to GDELT string file format for query."""
     
-    multiplier = dateInputVar.tolist().minute / 15
-    multiple = 15 * multiplier
-    queryDate = np.where(
-            multiplier > 1,dateInputVar.tolist().replace(
-            minute=0, second=0) + datetime.timedelta(
-            minutes=multiple),
-            dateInputVar.tolist().replace(
-            minute=0, second=0,microsecond=0000)
-            )
+#     multiplier = dateInputVar.tolist().minute / 15
+#     multiple = 15 * multiplier
+#     queryDate = np.where(
+#             multiplier > 1,dateInputVar.tolist().replace(
+#             minute=0, second=0) + datetime.timedelta(
+#             minutes=multiple),
+#             dateInputVar.tolist().replace(
+#             minute=0, second=0,microsecond=0000)
+#             )
     
-    # Check for date equality on historical query
-    modifierTip = datetime.datetime.now().replace(
-        hour=0,minute=0,second=0,microsecond=0
-        ) == queryDate.tolist().replace(
-        hour=0,minute=0,second=0,microsecond=0
-        )
+#     # Check for date equality on historical query
+#     modifierTip = datetime.datetime.now().replace(
+#         hour=0,minute=0,second=0,microsecond=0
+#         ) == queryDate.tolist().replace(
+#         hour=0,minute=0,second=0,microsecond=0
+#         )
     
-    # Based on modifier, get oldest file for historical query
-    queryDate = np.where(
-        modifierTip==False,
-        queryDate.tolist().replace(
-            hour=23,
-            minute=45,
-            second=00,
-            microsecond=0000
-            ),queryDate
-        )
+#     # Based on modifier, get oldest file for historical query
+#     queryDate = np.where(
+#         modifierTip==False,
+#         queryDate.tolist().replace(
+#             hour=23,
+#             minute=45,
+#             second=00,
+#             microsecond=0000
+#             ),queryDate
+#         )
     
-#     print modifierTip
-    return queryDate.tolist().strftime("%Y%m%d%H%M%S")
+# #     print modifierTip
+#     return queryDate.tolist().strftime("%Y%m%d%H%M%S")
 
 #############################################
 # Match parsed date to GDELT master list
 #############################################
 
-def match_date(dateString):
-    """Return dataframe with GDELT data for matching date"""
+# def match_date(dateString):
+#     """Return dataframe with GDELT data for matching date"""
     
-    masterListUrl = 'http://data.gdeltproject.org/gdeltv2/masterfilelist.txt'
-    directory = requests.get(masterListUrl)
-    results = directory.content.split('\n')
-    results = map(lambda x: x.split(' '),results)
-    masterListdf = pd.DataFrame(results)
-    return masterListdf[
-        masterListdf[2].str.contains(
-            dateString
-            )==True
-        ]
+#     masterListUrl = 'http://data.gdeltproject.org/gdeltv2/masterfilelist.txt'
+#     directory = requests.get(masterListUrl)
+#     results = directory.content.split('\n')
+#     results = map(lambda x: x.split(' '),results)
+#     masterListdf = pd.DataFrame(results)
+#     return masterListdf[
+#         masterListdf[2].str.contains(
+#             dateString
+#             )==True
+#         ]
     
 def dateformatter(datearray):
     """Function to format strings for numpy arange"""
@@ -486,7 +469,7 @@ def downloadVectorizer(function,urlList):
 
 
 ```python
-date = ['2016 9 12', '2013 08 12','2010 4 03']
+date = '2016 9 12'
 
 vectorizer(gdeltRangeString,dateRanger(date))
 ```
@@ -494,7 +477,7 @@ vectorizer(gdeltRangeString,dateRanger(date))
 
 
 
-    ['20160912234500', '20130812234500', '20100403234500']
+    '20160912234500'
 
 
 
@@ -531,395 +514,56 @@ resultMaster = vectorizedUrlFinder(UrlFinder,datesToPull)
 ```
 
 
-```python
-masterdf[masterdf[2].str.contains('gdeltv2/2015')]
-```
+    ---------------------------------------------------------------------------
+
+    NameError                                 Traceback (most recent call last)
+
+    <ipython-input-84-19c02f5f54e7> in <module>()
+          1 # gets the urls from array
+    ----> 2 resultMaster = vectorizedUrlFinder(UrlFinder,datesToPull)
+    
+
+    <ipython-input-76-d6b90032dcea> in vectorizedUrlFinder(function, urlList)
+        139 def vectorizedUrlFinder(function,urlList):
+        140     helper=np.vectorize(function)
+    --> 141     return pd.concat(helper(urlList).tolist())
+        142 
+        143 def downloadVectorizer(function,urlList):
 
 
+    /Users/linwood/anaconda/envs/gdelt/lib/python2.7/site-packages/numpy/lib/function_base.pyc in __call__(self, *args, **kwargs)
+       2216             vargs.extend([kwargs[_n] for _n in names])
+       2217 
+    -> 2218         return self._vectorize_call(func=func, args=vargs)
+       2219 
+       2220     def _get_ufunc_and_otypes(self, func, args):
 
 
-<div>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>0</th>
-      <th>1</th>
-      <th>2</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>150383</td>
-      <td>297a16b493de7cf6ca809a7cc31d0b93</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>318084</td>
-      <td>bb27f78ba45f69a17ea6ed7755e9f8ff</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>10768507</td>
-      <td>ea8dde0beb0ba98810a92db068c0ce99</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>149211</td>
-      <td>2a91041d7e72b0fc6a629e2ff867b240</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>339037</td>
-      <td>dec3f427076b716a8112b9086c342523</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>10269336</td>
-      <td>2f1a504a3c4558694ade0442e9a5ae6f</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>149723</td>
-      <td>12268e821823aae2da90882621feda18</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>357229</td>
-      <td>744acad14559f2781a8db67715d63872</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>11279827</td>
-      <td>66b03e2efd7d51dabf916b1666910053</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>158842</td>
-      <td>a5298ce3c6df1a8a759c61b5c0b6f8bb</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
-    </tr>
-    <tr>
-      <th>10</th>
-      <td>374528</td>
-      <td>dd322c888f28311aca2c735468405551</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
-    </tr>
-    <tr>
-      <th>11</th>
-      <td>11212939</td>
-      <td>cd20f295649b214dd16666ca451b9994</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502182...</td>
-    </tr>
-    <tr>
-      <th>12</th>
-      <td>362610</td>
-      <td>c4268d558bb22c02b3c132c17818c68b</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>13</th>
-      <td>287807</td>
-      <td>e7f464a7a451ad2af6e9c8fa24f0ccea</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>14</th>
-      <td>9728953</td>
-      <td>8f4b26e134bd6605cce2d32e92e5d3d7</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>15</th>
-      <td>251605</td>
-      <td>7685a6c71f010918f3be0d4ed2be977e</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>16</th>
-      <td>263793</td>
-      <td>e23ee65a60a1577dc74b979a54da406e</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>17</th>
-      <td>9459370</td>
-      <td>6031464dfdcb331551d491916d400c18</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>18</th>
-      <td>255259</td>
-      <td>f41066efb05d4024fca9dc1c2c6b9112</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>19</th>
-      <td>308019</td>
-      <td>061133d1efd29c66c7ecba0d52063927</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>20</th>
-      <td>10705358</td>
-      <td>84685f907404b79e7978a06a441b9731</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>21</th>
-      <td>219398</td>
-      <td>555d808779fe5b3eaf0a9ebf212116a2</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>22</th>
-      <td>277207</td>
-      <td>0897fb7630ac913409c48345dca7565e</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>23</th>
-      <td>9555639</td>
-      <td>b02920524f0b48c07bdab6c6d354a789</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>24</th>
-      <td>225092</td>
-      <td>6b4e1d0421548dbba59754d0f164d2a1</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>25</th>
-      <td>286852</td>
-      <td>275a862fe0b27cdd3c3eabe2d05a964d</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>26</th>
-      <td>9754826</td>
-      <td>5a84073aaf4a588319da7a53a83b56f1</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>27</th>
-      <td>185226</td>
-      <td>36f14471b716d8b47c8f766507ab9adc</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>28</th>
-      <td>268121</td>
-      <td>c9a62b0fdf05e4ae79a1ad1d9824af12</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>29</th>
-      <td>9014001</td>
-      <td>8862c82cb3fdfac53d98f658b7f369bf</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201502190...</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>90390</th>
-      <td>83257</td>
-      <td>7f2e221ec63a3808253fd8f2f58d9085</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90391</th>
-      <td>194871</td>
-      <td>74d9310b77edf5c5a7c3a97ab62a9bb6</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90392</th>
-      <td>8818372</td>
-      <td>79555c3c0b8a235c448b51b2dc7049c1</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90393</th>
-      <td>100191</td>
-      <td>33aa8728815a4b348a3046a15ad54089</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90394</th>
-      <td>245153</td>
-      <td>88e390bd742f2f10281c4faa5eb3bb5d</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90395</th>
-      <td>9581136</td>
-      <td>dfcadafaea1e42d34425a31b0ee70439</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90396</th>
-      <td>101057</td>
-      <td>84e8492d45bd4aaea40e8b70b327ff43</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90397</th>
-      <td>201640</td>
-      <td>1dde29f44451bc9324c8bccf02c9faac</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90398</th>
-      <td>9663637</td>
-      <td>326da26cc1c6dd0196061d432aed5955</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90399</th>
-      <td>97249</td>
-      <td>7bad1f0a249f7bee2f146b31fbf0cb11</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90400</th>
-      <td>231654</td>
-      <td>cf94eeced0227e28c2f41190da13124d</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90401</th>
-      <td>9568781</td>
-      <td>7de907cc435cf93371c0b227ab0b42b7</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90402</th>
-      <td>90488</td>
-      <td>cdc7d23812f494e73ff3f3c365a0bef6</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90403</th>
-      <td>225026</td>
-      <td>2f6c690395aced64449846be3d25f32b</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90404</th>
-      <td>8995467</td>
-      <td>9b1f438536509abcb0c870603c0452cc</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90405</th>
-      <td>78168</td>
-      <td>ea64b9aa14532a113c3a5c9d0e8fffe6</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90406</th>
-      <td>193781</td>
-      <td>4f1059453967968809a12a1da9b3bfc0</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90407</th>
-      <td>9170488</td>
-      <td>43984253463caf47339397a521266529</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90408</th>
-      <td>93898</td>
-      <td>f8380f1a29427309ac440e19107cb617</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90409</th>
-      <td>204608</td>
-      <td>603c5c69059292b16bde4a983c04d55b</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90410</th>
-      <td>8295657</td>
-      <td>4b0134f4a58b531f9b27f10823c18a67</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90411</th>
-      <td>101897</td>
-      <td>2d64d0d91ab45a35f29234ad24b4cbfe</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90412</th>
-      <td>217511</td>
-      <td>365a65fc1eafbcd94a164828961923fa</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90413</th>
-      <td>8973555</td>
-      <td>b0857c5330e03a64f202c817a0c32e20</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90414</th>
-      <td>76999</td>
-      <td>33f345873ed8ffb41c13f63530b7f653</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90415</th>
-      <td>178393</td>
-      <td>d1a167db36ed4b662812f4012f737277</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90416</th>
-      <td>8474142</td>
-      <td>90c5e5d72e7732639578f2f3a46716c5</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90417</th>
-      <td>67506</td>
-      <td>8da2e8a6c2adc56ee48b85efe6c3be7f</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90418</th>
-      <td>174329</td>
-      <td>b75bae9dc91674ff20e56e1652c0afa7</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-    <tr>
-      <th>90419</th>
-      <td>7872205</td>
-      <td>8eab1d2d1185b872e9b1940ec41df62f</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201512312...</td>
-    </tr>
-  </tbody>
-</table>
-<p>90420 rows × 3 columns</p>
-</div>
+    /Users/linwood/anaconda/envs/gdelt/lib/python2.7/site-packages/numpy/lib/function_base.pyc in _vectorize_call(self, func, args)
+       2279             _res = func()
+       2280         else:
+    -> 2281             ufunc, otypes = self._get_ufunc_and_otypes(func=func, args=args)
+       2282 
+       2283             # Convert args to object arrays first
 
+
+    /Users/linwood/anaconda/envs/gdelt/lib/python2.7/site-packages/numpy/lib/function_base.pyc in _get_ufunc_and_otypes(self, func, args)
+       2241             # arrays (the input values are not checked to ensure this)
+       2242             inputs = [asarray(_a).flat[0] for _a in args]
+    -> 2243             outputs = func(*inputs)
+       2244 
+       2245             # Performance note: profiling indicates that -- for simple
+
+
+    <ipython-input-76-d6b90032dcea> in UrlFinder(targetDate)
+        135 
+        136 def UrlFinder(targetDate):
+    --> 137     return masterdf[masterdf[2].str.contains(targetDate)]
+        138 
+        139 def vectorizedUrlFinder(function,urlList):
+
+
+    NameError: global name 'masterdf' is not defined
 
 
 
@@ -928,41 +572,15 @@ resultMaster
 ```
 
 
+    ---------------------------------------------------------------------------
 
+    NameError                                 Traceback (most recent call last)
 
-<div>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>0</th>
-      <th>1</th>
-      <th>2</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>164058</th>
-      <td>124869</td>
-      <td>c2e64d50b4e40600280d08333ff0a6ad</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201609122...</td>
-    </tr>
-    <tr>
-      <th>164059</th>
-      <td>304638</td>
-      <td>71f27287bfffc9625526258339c00d1b</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201609122...</td>
-    </tr>
-    <tr>
-      <th>164060</th>
-      <td>13620647</td>
-      <td>4fb3cde6d887b437fce4262ee8aefef2</td>
-      <td>http://data.gdeltproject.org/gdeltv2/201609122...</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+    <ipython-input-81-afe18af84056> in <module>()
+    ----> 1 resultMaster
+    
 
+    NameError: name 'resultMaster' is not defined
 
 
 ## Testing Area for Dates; Above is good, below is experimental

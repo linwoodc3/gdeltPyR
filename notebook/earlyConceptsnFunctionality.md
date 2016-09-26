@@ -12,6 +12,13 @@ Image(url='../utils/images/spinningglobe.gif')
 ```
 
 
+
+
+<img src="../utils/images/spinningglobe.gif"/>
+
+
+
+
 ```python
 import requests
 import lxml.html as lh

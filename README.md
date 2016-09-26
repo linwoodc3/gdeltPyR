@@ -6,4 +6,3 @@ gdeltPyR is a light Python based framework to access GDELT 2.0 data (Events Data
 
 
 [spinningglobe]: https://twistedsifter.files.wordpress.com/2015/06/people-tweeting-about-sunrises-over-a-24-hour-period.gif?w=700&h=453
-#http://bestanimations.com/Earth&Space/Earth/earth-spinning-rotating-animation-24.gif

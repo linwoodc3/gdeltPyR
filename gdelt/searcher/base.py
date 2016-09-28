@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import datetime
 import requests
-from gdelt.datecheck import dateInputCheck
+from gdelt.searcher.datecheck import dateInputCheck
 
 
 class gdeltSearch(object):

@@ -11,6 +11,7 @@ class gdeltSearch(object):
     """Placeholder string"""
     
     def __init__(self,
+                 date,
                  gdelt2MasterUrl = 'http://data.gdeltproject.org/gdeltv2/masterfilelist.txt',
                  gdelt1MasterUrl = 'http://data.gdeltproject.org/events/index.html',
                  tblType = None,
@@ -29,6 +30,11 @@ class gdeltSearch(object):
         self.masterdf = pd.DataFrame(self.clean)
         self.masterdf.fillna('', inplace=True)
         self.queryTime=queryTime
+        self.date = date
+        if isinstance(self.date,str):
+            print "True"
+        else:
+            print "I don't know"
         
-        def Search(date):
-            return 2 + 3
+        
+        

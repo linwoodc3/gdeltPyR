@@ -25,7 +25,7 @@ def extract_metaitem(meta):
     raise RuntimeError('Unable to find __{meta}__ string.'.format(meta=meta))
 
 setup(
-    name='gdeltPyR',
+    name='gdelt',
     version=extract_metaitem('version'),
     license=extract_metaitem('license'),
     description=extract_metaitem('description'),
@@ -39,7 +39,9 @@ setup(
     url=extract_metaitem('url'),
     #download_url=extract_metaitem('download_url'),
     platforms=['Any'],
-    install_requires=['numpy', 'pandas', 'requests','python-dateutil'],
+    packages=['gdelt'],
+    install_requires=['numpy', 'pandas', 'requests',
+                      'python-dateutil','psutil','lxml'],
     keywords='gdelt pandas tidy data api',
     classifiers=[
         'Development Status :: 1 - Planning',

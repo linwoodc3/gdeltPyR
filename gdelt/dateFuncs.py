@@ -53,10 +53,14 @@ def dateRanger(originalArray):
             cleaner = np.vectorize(dateFormatter)
             converted = cleaner(originalArray).tolist()
             dates = np.arange(converted[0],converted[1],dtype='datetime64[D]')
-            dates = np.append(dates,np.datetime64(datetime.date.today())) # numpy range is not endpoint inclusive
+            if len(originalArray)==2:
+                
+                dates = np.append(dates,np.datetime64(parse(converted[1]).date())) # numpy range is not endpoint inclusive
+            else:
+                pass
             return dates
 
-def gdeltRangeString(element):
+def gdeltRangeString(element,version=2.0):
     if element == datetime.date.today():
         multiplier = datetime.datetime.now().minute / 15
         multiple = 15 * multiplier
@@ -67,19 +71,12 @@ def gdeltRangeString(element):
         
     
     converted = np.where((converted >= parse('2013 04 01')),converted.strftime('%Y%m%d%H%M%S')[:8],
-                  np.where((converted <parse('2006 01 01')),
+                  np.where((converted <parse('2006 01 01') and (int(version)==1)),
                            converted.strftime('%Y%m%d%H%M%S')[:4],converted.strftime('%Y%m%d%H%M%S')[:6]))
     
+
     
-    # try:
-    #     print converted.tolist(),"Yes"
-    # except:
-    #     print converted,"Changed"
-        
-    if parse(converted.tolist()).date() == datetime.date.today():
-        pass
-    else:
-        return converted
+    return converted 
 
     
 

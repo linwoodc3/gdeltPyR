@@ -14,7 +14,7 @@ def vectorizer(function,dateArray):
     elif isinstance(final,str):
         final=final
     else:
-        print "Vectorizer"
+        pass
     
     return final
 

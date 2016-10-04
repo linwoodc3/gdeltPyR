@@ -9,7 +9,7 @@ from gdelt.extractors import (downloadAndExtract,addHeader)
 
 def parallelDownload(function,urlList):
     p = Pool()
-    return pd.concat(p.map(downloadAndExtract, urlList)).reset_index(drop=True)
+    return pd.concat(p.imap_unordered(downloadAndExtract, urlList)).reset_index(drop=True)
 
 if __name__ == '__main__':
     parallelDownload(function,urlList)

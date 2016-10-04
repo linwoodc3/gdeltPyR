@@ -50,6 +50,7 @@ def dateInputCheck(date, version):
                     raise ValueError(
                         "One or more of your input date strings does not parse to a date format. Check input."
                         )
+                return "".join(date)
         
             elif len(date)==2 and isinstance(date,list):
                 

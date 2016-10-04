@@ -125,7 +125,7 @@ class gdelt(object):
                 self.mentions=parallelDownload(downloadAndExtract,self.mentionsdf.tolist())
                 self.mentions.columns = mentionsHeads()
                 self.finalResults = pd.merge(self.results,self.mentions,on='GLOBALEVENTID')
-                return self.finalResults,self.eventsdf.tolist()+self.mentionsdf.tolist()
+                return self.finalResults
                 
                 
                 

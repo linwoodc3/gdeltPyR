@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
+
+import codecs
 import os
 import re
-import codecs
 
-from setuptools import setup, find_packages
-
+from setuptools import setup
 
 cwd = os.path.abspath(os.path.dirname(__file__))
 
@@ -42,6 +42,8 @@ setup(
     packages=['gdelt'],
     install_requires=['numpy', 'pandas', 'requests',
                       'python-dateutil','psutil','lxml'],
+    package_data={'': ['utils/schema_csvs/*']},
+    include_package_data=True,
     keywords='gdelt pandas tidy data api',
     classifiers=[
         'Development Status :: 1 - Planning',

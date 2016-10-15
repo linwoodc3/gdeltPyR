@@ -1,18 +1,16 @@
-
-import traceback,sys
-import pandas as pd
-import numpy as np
-import lxml.html as lh
 import datetime
+
+import lxml.html as lh
+import pandas as pd
 import requests
-from gdelt.inputChecks import (dateInputCheck,tblCheck)
-from gdelt.dateFuncs import (parse_date, dateFormatter,
-                             dateRanger,gdeltRangeString)
-from gdelt.vectorizingFuncs import (vectorizer, urlFinder,
-                                    vectorizedUrlFinder, downloadVectorizer)
-from gdelt.extractors import (downloadAndExtract,addHeader)
-from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads,gkgHeads
+
+from gdelt.dateFuncs import (dateRanger, gdeltRangeString)
+from gdelt.extractors import (downloadAndExtract)
+from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads, gkgHeads
+from gdelt.inputChecks import (dateInputCheck)
 from gdelt.parallel import parallelDownload
+from gdelt.vectorizingFuncs import (vectorizer)
+
 
 # import os
 # this_dir, this_filename = os.path.split(__file__)
@@ -120,23 +118,24 @@ class gdelt(object):
                 ###################################
                 
                 self.results=parallelDownload(downloadAndExtract,self.eventsdf.tolist())
+                print(self.results.head())
                 self.results.columns = events2Heads()
                 
                 self.mentions=parallelDownload(downloadAndExtract,self.mentionsdf.tolist())
                 self.mentions.columns = mentionsHeads()
                 self.finalResults = pd.merge(self.results,self.mentions,on='GLOBALEVENTID')
                 return self.finalResults
-                
-                
-                
-#             elif self.table == 'gkg':
-#                 self.gkgdf=self.filtereddf[self.filtereddf.str.contains('gkg')]
-#                 self.gkg = parallelDownload(downloadAndExtract,self.gkgdf.tolist())
-#                 self.gkg.columns = gkgHeads()
-#                 return self.gkg
-                 
-#             else:
-#                 raise ValueError('Incorrect table entry')
+
+
+
+            elif self.table == 'gkg':
+                self.gkgdf = self.filtereddf[self.filtereddf.str.contains('gkg')]
+                self.gkg = parallelDownload(downloadAndExtract, self.gkgdf.tolist())
+                self.gkg.columns = gkgHeads()
+                return self.gkg
+
+            else:
+                raise ValueError('Incorrect table entry')
             
             
 

@@ -1,59 +1,59 @@
-	tableId
-0	GLOBALEVENTID
-1	SQLDATE
-2	MonthYear
-3	Year
-4	FractionDate
-5	Actor1Code
-6	Actor1Name
-7	Actor1CountryCode
-8	Actor1KnownGroupCode
-9	Actor1EthnicCode
-10	Actor1Religion1Code
-11	Actor1Religion2Code
-12	Actor1Type1Code
-13	Actor1Type2Code
-14	Actor1Type3Code
-15	Actor2Code
-16	Actor2Name
-17	Actor2CountryCode
-18	Actor2KnownGroupCode
-19	Actor2EthnicCode
-20	Actor2Religion1Code
-21	Actor2Religion2Code
-22	Actor2Type1Code
-23	Actor2Type2Code
-24	Actor2Type3Code
-25	IsRootEvent
-26	EventCode
-27	EventBaseCode
-28	EventRootCode
-29	QuadClass
-30	GoldsteinScale
-31	NumMentions
-32	NumSources
-33	NumArticles
-34	AvgTone
-35	Actor1Geo_Type
-36	Actor1Geo_FullName
-37	Actor1Geo_CountryCode
-38	Actor1Geo_ADM1Code
-39	Actor1Geo_Lat
-40	Actor1Geo_Long
-41	Actor1Geo_FeatureID
-42	Actor2Geo_Type
-43	Actor2Geo_FullName
-44	Actor2Geo_CountryCode
-45	Actor2Geo_ADM1Code
-46	Actor2Geo_Lat
-47	Actor2Geo_Long
-48	Actor2Geo_FeatureID
-49	ActionGeo_Type
-50	ActionGeo_FullName
-51	ActionGeo_CountryCode
-52	ActionGeo_ADM1Code
-53	ActionGeo_Lat
-54	ActionGeo_Long
-55	ActionGeo_FeatureID
-56	DATEADDED
-57	SOURCEURL
+tableId
+GLOBALEVENTID
+SQLDATE
+MonthYear
+Year
+FractionDate
+Actor1Code
+Actor1Name
+Actor1CountryCode
+Actor1KnownGroupCode
+Actor1EthnicCode
+Actor1Religion1Code
+Actor1Religion2Code
+Actor1Type1Code
+Actor1Type2Code
+Actor1Type3Code
+Actor2Code
+Actor2Name
+Actor2CountryCode
+Actor2KnownGroupCode
+Actor2EthnicCode
+Actor2Religion1Code
+Actor2Religion2Code
+Actor2Type1Code
+Actor2Type2Code
+Actor2Type3Code
+IsRootEvent
+EventCode
+EventBaseCode
+EventRootCode
+QuadClass
+GoldsteinScale
+NumMentions
+NumSources
+NumArticles
+AvgTone
+Actor1Geo_Type
+Actor1Geo_FullName
+Actor1Geo_CountryCode
+Actor1Geo_ADM1Code
+Actor1Geo_Lat
+Actor1Geo_Long
+Actor1Geo_FeatureID
+Actor2Geo_Type
+Actor2Geo_FullName
+Actor2Geo_CountryCode
+Actor2Geo_ADM1Code
+Actor2Geo_Lat
+Actor2Geo_Long
+Actor2Geo_FeatureID
+ActionGeo_Type
+ActionGeo_FullName
+ActionGeo_CountryCode
+ActionGeo_ADM1Code
+ActionGeo_Lat
+ActionGeo_Long
+ActionGeo_FeatureID
+DATEADDED
+SOURCEURL

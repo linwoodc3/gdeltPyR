@@ -60,6 +60,7 @@ class gdelt(object):
                coverage=None,
                queryTime=datetime.datetime.now().strftime('%m-%d-%Y %H:%M:%S')
                ):
+        """Placeholder text"""
         dateInputCheck(date, self.version)
         self.coverage = coverage
         self.date = date

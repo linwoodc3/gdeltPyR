@@ -10,6 +10,14 @@ The GDELT Project is the largest, most comprehensive, and highest resolution ope
 
 ### Installation
 
+
+You can also install directly from www.github.com
+
+```bash
+pip install git+https://github.com/linwoodc3/gdeltPyR
+```
+
+
 ```bash
 git clone git@github.com:linwoodc3/gdeltPyR.git
 ```

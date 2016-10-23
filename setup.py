@@ -50,7 +50,7 @@ setup(
     include_package_data=True,
     keywords='gdelt pandas tidy data api',
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Operating System :: OS Independent',
@@ -61,6 +61,9 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7'
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 2.7.12',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5.2'
     ],
 )

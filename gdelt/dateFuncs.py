@@ -40,8 +40,8 @@ def dateRanger(originalArray):
         Returns self.
     """
 
-    minutes = (map(str, range(00, 60, 15)))
-    hours = (map(str, range(0, 24)))
+    minutes = list(map(str, range(00, 60, 15)))
+    hours = list(map(str, range(0, 24)))
     times = []
     for l in hours:
         if int(l) < 10:
@@ -54,7 +54,7 @@ def dateRanger(originalArray):
     if isinstance(originalArray, str):
         """Check user input to retrieve date query."""
 
-        return np.where(len(originalArray) == 0, np.array(datetime.datetime.now()),
+        return np.where(len(originalArray) == 0, "crazy",
                         parse_date(originalArray))
 
     elif isinstance(originalArray, list):
@@ -64,13 +64,13 @@ def dateRanger(originalArray):
         elif len(originalArray) > 2:
             #
             #             return np.array(map(parse,originalArray),dtype='datetime64[D]').tolist()
-            return np.array(map(lambda x: parse(x), originalArray))
+            return np.array(list(map(lambda x: parse(x), originalArray)))
         else:
 
             cleaner = np.vectorize(dateFormatter)
             converted = cleaner(originalArray).tolist()
             dates = np.arange(converted[0], converted[1], dtype='datetime64[D]')
-            dates = map(lambda x: datetime.datetime.combine(x, datetime.datetime.min.time()), dates.tolist())
+            dates = list(map(lambda x: datetime.datetime.combine(x, datetime.datetime.min.time()), dates.tolist()))
             if len(originalArray) == 2:
                 adder = np.datetime64(parse(converted[1]).date())
                 adder = datetime.datetime.combine(adder.tolist(), datetime.datetime.min.time())
@@ -93,8 +93,8 @@ def gdeltRangeString(element, coverage=None, version=2.0):
     ########################
 
 
-    minutes = (map(str, range(00, 60, 15)))
-    hours = (map(str, range(0, 24)))
+    minutes = list(map(str, range(00, 60, 15)))
+    hours = list(map(str, range(0, 24)))
     times = []
     for l in hours:
         if int(l) < 10:
@@ -107,21 +107,22 @@ def gdeltRangeString(element, coverage=None, version=2.0):
     element = element.tolist()
 
     hour = datetime.datetime.now().hour
-    multiplier = datetime.datetime.now().minute / 15
+    multiplier = (datetime.datetime.now().minute // 15)
     multiple = 15 * multiplier
     conditioner = multiplier + 1
 
-    if isinstance(element, list) is False:
+    # calculate nearest 15 minute interval
+    if isinstance(element, list) == False:
 
         if element.date() == datetime.datetime.now().date():
             if coverage and int(version) != 1:
-                print ("coverage current")
+
                 converted = np.array(
-                    map(
+                    list(map(
                         lambda x: np.datetime64(parse(str(element) + " " + x)
                                                 ).tolist().strftime(
                             '%Y%m%d%H%M%S'
-                        ), times[:hour * 4 + conditioner]))
+                        ), times[:hour * 4 + conditioner])))
             else:
                 converted = datetime.datetime.now().replace(minute=multiple, second=0).strftime('%Y%m%d%H%M%S')
 
@@ -129,14 +130,14 @@ def gdeltRangeString(element, coverage=None, version=2.0):
             if coverage and int(version) != 1:
 
                 converted = restOfDay = np.array(
-                    map(
+                    list(map(
                         lambda x: np.datetime64(parse(str(element) + " " + x)
                                                 ).tolist().strftime(
                             '%Y%m%d%H%M%S'
-                        ), times[:]))
+                        ), times[:])))
             else:
 
-                converted = element.replace(minute=multiple, second=0).strftime('%Y%m%d%H%M%S')
+                converted = element.replace(minute=int(multiple), second=0).strftime('%Y%m%d%H%M%S')
 
 
     #################################
@@ -152,13 +153,12 @@ def gdeltRangeString(element, coverage=None, version=2.0):
         if isinstance(element, list) is True:
 
             #             converted = map(lambda x: x.strftime('%Y%m%d%H%M%S'),element)
-            converted = map(lambda x: (datetime.datetime.combine(x, datetime.time.min) +
-                                       datetime.timedelta(
+            converted = list(map(lambda x: (datetime.datetime.combine(x, datetime.time.min) +
+                                            datetime.timedelta(
                                            minutes=45, hours=23
                                        )
-                                       ).strftime('%Y%m%d%H%M%S'), element)
+                                            ).strftime('%Y%m%d%H%M%S'), element))
         else:
-            print ("i'm here")
             converted = (datetime.datetime.combine(element, datetime.time.min) +
                          datetime.timedelta(
                              minutes=45, hours=23
@@ -174,11 +174,11 @@ def gdeltRangeString(element, coverage=None, version=2.0):
             converted = []
             for i in element:
                 converted.append(np.array(
-                    map(
+                    list(map(
                         lambda x: np.datetime64(parse(str(i) + " " + x)
                                                 ).tolist().strftime(
                             '%Y%m%d%H%M%S'
-                        ), times[:])))
+                        ), times[:]))))
             converted = np.concatenate(converted, axis=0)
             if len(converted.tolist()) >= (3 * 192):
                 warnings.warn(
@@ -192,12 +192,13 @@ def gdeltRangeString(element, coverage=None, version=2.0):
     if int(version) == 1:
         if isinstance(converted, list) is True:
 
-            converted = map(lambda x: np.where((parse(x) >= parse('2013 04 01')), parse(x).strftime('%Y%m%d%H%M%S')[:8],
-                                               np.where((parse(x) < parse('2006 01 01') and (int(version) == 1)),
-                                                        parse(x).strftime('%Y%m%d%H%M%S')[:4],
-                                                        parse(x).strftime('%Y%m%d%H%M%S')[:6]))
-                            , converted)
-            converted = map(lambda x: x.tolist(), converted)
+            converted = list(
+                map(lambda x: np.where((parse(x) >= parse('2013 04 01')), parse(x).strftime('%Y%m%d%H%M%S')[:8],
+                                       np.where((parse(x) < parse('2006 01 01') and (int(version) == 1)),
+                                                parse(x).strftime('%Y%m%d%H%M%S')[:4],
+                                                parse(x).strftime('%Y%m%d%H%M%S')[:6]))
+                    , converted))
+            converted = list(map(lambda x: x.tolist(), converted))
             converted = list(set(converted))  # account for duplicates
         else:
             converted = np.where((parse(converted) >= parse('2013 04 01')),

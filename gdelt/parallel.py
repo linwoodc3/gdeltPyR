@@ -1,6 +1,7 @@
 import datetime
 import multiprocessing
 import os
+import re
 import time
 import warnings
 from io import BytesIO
@@ -11,7 +12,9 @@ import requests
 
 
 def mp_worker(url):
-    warnings.filterwarnings("ignore")
+    '''Code to download the urls and blow away the buffer to keep memory usage down'''
+    warnings.filterwarnings("ignore",
+                            '.*have mixed types. Specify dtype.*')  # ignore pandas warning for GDELT 1.0 dtype
     start = datetime.datetime.now()
     proc_name = current_process().name
     # print (multiprocessing.current_process().name)
@@ -19,10 +22,22 @@ def mp_worker(url):
     # print ('Starting {0}-{1}'.format(proc_name,proc))
     r = requests.get(url)
     # print (multiprocessing.Process(name=multiprocessing.current_process().name).is_alive())
-    frame = pd.read_csv(BytesIO(r.content), compression='zip', sep='\t', header=None, warn_bad_lines=False)
-    end = datetime.datetime.now() - start
-    # print ("{0} with id {1} finished processing in {2}".format(proc_name,proc,end))
-    return frame
+    try:
+        buffer = BytesIO(r.content)
+        frame = pd.read_csv(buffer, compression='zip', sep='\t', header=None, warn_bad_lines=False)
+        end = datetime.datetime.now() - start
+        # print ("{0} with id {1} finished processing in {2}".format(proc_name,proc,end))
+        buffer.flush()
+        buffer.close()
+        return frame
+
+    except:
+        try:
+            message = "GDELT did not return data for date time {0}".format(re.search('[0-9]{4,18}', url).group())
+            warnings.warn(message)
+        except:
+            message = "No data return for {0}".format(r.url)
+            warnings.warn(message)
 
 
 def mp_handler(function, urllist):

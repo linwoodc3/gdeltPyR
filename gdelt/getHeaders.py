@@ -17,7 +17,7 @@ def events1Heads():
     eventsDbHeaders = pd.read_csv(
         BytesIO(
             requests.get(
-                ("https://raw.githubusercontent.com/linwoodc3/gdeltPyR/coreFunc/utils/schema_csvs/"
+                ("https://raw.githubusercontent.com/linwoodc3/gdeltPyR/master/utils/schema_csvs/"
                  "GDELT_1.0_event_Column_Labels_Header_Row_Sep2016.tsv")
             ).content), delimiter='\t', usecols=['tableId'])
     return eventsDbHeaders.tableId.tolist()

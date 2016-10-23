@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from dateutil.parser import parse
 
 
 def vectorizer(function, dateArray):
@@ -69,8 +70,29 @@ def urlBuilder(dateString, version, table='events'):
                          ' Choose between \"events\",\"mentions\",and \"gkg\".')
 
     if isinstance(dateString, list) is True or isinstance(dateString, np.ndarray) is True:
-        return map(lambda x: base + x + caboose, dateString)
+
+        if (np.all(list(
+                map(
+                    lambda x: x > parse('2013 04 1'), list(
+                        map(
+                            parse, dateString)))))) == False:
+
+            return (list(
+                map(lambda x: base + x + ".zip" if parse(x).date() < parse('2013 04 01').date() else base + x + caboose,
+                    dateString)))
+
+        else:
+
+            return list(map(lambda x: base + x + caboose, dateString))
+
     elif isinstance(dateString, str) is True or len(dateString) == 1:
+        if version == 1:
+
+            if parse(dateString) < parse('2013 Apr 01'):
+                caboose = ".zip"
         if isinstance(dateString, list) is True or isinstance(dateString, np.ndarray) is True:
             dateString = dateString[0]
-        return "on the string", base + dateString + caboose
+            if parse(dateString[0]) < parse('2013 Apr 01'):
+                caboose = ".zip"
+
+        return base + dateString + caboose

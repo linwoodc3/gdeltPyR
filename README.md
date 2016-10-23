@@ -17,6 +17,20 @@ You can also install directly from www.github.com
 pip install git+https://github.com/linwoodc3/gdeltPyR
 ```
 
+### Basic Example
+
+```python
+import gdelt
+
+gd = gdelt.gdelt(version=2)
+
+%time results = gd.Search(['2016 10 19','2016 10 22'],table='events',coverage=True)
+```
+
+Performance on 4 core, MacOS Sierra 10.12 with 16GB of RAM:
+* 900,000 by 61 (rows x columns) pandas dataframe returned in 36 seconds
+    * data is a merged pandas dataframe of GDELT 2.0 events database data
+
 
 ```bash
 git clone git@github.com:linwoodc3/gdeltPyR.git

@@ -10,11 +10,14 @@ from setuptools import setup
 
 cwd = os.path.abspath(os.path.dirname(__file__))
 
+
 def read(filename):
     with codecs.open(os.path.join(cwd, filename), 'rb', 'utf-8') as h:
         return h.read()
 
+
 metadata = read(os.path.join(cwd, 'gdelt', '__init__.py'))
+
 
 def extract_metaitem(meta):
     # swiped from https://hynek.me 's attr package
@@ -23,6 +26,7 @@ def extract_metaitem(meta):
     if meta_match:
         return meta_match.group(1)
     raise RuntimeError('Unable to find __{meta}__ string.'.format(meta=meta))
+
 
 setup(
     name='gdelt',
@@ -37,11 +41,11 @@ setup(
     maintainer=extract_metaitem('author'),
     maintainer_email=extract_metaitem('email'),
     url=extract_metaitem('url'),
-    #download_url=extract_metaitem('download_url'),
+    # download_url=extract_metaitem('download_url'),
     platforms=['Any'],
     packages=['gdelt'],
     install_requires=['numpy', 'pandas', 'requests',
-                      'python-dateutil','psutil','lxml'],
+                      'python-dateutil', 'psutil', 'lxml'],
     package_data={'': ['utils/schema_csvs/*']},
     include_package_data=True,
     keywords='gdelt pandas tidy data api',

@@ -1,38 +1,76 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
-
-def vectorizer(function,dateArray):
+def vectorizer(function, dateArray):
     helper = np.vectorize(function)
-    
+
     final = helper(dateArray.tolist()).tolist()
-    
-    if isinstance(final,list):
-        
+
+    if isinstance(final, list):
+
         final = list(set(final))
-    elif isinstance(final,str):
-        final=final
+    elif isinstance(final, str):
+        final = final
     else:
         pass
-    
+
     return final
+
 
 # Finds the urls from an array of dates
 
 
-def urlFinder(dataframe,targetDate,col):
-    
+def urlFinder(dataframe, targetDate, col):
     return dataframe[col][dataframe[col].str.contains(targetDate)]
-    
 
 
-def vectorizedUrlFinder(function,urlList,frame):
-    helper=np.vectorize(function)
-    return pd.concat(helper(urlList,frame).tolist())
+def vectorizedUrlFinder(function, urlList, frame):
+    helper = np.vectorize(function)
+    return pd.concat(helper(urlList, frame).tolist())
 
 
-def downloadVectorizer(function,urlList):
-    '''Vectorized function to download urls'''
-    helper=np.vectorize(function)
+def downloadVectorizer(function, urlList):
+    """Vectorized function to download urls"""
+    helper = np.vectorize(function)
     return pd.concat(helper(urlList).tolist()).reset_index(drop=True)
+
+
+def urlBuilder(dateString, version, table='events'):
+    """
+    Takes date string from gdeltRange string and creates GDELT urls
+
+
+    Parameters
+    ------------
+
+    table types:
+                * events and mentions (default)
+                * gkg
+                * mentions only
+                :param dateString:
+                :param version:
+                :param table:
+    """
+    if version == 2:
+        base = "http://data.gdeltproject.org/gdeltv2/"
+
+    if version == 1:
+        base = "http://data.gdeltproject.org/events/"
+
+    if table == "events":
+        caboose = ".export.CSV.zip"
+    elif table == "mentions":
+        caboose = ".mentions.CSV.zip"
+    elif table == "gkg":
+        caboose = ".gkg.csv.zip"
+    else:
+        raise ValueError('You entered an incorrect GDELT table type.'
+                         ' Choose between \"events\",\"mentions\",and \"gkg\".')
+
+    if isinstance(dateString, list) is True or isinstance(dateString, np.ndarray) is True:
+        return map(lambda x: base + x + caboose, dateString)
+    elif isinstance(dateString, str) is True or len(dateString) == 1:
+        if isinstance(dateString, list) is True or isinstance(dateString, np.ndarray) is True:
+            dateString = dateString[0]
+        return "on the string", base + dateString + caboose

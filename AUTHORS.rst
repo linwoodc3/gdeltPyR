@@ -1,3 +1,3 @@
-Full-on open source project with the following contributers:
+Full-on open source project with the following contributors:
 
 * Linwood Creekmore

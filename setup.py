@@ -33,7 +33,7 @@ setup(
     version=extract_metaitem('version'),
     license=extract_metaitem('license'),
     description=extract_metaitem('description'),
-    long_description=(read('README.md') + '\n\n' +
+    long_description=(read('README.rst') + '\n\n' +
                       read('AUTHORS.rst') + '\n\n' +
                       read('CHANGES')),
     author=extract_metaitem('author'),

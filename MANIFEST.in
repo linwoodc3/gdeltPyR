@@ -4,11 +4,14 @@ include LICENSE
 include *.rst
 include AUTHORS.rst
 include README.rst
-recursive-include doc *
+include README.md
+recursive-include docs *
 recursive-include utils *
 
 # Include the data files
-recursive-include utils/schema_csvs/*
+recursive-include utils/schema_csvs *
+#recursive-include utils/ *
+
 
 # If using Python 2.6 or less, then have to include package data, even though
 # it's already declared in setup.py

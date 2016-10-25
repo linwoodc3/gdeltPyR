@@ -6,3 +6,6 @@
 
 2016-10-23
   Working on 0.1 release, basic functionality all there
+
+2016-10-25
+  Changed MANIFEST.in file; cleaned up egg.info

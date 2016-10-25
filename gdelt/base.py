@@ -10,7 +10,6 @@ from gdelt.inputChecks import (dateInputCheck)
 from gdelt.parallel import mp_worker
 from gdelt.vectorizingFuncs import urlBuilder
 
-
 # import os
 # this_dir, this_filename = os.path.split(__file__)
 # CSV_PATH = os.path.join(this_dir, "utils","schema_csvs",
@@ -28,9 +27,78 @@ from gdelt.vectorizingFuncs import urlBuilder
 # Core GDELT class
 ##############################
 
+'''Gig line'''
+
+
+###############################################################################
 
 class gdelt(object):
-    """Placeholder string"""
+    """GDELT Object
+        Read more in the :ref:`User Guide <k_means>`.
+        Parameters
+        ----------
+        version : int, optional, default: 2
+            The version of GDELT services used by gdelt. 1 or 2
+        gdelt2MasterUrl : string, default: http://data.gdeltproject.org/gdeltv2/
+            Base url for GDELT 2.0 services.
+        gdelt1MasterUrl : string, default: http://data.gdeltproject.org/events/
+            Base url for GDELT 1.0 services.
+        cores : int, optional, default:
+            Count of total CPU cores available.
+        pool: function
+            Standard multiprocessing function to establish Pool workers
+
+        Attributes
+        ----------
+        version : int, default: 2
+            The version of GDELT services used by gdelt. 1 or 2
+        cores :
+            Cores used for multiprocessing pipelines
+        pool : string
+            pool variable for multiprocessing workers.
+        baseUrl : string
+            Url for GDELT queries.
+
+
+        Examples
+        --------
+        >>> from gdelt
+        >>> gd = gdelt.gdelt(version=2)
+        >>> results = gd.Search(['2016 10 19'],table='events',coverage=True)
+        >>> print(len(results))
+        244767
+        >>> print(results.columns)
+        Index(['GLOBALEVENTID', 'SQLDATE', 'MonthYear', 'Year', 'FractionDate',
+       'Actor1Code', 'Actor1Name', 'Actor1CountryCode', 'Actor1KnownGroupCode',
+       'Actor1EthnicCode', 'Actor1Religion1Code', 'Actor1Religion2Code',
+       'Actor1Type1Code', 'Actor1Type2Code', 'Actor1Type3Code', 'Actor2Code',
+       'Actor2Name', 'Actor2CountryCode', 'Actor2KnownGroupCode',
+       'Actor2EthnicCode', 'Actor2Religion1Code', 'Actor2Religion2Code',
+       'Actor2Type1Code', 'Actor2Type2Code', 'Actor2Type3Code', 'IsRootEvent',
+       'EventCode', 'EventBaseCode', 'EventRootCode', 'QuadClass',
+       'GoldsteinScale', 'NumMentions', 'NumSources', 'NumArticles', 'AvgTone',
+       'Actor1Geo_Type', 'Actor1Geo_FullName', 'Actor1Geo_CountryCode',
+       'Actor1Geo_ADM1Code', 'Actor1Geo_ADM2Code', 'Actor1Geo_Lat',
+       'Actor1Geo_Long', 'Actor1Geo_FeatureID', 'Actor2Geo_Type',
+       'Actor2Geo_FullName', 'Actor2Geo_CountryCode', 'Actor2Geo_ADM1Code',
+       'Actor2Geo_ADM2Code', 'Actor2Geo_Lat', 'Actor2Geo_Long',
+       'Actor2Geo_FeatureID', 'ActionGeo_Type', 'ActionGeo_FullName',
+       'ActionGeo_CountryCode', 'ActionGeo_ADM1Code', 'ActionGeo_ADM2Code',
+       'ActionGeo_Lat', 'ActionGeo_Long', 'ActionGeo_FeatureID', 'DATEADDED',
+       'SOURCEURL'],
+       dtype='object')
+
+
+        Notes
+        ------
+        gdeltPyR retrieves Global Database of Events, Language, and Tone (GDELT) data (version
+        1.0 or version 2.0) via parallel HTTP GET requests and is an alternative to accessing GDELT
+        data via Google BigQuery .
+
+        Performance will vary based on the number of available cores (i.e. CPUs), internet connection
+        speed, and available RAM. For systems with limited RAM, Later iterations of gdeltPyR will include
+        an option to store the output directly to disc.
+        """
 
     def __init__(self,
                  gdelt2MasterUrl='http://data.gdeltproject.org/gdeltv2/',

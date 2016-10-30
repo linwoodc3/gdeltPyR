@@ -186,7 +186,7 @@ def gdeltRangeString(element, coverage=None, version=2.0):
                             '%Y%m%d%H%M%S'
                         ), times[:]))))
             converted = np.concatenate(converted, axis=0)
-            if len(converted.tolist()) >= (3 * 192):
+            if len(converted.tolist()) >= (5 * 192):
                 warnings.warn(
                     ("This query will download {0} files, and likely "
                      "exhaust your memory with possibly 10s of "

@@ -174,7 +174,6 @@ def gdeltRangeString(element, coverage=None, version=2.0):
 
         ####################
         # Return all 15 min intervals
-        # ignore this for version 1
         ####################
         if coverage and int(version) != 1:
 

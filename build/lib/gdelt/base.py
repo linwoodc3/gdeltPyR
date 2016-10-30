@@ -5,7 +5,8 @@ from multiprocessing import Pool, cpu_count
 import pandas as pd
 
 from gdelt.dateFuncs import (dateRanger, gdeltRangeString)
-from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads, gkgHeads
+from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads, \
+    gkgHeads
 from gdelt.inputChecks import (dateInputCheck)
 from gdelt.parallel import mp_worker
 from gdelt.vectorizingFuncs import urlBuilder
@@ -19,8 +20,7 @@ from gdelt.vectorizingFuncs import urlBuilder
 # print HEADER_PATH = os.path.join(this_dir,"utils","schema_csvs",
 # "GDELT_2.0_gdeltKnowledgeGraph_Column_Labels_Header_Row_Sep2016.tsv")
 
-# header = pd.read_csv(HEADER_PATH,delimiter='\t',usecols=['tableId','dataType'
-# ,'Description'])
+# header = pd.read_csv(HEADER_PATH,delimiter='\t',usecols=['tableId','dataType','Description'])
 
 # print header
 
@@ -92,20 +92,19 @@ class gdelt(object):
 
         Notes
         ------
-        gdeltPyR retrieves Global Database of Events, Language, and Tone
-        (GDELT) data (version 1.0 or version 2.0) via parallel HTTP GET
-        requests and is an alternative to accessing GDELT
+        gdeltPyR retrieves Global Database of Events, Language, and Tone (GDELT) data (version
+        1.0 or version 2.0) via parallel HTTP GET requests and is an alternative to accessing GDELT
         data via Google BigQuery .
 
-        Performance will vary based on the number of available cores
-        (i.e. CPUs), internet connection speed, and available RAM. For
-        systems with limited RAM, Later iterations of gdeltPyR will include
+        Performance will vary based on the number of available cores (i.e. CPUs), internet connection
+        speed, and available RAM. For systems with limited RAM, Later iterations of gdeltPyR will include
         an option to store the output directly to disc.
         """
 
     def __init__(self,
                  gdelt2MasterUrl='http://data.gdeltproject.org/gdeltv2/',
                  gdelt1MasterUrl='http://data.gdeltproject.org/events/',
+                 # index.html, events/20160930.export.CSV.zip
                  version=2.0,
                  cores=cpu_count(),
                  pool=Pool(processes=cpu_count())
@@ -146,10 +145,8 @@ class gdelt(object):
         # Partial Functions
         #################################
 
-        v1RangerCoverage = partial(gdeltRangeString, version=1,
-                                   coverage=True)
-        v2RangerCoverage = partial(gdeltRangeString, version=2,
-                                   coverage=True)
+        v1RangerCoverage = partial(gdeltRangeString, version=1, coverage=True)
+        v2RangerCoverage = partial(gdeltRangeString, version=2, coverage=True)
         v1RangerNoCoverage = partial(gdeltRangeString, version=1,
                                      coverage=False)
         v2RangerNoCoverage = partial(gdeltRangeString, version=2,
@@ -181,9 +178,9 @@ class gdelt(object):
         if int(self.version) == 1:
 
             if self.table is "mentions":
-                raise BaseException('GDELT 1.0 does not have the "mentions'
-                                    ' table. Specify the "events" or "gkg"'
-                                    'table.')
+                raise BaseException(
+                    'GDELT 1.0 does not have the "mentions" table. Specify the "events" or'
+                    ' "gkg" table.')
             else:
                 pass
 
@@ -192,18 +189,18 @@ class gdelt(object):
 
             if self.table == 'events':
 
-
                 if self.coverage is True:
 
-                    self.download_list = (urlsv1events(v1RangerCoverage(
-                        dateRanger(self.date))))
+                    self.download_list = (
+                        urlsv1events(v1RangerCoverage(dateRanger(self.date))))
 
                 # print ("1 events", urlsv1events(self.datesString))
                 # print (urlsv2events(v2RangerNoCoverage(dateRanger(self.date))))
                 else:
                     print("I'm here at line 125")
-                    self.download_list = (urlsv1events(v1RangerNoCoverage(
-                        dateRanger(self.date))))
+                    self.download_list = (
+                        urlsv1events(
+                            v1RangerNoCoverage(dateRanger(self.date))))
 
         #####################################
         # GDELT Version 2.0 Analytics and Download
@@ -214,41 +211,42 @@ class gdelt(object):
                 columns = self.events_columns
                 if self.coverage is True:
 
-                    self.download_list = (urlsv2events(v2RangerCoverage(
-                        dateRanger(self.date))))
+                    self.download_list = (
+                        urlsv2events(v2RangerCoverage(dateRanger(self.date))))
                 else:
-                    self.download_list = (urlsv2events(v2RangerNoCoverage(
-                        dateRanger(self.date))))
+                    self.download_list = (
+                        urlsv2events(
+                            v2RangerNoCoverage(dateRanger(self.date))))
 
             if self.table == 'gkg':
                 columns = self.gkg_columns
                 if self.coverage is True:
 
-                    self.download_list = (urlsv2gkg(v2RangerCoverage(
-                        dateRanger(self.date))))
+                    self.download_list = (
+                        urlsv2gkg(v2RangerCoverage(dateRanger(self.date))))
                 else:
-                    self.download_list = (urlsv2gkg(v2RangerNoCoverage(
-                        dateRanger(self.date))))
+                    self.download_list = (
+                        urlsv2gkg(v2RangerNoCoverage(dateRanger(self.date))))
                     # print ("2 gkg", urlsv2gkg(self.datesString))
 
             if self.table == 'mentions':
                 columns = self.mentions_columns
                 if self.coverage is True:
 
-                    self.download_list = (urlsv2mentions(v2RangerCoverage(
-                        dateRanger(self.date))))
+                    self.download_list = (
+                        urlsv2mentions(
+                            v2RangerCoverage(dateRanger(self.date))))
 
                 else:
 
-                    self.download_list = (urlsv2mentions(v2RangerNoCoverage(
-                        dateRanger(self.date))))
+                    self.download_list = (
+                        urlsv2mentions(
+                            v2RangerNoCoverage(dateRanger(self.date))))
 
         #########################
         # DEBUG Print
         #########################
-        # print (self.version, self.table, self.coverage, self.datesString,
-        #
-        # self.download_list)
+        # print (self.version, self.table, self.coverage, self.datesString,self.download_list)
 
         #########################
         # Download section
@@ -265,8 +263,8 @@ class gdelt(object):
         else:
 
             pool = Pool(processes=cpu_count())
-            downloaded_dfs = list(pool.imap_unordered(mp_worker,
-                                                      self.download_list))
+            downloaded_dfs = list(
+                pool.imap_unordered(mp_worker, self.download_list))
             pool.close()
             pool.terminate()
             pool.join()
@@ -274,15 +272,12 @@ class gdelt(object):
             del downloaded_dfs
             results.reset_index(drop=True, inplace=True)
 
-
-
-
         results.columns = columns
 
         if (len(results)) == 0:
-            raise ValueError("This GDELT query returned no data. Check "
-                             "internet connection or query parameters and "
-                             "retry")
+            raise ValueError(
+                "This GDELT query returned no data. Check internet connection or query parameters"
+                " and retry")
 
         self.final = results
 

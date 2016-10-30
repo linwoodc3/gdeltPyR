@@ -67,8 +67,7 @@ def urlBuilder(dateString, version, table='events'):
         caboose = ".gkg.csv.zip"
     else:
         raise ValueError('You entered an incorrect GDELT table type.'
-                         ' Choose between \"events\",\"mentions\",'
-                         'and \"gkg\".')
+                         ' Choose between \"events\",\"mentions\",and \"gkg\".')
 
     if isinstance(dateString, list) is True or isinstance(dateString,
                                                           np.ndarray) is True:
@@ -80,8 +79,7 @@ def urlBuilder(dateString, version, table='events'):
                             parse, dateString)))))) == False:
 
             return (list(
-                map(lambda x: base + x + ".zip" if parse(
-                    x).date() < parse(
+                map(lambda x: base + x + ".zip" if parse(x).date() < parse(
                     '2013 04 01').date() else base + x + caboose,
                     dateString)))
 
@@ -94,8 +92,8 @@ def urlBuilder(dateString, version, table='events'):
 
             if parse(dateString) < parse('2013 Apr 01'):
                 caboose = ".zip"
-        if isinstance(dateString, list) is True or isinstance(
-                dateString, np.ndarray) is True:
+        if isinstance(dateString, list) is True or isinstance(dateString,
+                                                              np.ndarray) is True:
             dateString = dateString[0]
             if parse(dateString[0]) < parse('2013 Apr 01'):
                 caboose = ".zip"

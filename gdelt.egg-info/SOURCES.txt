@@ -46,6 +46,7 @@ gdelt/base.py
 gdelt/dateFuncs.py
 gdelt/extractors.py
 gdelt/getHeaders.py
+gdelt/helpers.py
 gdelt/inputChecks.py
 gdelt/parallel.py
 gdelt/vectorizingFuncs.py

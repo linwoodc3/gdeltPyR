@@ -3,26 +3,29 @@ from functools import partial
 from multiprocessing import Pool, cpu_count
 
 import pandas as pd
+import json
+import os
 
 from gdelt.dateFuncs import (dateRanger, gdeltRangeString)
 from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads, gkgHeads
 from gdelt.inputChecks import (dateInputCheck)
 from gdelt.parallel import mp_worker
 from gdelt.vectorizingFuncs import urlBuilder
+from gdelt.helpers import cameos
 
-# import os
-# this_dir, this_filename = os.path.split(__file__)
-# CSV_PATH = os.path.join(this_dir, "utils","schema_csvs",
-# "GDELT_2.0_gdeltKnowledgeGraph_Column_Labels_Header_Row_Sep2016.tsv")
-# print(CSV_PATH)
 
-# print HEADER_PATH = os.path.join(this_dir,"utils","schema_csvs",
-# "GDELT_2.0_gdeltKnowledgeGraph_Column_Labels_Header_Row_Sep2016.tsv")
+##############################################
+#  Admin to load local files
+##############################################
 
-# header = pd.read_csv(HEADER_PATH,delimiter='\t',usecols=['tableId','dataType'
-# ,'Description'])
 
-# print header
+this_dir, this_filename = os.path.split(__file__)
+BASE_DIR = os.path.dirname(this_dir)
+UTIL_FILES_PATH = os.path.join(BASE_DIR, "utils","schema_csvs")
+codes = json.load(open(os.path.join(UTIL_FILES_PATH,"cameoCodes.json")))
+
+
+
 
 ##############################
 # Core GDELT class
@@ -161,6 +164,7 @@ class gdelt(object):
         urlsv2gkg = partial(urlBuilder, version=2, table='gkg')
 
         eventWork = partial(mp_worker,table='events')
+        codeCams = partial(cameos,codes=codes)
 
         #####################################
         # GDELT Version 2.0 Headers
@@ -261,8 +265,6 @@ class gdelt(object):
         if isinstance(self.datesString, str):
 
             if self.table == 'events':
-                print('line 270 base')
-                pool = Pool(processes=cpu_count())
                 results = eventWork(self.download_list)
 
             else:
@@ -273,12 +275,12 @@ class gdelt(object):
         else:
 
             if self.table == 'events':
-                print('line 270 base')
+
                 pool = Pool(processes=cpu_count())
                 downloaded_dfs = list(pool.imap_unordered(eventWork,
                                                           self.download_list))
             else:
-                print('line 275 base')
+
                 pool = Pool(processes=cpu_count())
                 downloaded_dfs = list(pool.imap_unordered(mp_worker,
                                                           self.download_list))
@@ -292,6 +294,7 @@ class gdelt(object):
 
 
 
+
         results.columns = columns
 
         if (len(results)) == 0:
@@ -299,7 +302,18 @@ class gdelt(object):
                              "internet connection or query parameters and "
                              "retry")
 
+        # Add column of human readable codes; need updated CAMEO
+        if self.table == 'events':
+
+            cameoDescripts = results.EventCode.apply(codeCams)
+
+            results.insert(27,'CAMEOCodeDescription',
+                           value=cameoDescripts.values)
+
+
         self.final = results
+
+
 
         #########################
         # Return the result

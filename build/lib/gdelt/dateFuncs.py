@@ -75,10 +75,9 @@ def dateRanger(originalArray):
                 x, datetime.datetime.min.time()), dates.tolist()))
             if len(originalArray) == 2:
                 adder = np.datetime64(parse(converted[1]).date())
-                adder = datetime.datetime.combine(
-                    adder.tolist(), datetime.datetime.min.time())
-                return np.append(dates,
-                                 adder)  # numpy range is not endpoint inclusive
+                adder = datetime.datetime.combine(adder.tolist(),
+                                                  datetime.datetime.min.time())
+                return np.append(dates, adder)  # numpy range is not endpoint inclusive
             else:
                 pass
             return np.array(dates)
@@ -128,9 +127,8 @@ def gdeltRangeString(element, coverage=None, version=2.0):
                             '%Y%m%d%H%M%S'
                         ), times[:hour * 4 + conditioner])))
             else:
-                converted = datetime.datetime.now().replace(minute=multiple,
-                                                            second=0).strftime(
-                    '%Y%m%d%H%M%S')
+                converted = datetime.datetime.now().replace(
+                    minute=multiple, second=0).strftime('%Y%m%d%H%M%S')
 
         else:
             if coverage and int(version) != 1:
@@ -143,8 +141,8 @@ def gdeltRangeString(element, coverage=None, version=2.0):
                         ), times[:])))
             else:
 
-                converted = element.replace(minute=int(multiple),
-                                            second=0).strftime('%Y%m%d%H%M%S')
+                converted = element.replace(minute=int(
+                    multiple), second=0).strftime('%Y%m%d%H%M%S')
 
 
     #################################
@@ -160,13 +158,12 @@ def gdeltRangeString(element, coverage=None, version=2.0):
         if isinstance(element, list) is True:
 
             #             converted = map(lambda x: x.strftime('%Y%m%d%H%M%S'),element)
-            converted = list(map(lambda x: (datetime.datetime.combine(
-                x, datetime.time.min) +
+            converted = list(map(lambda x: (
+                datetime.datetime.combine(x, datetime.time.min) +
                                             datetime.timedelta(
-                                                minutes=45, hours=23
-                                            )
-                                            ).strftime('%Y%m%d%H%M%S'),
-                                 element))
+                                           minutes=45, hours=23
+                                       )
+                                            ).strftime('%Y%m%d%H%M%S'), element))
         else:
             converted = (datetime.datetime.combine(
                 element, datetime.time.min) +
@@ -177,7 +174,6 @@ def gdeltRangeString(element, coverage=None, version=2.0):
 
         ####################
         # Return all 15 min intervals
-        # ignore this for version 1
         ####################
         if coverage and int(version) != 1:
 
@@ -190,13 +186,13 @@ def gdeltRangeString(element, coverage=None, version=2.0):
                             '%Y%m%d%H%M%S'
                         ), times[:]))))
             converted = np.concatenate(converted, axis=0)
-            if len(converted.tolist()) >= (3 * 192):
-                warnings.warn(
-                    "\n\nThis query will download {0} files, and likely "
-                    "exhaust your memory with possibly 10s of GBs of data in "
-                    "this single query.  Hit Ctr-C to kill this query "
-                    "if you do not want to continue.".format(len(
-                        converted.tolist())))
+            if len(converted.tolist()) >= (5 * 192):
+                warnText = ("This query will download {0} files, and likely "
+                     "exhaust your memory with possibly 10s of "
+                     "GBs of data in this single query.Hit Ctr-C to kill "
+                     "this query if you do not want to "
+                     "continue.".format(len(converted.tolist())))
+                warnings.warn(warnText)
 
     ########################
     # Version 1 Datestrings
@@ -205,44 +201,39 @@ def gdeltRangeString(element, coverage=None, version=2.0):
         if isinstance(converted, list) is True:
 
             converted = list(
-                map(lambda x: np.where(
-                    (parse(x) >= parse('2013 04 01')),
-                    parse(x).strftime('%Y%m%d%H%M%S')[:8],
-                    np.where(
-                        (parse(x) <
-                         parse('2006 01 01') and
-                         (int(version) == 1)),
-                        parse(x).strftime(
-                            '%Y%m%d%H%M%S')[:4],
-                        parse(x).strftime(
-                            '%Y%m%d%H%M%S')[:6]))
+                map(lambda x: np.where((parse(x) >= parse(
+                    '2013 04 01')), parse(x).strftime('%Y%m%d%H%M%S')[:8],
+                                       np.where((parse(x) < parse(
+                                           '2006 01 01') and (
+                                                     int(version) == 1)),
+                                                parse(x).strftime(
+                                                    '%Y%m%d%H%M%S')[:4],
+                                                parse(x).strftime(
+                                                    '%Y%m%d%H%M%S')[:6]))
                     , converted))
             converted = list(map(lambda x: x.tolist(), converted))
             converted = list(set(converted))  # account for duplicates
         else:
             converted = np.where((parse(converted) >= parse('2013 04 01')),
                                  parse(converted).strftime('%Y%m%d%H%M%S')[:8],
-                                 np.where(
-                                     (parse(converted) <
-                                      parse('2006 01 01') and (
-                                          int(version) == 1)),
-                                     parse(converted).strftime(
-                                         '%Y%m%d%H%M%S')[:4],
-                                     parse(converted).strftime(
-                                         '%Y%m%d%H%M%S')[:6])).tolist()
+                                 np.where((parse(converted) < parse(
+                                     '2006 01 01') and (int(version) == 1)),
+                                          parse(converted).strftime(
+                                              '%Y%m%d%H%M%S')[:4],
+                                          parse(converted).strftime(
+                                              '%Y%m%d%H%M%S')[:6])).tolist()
 
     return converted
 
 
 def dateMasker(dateString, version):
-    mask = (
-        np.where((int(version == 1) and parse(dateString) >=
-                  parse('2013 04 01')) or (int(version) == 2),
-                 vectorizer(gdeltRangeString, dateRanger(dateString))[:8],
-                 np.where(int(version) == 1 and parse(dateString) <
-                          parse('2006 01'),
-                          vectorizer(gdeltRangeString, dateRanger(
-                              dateString))[:4],
-                          vectorizer(gdeltRangeString, dateRanger(
-                              dateString))[:6]))).tolist()
+    mask = (np.where((int(version == 1) and parse(dateString) >= parse(
+        '2013 04 01')) or (int(version) == 2),
+                     vectorizer(gdeltRangeString, dateRanger(dateString))[:8],
+                     np.where(int(version) == 1 and parse(
+                         dateString) < parse('2006 01'),
+                              vectorizer(gdeltRangeString, dateRanger(
+                                  dateString))[:4],
+                              vectorizer(gdeltRangeString, dateRanger(
+                                  dateString))[:6]))).tolist()
     return mask

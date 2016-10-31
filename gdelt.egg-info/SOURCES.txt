@@ -62,3 +62,5 @@ utils/schema_csvs/GDELT_1.0_event_Column_Labels_Header_Row_Sep2016.tsv
 utils/schema_csvs/GDELT_2.0_Events_Column_Labels_Header_Row_Sep2016.csv
 utils/schema_csvs/GDELT_2.0_eventMentions_Column_Labels_Header_Row_Sep2016.tsv
 utils/schema_csvs/GDELT_2.0_gdeltKnowledgeGraph_Column_Labels_Header_Row_Sep2016.tsv
+utils/schema_csvs/cameoCodeTable.tsv
+utils/schema_csvs/cameoCodes.json

@@ -9,3 +9,9 @@
 
 2016-10-25
   Changed MANIFEST.in file; cleaned up egg.info
+
+2016-10-30
+  Edited the warning strings and aligned some code with PEP8
+
+2016-10-31
+  Added human readable CAMEO Codes column

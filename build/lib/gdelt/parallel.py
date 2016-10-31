@@ -11,12 +11,15 @@ import pandas as pd
 import requests
 
 
-def mp_worker(url):
+
+def mp_worker(url,table=None):
+
     '''Code to download the urls and blow away the buffer to keep memory usage down'''
     warnings.filterwarnings("ignore",
                             '.*have mixed types. Specify dtype.*')  # ignore pandas warning for GDELT 1.0 dtype
     start = datetime.datetime.now()
     proc_name = current_process().name
+
     # print (multiprocessing.current_process().name)
     proc = os.getpid()
     # print ('Starting {0}-{1}'.format(proc_name,proc))
@@ -24,8 +27,16 @@ def mp_worker(url):
     # print (multiprocessing.Process(name=multiprocessing.current_process().name).is_alive())
     try:
         buffer = BytesIO(r.content)
-        frame = pd.read_csv(buffer, compression='zip', sep='\t', header=None,
-                            warn_bad_lines=False)
+        if table == 'events':
+
+            frame = pd.read_csv(buffer,compression='zip', sep='\t',
+                            header=None, warn_bad_lines=False,
+                                dtype={26:'str',27:'str',28:'str'},
+                                parse_dates=[1,2,59])
+        else:
+
+            frame = pd.read_csv(buffer, compression='zip', sep='\t',
+                            header=None, warn_bad_lines=False)
         end = datetime.datetime.now() - start
         # print ("{0} with id {1} finished processing in {2}".format(proc_name,proc,end))
         buffer.flush()
@@ -34,11 +45,11 @@ def mp_worker(url):
 
     except:
         try:
-            message = "GDELT did not return data for date time {0}".format(
-                re.search('[0-9]{4,18}', url).group())
+            message = "GDELT did not return data for date time " \
+                      "{0}".format(re.search('[0-9]{4,18}', url).group())
             warnings.warn(message)
         except:
-            message = "No data return for {0}".format(r.url)
+            message = "No data returned for {0}".format(r.url)
             warnings.warn(message)
 
 

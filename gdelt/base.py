@@ -22,14 +22,15 @@ from gdelt.helpers import cameos
 
 this_dir, this_filename = os.path.split(__file__)
 BASE_DIR = os.path.dirname(this_dir)
+
 UTIL_FILES_PATH = os.path.join(BASE_DIR, "utils","schema_csvs")
-codes = json.load(open(os.path.join(UTIL_FILES_PATH,"cameoCodes.json")))
-if len(codes)<0:
-    a = 'https://raw.githubusercontent.com/linwoodc3/gdeltPyR/master/' \
-        'utils/schema_csvs/cameoCodes.json'
-
-
-    codes = json.loads((requests.get(a).content.decode('utf-8')))
+# codes = json.load(open(os.path.join(UTIL_FILES_PATH,"cameoCodes.json")))
+# if len(codes)<0:
+#     a = 'https://raw.githubusercontent.com/linwoodc3/gdeltPyR/master/' \
+#         'utils/schema_csvs/cameoCodes.json'
+#
+#
+#     codes = json.loads((requests.get(a).content.decode('utf-8')))
 
 
 

@@ -32,15 +32,17 @@ print(UTIL_FILES_PATH)
 
 
 try:
-    print('loaded the file')
+
     codes = json.load(open(os.path.join(UTIL_FILES_PATH, "cameoCodes.json")))
 
+
 except:
-    print('loaded the website')
+
     a = 'https://raw.githubusercontent.com/linwoodc3/gdeltPyR/master' \
            '/utils/' \
     'schema_csvs/cameoCodes.json'
     codes = json.loads((requests.get(a).content.decode('utf-8')))
+
 
 
 

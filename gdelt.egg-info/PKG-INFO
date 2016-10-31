@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: gdelt
-Version: 0.1.3
+Version: 0.1.4
 Summary: Python based framework to retreive Global Database of 
 Home-page: https://github.com/linwoodc3/gdeltPyR
 Author: Linwood Creekmore
@@ -78,6 +78,9 @@ Description: GDELT in Python with ``gdeltPyR``
         
         2016-10-31
           Added human readable CAMEO Codes column
+        
+        2016-10-31
+          Bug fix; file not loading or downloading on install
         
 Keywords: gdelt pandas tidy data api
 Platform: Any

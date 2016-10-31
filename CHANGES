@@ -15,3 +15,6 @@
 
 2016-10-31
   Added human readable CAMEO Codes column
+
+2016-10-31
+  Bug fix; file not loading or downloading on install

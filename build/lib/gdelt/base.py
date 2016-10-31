@@ -24,12 +24,23 @@ this_dir, this_filename = os.path.split(__file__)
 BASE_DIR = os.path.dirname(this_dir)
 print(BASE_DIR)
 
-UTIL_FILES_PATH = os.path.join(BASE_DIR, "utils","schema_csvs")
+UTIL_FILES_PATH = os.path.join(BASE_DIR,"gdeltPyR", "utils","schema_csvs")
 import json
 import requests
-a = 'https://raw.githubusercontent.com/linwoodc3/gdeltPyR/master/utils/' \
+
+print(UTIL_FILES_PATH)
+
+
+try:
+    print('loaded the file')
+    codes = json.load(open(os.path.join(UTIL_FILES_PATH, "cameoCodes.json")))
+
+except:
+    print('loaded the website')
+    a = 'https://raw.githubusercontent.com/linwoodc3/gdeltPyR/master' \
+           '/utils/' \
     'schema_csvs/cameoCodes.json'
-codes = json.loads((requests.get(a).content.decode('utf-8')))
+    codes = json.loads((requests.get(a).content.decode('utf-8')))
 
 
 

@@ -12,7 +12,7 @@ include utils/schema_csvs/*
 recursive-include *.json
 # Include the data files
 recursive-include utils/schema_csvs/*
-#recursive-include utils/ *
+#recursive-include utils/*
 
 
 # If using Python 2.6 or less, then have to include package data, even though

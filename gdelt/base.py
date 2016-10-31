@@ -28,9 +28,9 @@ if len(codes)<0:
     a = 'https://raw.githubusercontent.com/linwoodc3/gdeltPyR/master/' \
         'utils/schema_csvs/cameoCodes.json'
 
-    try:
-        codes = json.loads((requests.get(a).content.decode('utf-8')))
-    except:
+
+    codes = json.loads((requests.get(a).content.decode('utf-8')))
+
 
 
 

@@ -7,9 +7,11 @@ include README.rst
 include README.md
 recursive-include docs *
 recursive-include utils *
-
+recursive-include utils/*
+include utils/schema_csvs/*
+recursive-include *.json
 # Include the data files
-recursive-include utils/schema_csvs *
+recursive-include utils/schema_csvs/*
 #recursive-include utils/ *
 
 

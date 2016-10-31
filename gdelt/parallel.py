@@ -19,7 +19,7 @@ def mp_worker(url,table=None):
                             '.*have mixed types. Specify dtype.*')  # ignore pandas warning for GDELT 1.0 dtype
     start = datetime.datetime.now()
     proc_name = current_process().name
-    print(table)
+
     # print (multiprocessing.current_process().name)
     proc = os.getpid()
     # print ('Starting {0}-{1}'.format(proc_name,proc))
@@ -28,13 +28,13 @@ def mp_worker(url,table=None):
     try:
         buffer = BytesIO(r.content)
         if table == 'events':
-            print('In events')
+
             frame = pd.read_csv(buffer,compression='zip', sep='\t',
                             header=None, warn_bad_lines=False,
                                 dtype={26:'str',27:'str',28:'str'},
                                 parse_dates=[1,2,59])
         else:
-            print('in normal')
+
             frame = pd.read_csv(buffer, compression='zip', sep='\t',
                             header=None, warn_bad_lines=False)
         end = datetime.datetime.now() - start

@@ -9,7 +9,7 @@ __name__ = 'gdelt'
 __author__ = 'Linwood Creekmore'
 __email__ = 'valinvescap@gmail.com'
 __license__ = 'GNU General Public License v3.0'
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 __url__ = 'https://github.com/linwoodc3/gdeltPyR'
 __description__ = 'Python based framework to retreive Global Database of ' \
                   'Events, Language, and Tone (GDELT)' \

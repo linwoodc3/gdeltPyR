@@ -160,6 +160,8 @@ class gdelt(object):
         urlsv1events = partial(urlBuilder, version=1, table='events')
         urlsv2gkg = partial(urlBuilder, version=2, table='gkg')
 
+        eventWork = partial(mp_worker,table='events')
+
         #####################################
         # GDELT Version 2.0 Headers
         #####################################
@@ -190,7 +192,7 @@ class gdelt(object):
             self.events_columns = events1Heads()
             columns = self.events_columns
 
-            if self.table == 'events':
+            if self.table == 'events' or self.table == '':
 
 
                 if self.coverage is True:
@@ -201,7 +203,7 @@ class gdelt(object):
                 # print ("1 events", urlsv1events(self.datesString))
                 # print (urlsv2events(v2RangerNoCoverage(dateRanger(self.date))))
                 else:
-                    print("I'm here at line 125")
+                    # print("I'm here at line 125")
                     self.download_list = (urlsv1events(v1RangerNoCoverage(
                         dateRanger(self.date))))
 
@@ -210,7 +212,7 @@ class gdelt(object):
         #####################################
         elif self.version == 2:
 
-            if self.table == 'events':
+            if self.table == 'events' or self.table == '':
                 columns = self.events_columns
                 if self.coverage is True:
 
@@ -258,15 +260,28 @@ class gdelt(object):
 
         if isinstance(self.datesString, str):
 
-            results = mp_worker(self.download_list)
+            if self.table == 'events':
+                print('line 270 base')
+                pool = Pool(processes=cpu_count())
+                results = eventWork(self.download_list)
+
+            else:
+                results = mp_worker(self.download_list)
 
 
 
         else:
 
-            pool = Pool(processes=cpu_count())
-            downloaded_dfs = list(pool.imap_unordered(mp_worker,
-                                                      self.download_list))
+            if self.table == 'events':
+                print('line 270 base')
+                pool = Pool(processes=cpu_count())
+                downloaded_dfs = list(pool.imap_unordered(eventWork,
+                                                          self.download_list))
+            else:
+                print('line 275 base')
+                pool = Pool(processes=cpu_count())
+                downloaded_dfs = list(pool.imap_unordered(mp_worker,
+                                                          self.download_list))
             pool.close()
             pool.terminate()
             pool.join()

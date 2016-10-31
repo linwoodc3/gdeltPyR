@@ -1,10 +1,15 @@
+.DS_Store
 AUTHORS.rst
+CHANGES
 LICENSE
 MANIFEST.in
 README.md
 README.rst
+cameoCodes.json
+requirements.txt
 setup.cfg
 setup.py
+data/cameoCodes.json
 docs/Makefile
 docs/make.bat
 docs/build/doctrees/environment.pickle

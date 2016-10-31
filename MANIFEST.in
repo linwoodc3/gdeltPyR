@@ -6,15 +6,11 @@ include AUTHORS.rst
 include README.rst
 include README.md
 recursive-include docs *
-recursive-include utils *
-recursive-include utils/*
-include utils/schema_csvs/*
-recursive-include *.json
-# Include the data files
-recursive-include utils/schema_csvs/*
-#recursive-include utils/*
+recursive-include utils/schema_csvs *
+
+
 
 
 # If using Python 2.6 or less, then have to include package data, even though
 # it's already declared in setup.py
-# include utils/schema*_csvs/*
+# include utils/schema_csvs/*

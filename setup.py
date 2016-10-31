@@ -48,7 +48,7 @@ setup(
                       'python-dateutil'],
     include_package_data=True,
     package_data={'utils': ['schema_csvs/*']},
-    data_files=[('data', [''])],
+    data_files=[('data', ['data/cameoCodes.json'])],
     keywords='gdelt pandas tidy data api',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

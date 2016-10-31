@@ -46,9 +46,6 @@ setup(
     packages=['gdelt'],
     install_requires=['numpy', 'pandas', 'requests',
                       'python-dateutil'],
-    include_package_data=True,
-    package_data={'': ['utils/schema_csvs/*.tsv']},
-    keywords='gdelt pandas tidy data api',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Science/Research',

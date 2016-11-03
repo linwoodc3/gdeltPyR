@@ -33,6 +33,10 @@ def mp_worker(url,table=None):
                             header=None, warn_bad_lines=False,
                                 dtype={26:'str',27:'str',28:'str'},
                                 parse_dates=[1,2,59])
+        elif table == 'gkg':
+            frame = pd.read_csv(buffer, compression='zip', sep='\t',
+                                parse_dates=['DATE'], warn_bad_lines=False)
+
         else:
 
             frame = pd.read_csv(buffer, compression='zip', sep='\t',

@@ -22,18 +22,18 @@ from gdelt.helpers import cameos
 
 this_dir, this_filename = os.path.split(__file__)
 BASE_DIR = os.path.dirname(this_dir)
-print(BASE_DIR)
+
 
 UTIL_FILES_PATH = os.path.join(BASE_DIR,"gdeltPyR", "utils","schema_csvs")
 import json
 import requests
 
-print(UTIL_FILES_PATH)
 
 
 try:
 
-    codes = json.load(open(os.path.join(UTIL_FILES_PATH, "cameoCodes.json")))
+    codes = json.load(open(os.path.join(UTIL_FILES_PATH,
+                                           "cameoCodes.json")))
 
 
 except:
@@ -42,16 +42,6 @@ except:
            '/utils/' \
     'schema_csvs/cameoCodes.json'
     codes = json.loads((requests.get(a).content.decode('utf-8')))
-
-
-
-
-
-
-
-
-
-
 
 ##############################
 # Core GDELT class
@@ -184,6 +174,7 @@ class gdelt(object):
         v2RangerNoCoverage = partial(gdeltRangeString, version=2,
                                      coverage=False)
 
+        urlsv1gkg = partial(urlBuilder,version=1,table='gkg')
         urlsv2mentions = partial(urlBuilder, version=2, table='mentions')
         urlsv2events = partial(urlBuilder, version=2, table='events')
         urlsv1events = partial(urlBuilder, version=1, table='events')
@@ -222,7 +213,11 @@ class gdelt(object):
             self.events_columns = events1Heads()
             columns = self.events_columns
 
-            if self.table == 'events' or self.table == '':
+            if self.table == 'gkg':
+                self.download_list = (urlsv1gkg(v1RangerCoverage(
+                    dateRanger(self.date))))
+
+            elif self.table == 'events' or self.table == '':
 
 
                 if self.coverage is True:
@@ -232,10 +227,14 @@ class gdelt(object):
 
                 # print ("1 events", urlsv1events(self.datesString))
                 # print (urlsv2events(v2RangerNoCoverage(dateRanger(self.date))))
+
                 else:
                     # print("I'm here at line 125")
                     self.download_list = (urlsv1events(v1RangerNoCoverage(
                         dateRanger(self.date))))
+            else:
+                raise('You entered an incorrect table type for GDELT 1.0.')
+
 
         #####################################
         # GDELT Version 2.0 Analytics and Download
@@ -280,7 +279,7 @@ class gdelt(object):
         #########################
         # print (self.version, self.table, self.coverage, self.datesString,
         #
-        # self.download_list)
+        # print (self.download_list)
 
         #########################
         # Download section
@@ -319,9 +318,12 @@ class gdelt(object):
 
 
 
+        if self.table == 'gkg' and self.version == 1:
+            results.columns = results.ix[0].values.tolist()
+            results.drop([0],inplace=True)
 
-
-        results.columns = columns
+        else:
+            results.columns = columns
 
         if (len(results)) == 0:
             raise ValueError("This GDELT query returned no data. Check "

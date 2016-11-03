@@ -57,13 +57,17 @@ def urlBuilder(dateString, version, table='events'):
         base = "http://data.gdeltproject.org/gdeltv2/"
 
     if version == 1:
-        base = "http://data.gdeltproject.org/events/"
+
+        base = "http://data.gdeltproject.org/"
 
     if table == "events":
+        base += 'events/'
         caboose = ".export.CSV.zip"
     elif table == "mentions":
         caboose = ".mentions.CSV.zip"
     elif table == "gkg":
+        if version == 1:
+            base += 'gkg/'
         caboose = ".gkg.csv.zip"
     else:
         raise ValueError('You entered an incorrect GDELT table type.'

@@ -1,19 +1,19 @@
 import datetime
+import json
+import os
 from functools import partial
 from multiprocessing import Pool, cpu_count
 
 import pandas as pd
 import requests
-import json
-import os
 
 from gdelt.dateFuncs import (dateRanger, gdeltRangeString)
-from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads, gkgHeads
+from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads, \
+    gkgHeads
+from gdelt.helpers import cameos
 from gdelt.inputChecks import (dateInputCheck)
 from gdelt.parallel import mp_worker
 from gdelt.vectorizingFuncs import urlBuilder
-from gdelt.helpers import cameos
-
 
 ##############################################
 #  Admin to load local files
@@ -23,24 +23,19 @@ from gdelt.helpers import cameos
 this_dir, this_filename = os.path.split(__file__)
 BASE_DIR = os.path.dirname(this_dir)
 
-
-UTIL_FILES_PATH = os.path.join(BASE_DIR,"gdeltPyR", "utils","schema_csvs")
-import json
-import requests
-
-
+UTIL_FILES_PATH = os.path.join(BASE_DIR, "gdeltPyR", "utils", "schema_csvs")
 
 try:
 
     codes = json.load(open(os.path.join(UTIL_FILES_PATH,
-                                           "cameoCodes.json")))
+                                        "cameoCodes.json")))
 
 
 except:
 
     a = 'https://raw.githubusercontent.com/linwoodc3/gdeltPyR/master' \
-           '/utils/' \
-    'schema_csvs/cameoCodes.json'
+        '/utils/' \
+        'schema_csvs/cameoCodes.json'
     codes = json.loads((requests.get(a).content.decode('utf-8')))
 
 ##############################
@@ -59,9 +54,9 @@ class gdelt(object):
         ----------
         version : int, optional, default: 2
             The version of GDELT services used by gdelt. 1 or 2
-        gdelt2MasterUrl : string, default: http://data.gdeltproject.org/gdeltv2/
+        gdelt2url : string,default: http://data.gdeltproject.org/gdeltv2/
             Base url for GDELT 2.0 services.
-        gdelt1MasterUrl : string, default: http://data.gdeltproject.org/events/
+        gdelt1url : string, default: http://data.gdeltproject.org/events/
             Base url for GDELT 1.0 services.
         cores : int, optional, default:
             Count of total CPU cores available.
@@ -123,8 +118,8 @@ class gdelt(object):
         """
 
     def __init__(self,
-                 gdelt2MasterUrl='http://data.gdeltproject.org/gdeltv2/',
-                 gdelt1MasterUrl='http://data.gdeltproject.org/events/',
+                 gdelt2url='http://data.gdeltproject.org/gdeltv2/',
+                 gdelt1url='http://data.gdeltproject.org/events/',
                  version=2.0,
                  cores=cpu_count(),
                  pool=Pool(processes=cpu_count())
@@ -135,9 +130,10 @@ class gdelt(object):
         self.cores = cores
         self.pool = pool
         if int(version) == 2:
-            self.baseUrl = gdelt2MasterUrl
+            self.baseUrl = gdelt2url
         elif int(version) == 1:
-            self.baseUrl = gdelt1MasterUrl
+            self.baseUrl = gdelt1url
+        self.codes = codes
 
     ###############################
     # Searcher function for GDELT
@@ -174,14 +170,14 @@ class gdelt(object):
         v2RangerNoCoverage = partial(gdeltRangeString, version=2,
                                      coverage=False)
 
-        urlsv1gkg = partial(urlBuilder,version=1,table='gkg')
+        urlsv1gkg = partial(urlBuilder, version=1, table='gkg')
         urlsv2mentions = partial(urlBuilder, version=2, table='mentions')
         urlsv2events = partial(urlBuilder, version=2, table='events')
         urlsv1events = partial(urlBuilder, version=1, table='events')
         urlsv2gkg = partial(urlBuilder, version=2, table='gkg')
 
-        eventWork = partial(mp_worker,table='events')
-        codeCams = partial(cameos,codes=codes)
+        eventWork = partial(mp_worker, table='events')
+        codeCams = partial(cameos, codes=codes)
 
         #####################################
         # GDELT Version 2.0 Headers
@@ -200,7 +196,6 @@ class gdelt(object):
         # GDELT Version 1.0 Analytics, Header, Downloads
         #####################################
 
-
         if int(self.version) == 1:
 
             if self.table is "mentions":
@@ -213,28 +208,25 @@ class gdelt(object):
             self.events_columns = events1Heads()
             columns = self.events_columns
 
+
             if self.table == 'gkg':
                 self.download_list = (urlsv1gkg(v1RangerCoverage(
                     dateRanger(self.date))))
 
             elif self.table == 'events' or self.table == '':
 
-
                 if self.coverage is True:
 
                     self.download_list = (urlsv1events(v1RangerCoverage(
                         dateRanger(self.date))))
-
-                # print ("1 events", urlsv1events(self.datesString))
-                # print (urlsv2events(v2RangerNoCoverage(dateRanger(self.date))))
 
                 else:
                     # print("I'm here at line 125")
                     self.download_list = (urlsv1events(v1RangerNoCoverage(
                         dateRanger(self.date))))
             else:
-                raise('You entered an incorrect table type for GDELT 1.0.')
-
+                raise Exception('You entered an incorrect table type for '
+                                'GDELT 1.0.')
 
         #####################################
         # GDELT Version 2.0 Analytics and Download
@@ -285,22 +277,17 @@ class gdelt(object):
         # Download section
         #########################
 
-
-
         if isinstance(self.datesString, str):
 
             if self.table == 'events':
-                results = eventWork(self.download_list)
 
+                results = eventWork(self.download_list)
             else:
                 results = mp_worker(self.download_list)
-
-
-
         else:
 
             if self.table == 'events':
-
+                p
                 pool = Pool(processes=cpu_count())
                 downloaded_dfs = list(pool.imap_unordered(eventWork,
                                                           self.download_list))
@@ -316,11 +303,9 @@ class gdelt(object):
             del downloaded_dfs
             results.reset_index(drop=True, inplace=True)
 
-
-
         if self.table == 'gkg' and self.version == 1:
             results.columns = results.ix[0].values.tolist()
-            results.drop([0],inplace=True)
+            results.drop([0], inplace=True)
 
         else:
             results.columns = columns
@@ -332,16 +317,12 @@ class gdelt(object):
 
         # Add column of human readable codes; need updated CAMEO
         if self.table == 'events':
-
             cameoDescripts = results.EventCode.apply(codeCams)
 
-            results.insert(27,'CAMEOCodeDescription',
+            results.insert(27, 'CAMEOCodeDescription',
                            value=cameoDescripts.values)
 
-
         self.final = results
-
-
 
         #########################
         # Return the result

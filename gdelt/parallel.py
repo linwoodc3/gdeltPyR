@@ -11,10 +11,8 @@ import pandas as pd
 import requests
 
 
-
-def mp_worker(url,table=None):
-
-    '''Code to download the urls and blow away the buffer to keep memory usage down'''
+def mp_worker(url, table=None):
+    """Code to download the urls and blow away the buffer to keep memory usage down"""
     warnings.filterwarnings("ignore",
                             '.*have mixed types. Specify dtype.*')  # ignore pandas warning for GDELT 1.0 dtype
     start = datetime.datetime.now()
@@ -29,10 +27,13 @@ def mp_worker(url,table=None):
         buffer = BytesIO(r.content)
         if table == 'events':
 
-            frame = pd.read_csv(buffer,compression='zip', sep='\t',
-                            header=None, warn_bad_lines=False,
-                                dtype={26:'str',27:'str',28:'str'},
-                                parse_dates=[1,2,59])
+
+            frame = pd.read_csv(buffer, compression='zip', sep='\t',
+                                header=None, warn_bad_lines=False,
+                                dtype={26: 'str', 27: 'str', 28: 'str'},
+                                parse_dates=[1, 2])
+
+
         elif table == 'gkg':
             frame = pd.read_csv(buffer, compression='zip', sep='\t',
                                 parse_dates=['DATE'], warn_bad_lines=False)
@@ -40,7 +41,7 @@ def mp_worker(url,table=None):
         else:
 
             frame = pd.read_csv(buffer, compression='zip', sep='\t',
-                            header=None, warn_bad_lines=False)
+                                header=None, warn_bad_lines=False)
         end = datetime.datetime.now() - start
         # print ("{0} with id {1} finished processing in {2}".format(proc_name,proc,end))
         buffer.flush()

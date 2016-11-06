@@ -13,7 +13,7 @@ def parse_date(var):
     try:
         return np.where(isinstance(parse(var), datetime.datetime),
                         parse(var), "Error")
-    except:
+    except Exception as e:
         return "You entered an incorrect date.  Check your date format."
 
 
@@ -77,7 +77,8 @@ def dateRanger(originalArray):
                 adder = np.datetime64(parse(converted[1]).date())
                 adder = datetime.datetime.combine(adder.tolist(),
                                                   datetime.datetime.min.time())
-                return np.append(dates, adder)  # numpy range is not endpoint inclusive
+                return np.append(dates,
+                                 adder)  # numpy range is not endpoint inclusive
             else:
                 pass
             return np.array(dates)
@@ -115,7 +116,7 @@ def gdeltRangeString(element, coverage=None, version=2.0):
     conditioner = multiplier + 1
 
     # calculate nearest 15 minute interval
-    if isinstance(element, list) == False:
+    if not isinstance(element, list):
 
         if element.date() == datetime.datetime.now().date():
             if coverage and int(version) != 1:
@@ -160,10 +161,10 @@ def gdeltRangeString(element, coverage=None, version=2.0):
             #             converted = map(lambda x: x.strftime('%Y%m%d%H%M%S'),element)
             converted = list(map(lambda x: (
                 datetime.datetime.combine(x, datetime.time.min) +
-                                            datetime.timedelta(
-                                           minutes=45, hours=23
-                                       )
-                                            ).strftime('%Y%m%d%H%M%S'), element))
+                datetime.timedelta(
+                    minutes=45, hours=23
+                )
+            ).strftime('%Y%m%d%H%M%S'), element))
         else:
             converted = (datetime.datetime.combine(
                 element, datetime.time.min) +
@@ -188,10 +189,10 @@ def gdeltRangeString(element, coverage=None, version=2.0):
             converted = np.concatenate(converted, axis=0)
             if len(converted.tolist()) >= (5 * 192):
                 warnText = ("This query will download {0} files, and likely "
-                     "exhaust your memory with possibly 10s of "
-                     "GBs of data in this single query.Hit Ctr-C to kill "
-                     "this query if you do not want to "
-                     "continue.".format(len(converted.tolist())))
+                            "exhaust your memory with possibly 10s of "
+                            "GBs of data in this single query.Hit Ctr-C to kill "
+                            "this query if you do not want to "
+                            "continue.".format(len(converted.tolist())))
                 warnings.warn(warnText)
 
     ########################

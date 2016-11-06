@@ -61,7 +61,8 @@ def urlBuilder(dateString, version, table='events'):
         base = "http://data.gdeltproject.org/"
 
     if table == "events":
-        base += 'events/'
+        if version ==1:
+            base += 'events/'
         caboose = ".export.CSV.zip"
     elif table == "mentions":
         caboose = ".mentions.CSV.zip"
@@ -77,11 +78,11 @@ def urlBuilder(dateString, version, table='events'):
     if isinstance(dateString, list) is True or isinstance(dateString,
                                                           np.ndarray) is True:
 
-        if (np.all(list(
+        if not (np.all(list(
                 map(
                     lambda x: x > parse('2013 04 1'), list(
                         map(
-                            parse, dateString)))))) == False:
+                            parse, dateString)))))):
 
             return (list(
                 map(lambda x: base + x + ".zip" if parse(

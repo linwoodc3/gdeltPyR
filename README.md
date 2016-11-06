@@ -26,7 +26,7 @@ import gdelt
 
 gd = gdelt.gdelt(version=2)
 
-%time results = gd.Search(['2016 10 19','2016 10 22'],table='events',coverage=True)
+results = gd.Search(['2016 10 19','2016 10 22'],table='events',coverage=True)
 ```
 
 Performance on 4 core, MacOS Sierra 10.12 with 16GB of RAM:

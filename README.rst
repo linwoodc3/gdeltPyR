@@ -11,14 +11,17 @@ The GDELT Project is the largest, most comprehensive, and highest resolution ope
 
 Installation
 --------------
-``gdeltPyR`` can be installed several ways.  Directly from GitHub.com::
+
+Latest release installs from PyPi::
+
+    pip install gdelt
+
+Latest dev version of ``gdeltPyR`` can be installed from GitHub.com::
 
     pip install git+https://github.com/linwoodc3/gdeltPyR
     
     
-This installs from PyPy::
 
-    pip install gdelt
 
 .. image:: https://twistedsifter.files.wordpress.com/2015/06/people-tweeting-about-sunrises-over-a-24-hour-period.gif?w=700&h=453
 :alt: GDELT can help you visualize the world's news!!!  Analyze GDELT data with gdeltPyR!!

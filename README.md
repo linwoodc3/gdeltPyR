@@ -13,10 +13,10 @@ The GDELT Project is the largest, most comprehensive, and highest resolution ope
 ### Installation
 
 
-You can also install directly from www.github.com
+`gdeltPyR` can be installed via pip
 
 ```bash
-pip install git+https://github.com/linwoodc3/gdeltPyR
+pip install gdelt
 ```
 
 ### Basic Example
@@ -33,13 +33,21 @@ Performance on 4 core, MacOS Sierra 10.12 with 16GB of RAM:
 * 900,000 by 61 (rows x columns) pandas dataframe returned in 36 seconds
     * data is a merged pandas dataframe of GDELT 2.0 events database data
 
+**Notes** `gdeltPyR` provides access to 1.0 and 2.0 data.  Four basic parameters guide the query syntax:
 
-```bash
-git clone git@github.com:linwoodc3/gdeltPyR.git
-```
+| **Name** | Description                                                                                                                                                                                                                                                       | Input Possibilities/Examples    |
+|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------|
+| version  | (integer)  - Selects the version of GDELT data to query; defaults to version 2.                                                                                                                                                                                   | 1 or 2                          |
+| date     | (string or list of strings) - Dates to query                                                                                                                                                                                                                      | "2016 10 23" or "2016 Oct 23"   |
+| coverage | (bool) - For GDELT 2.0, pulls every 15 minute interval in the dates passed in the 'date' parameter. Default coverage is False or None.  `gdeltPyR` will pull the latest 15 minute interval for the current day or the last 15 minute interval for a historic day. | True or False or None           |
+| tables   | (string) - The specific GDELT table to pull.  The default table is the 'events' table.  See the [GDELT documentation page for more information](http://gdeltproject.org/data.html#documentation)                                                                  | 'events' or 'mentions' or 'gkg' |
 
-
-```python
-python setup.py install
-```
-
+These parameter values can be mixed and matched to return the data you want.  the `coverage` parameter is used with GDELT version 2; when set to "True", the `gdeltPyR` will query all available 15 minute intervals for the dates passed.  For the current day, the query will return the most recent 15 minute interval. 
+  
+*Facts*
+* GDELT 1.0 is a daily dataset 
+     *  1.0 only has 'events' and 'gkg' tables
+     *  1.0 posts the previous day's data at 6AM EST of next day (i.e. Monday's data will be available 6AM Tuesday EST)
+* GDELT 2.0 is updated every 15 minutes  
+     *  2.0 has 'events','gkg', and 'mentions' tables
+     *  2.0 has more columns

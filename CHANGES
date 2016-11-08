@@ -24,3 +24,6 @@
 
 2016-11-06
   GDELT changed url structure for 2.0 events database.
+
+2016-11-07
+  Typo on line 290 of base.py; removed and fixed bug.

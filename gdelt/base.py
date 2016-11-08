@@ -282,12 +282,15 @@ class gdelt(object):
             if self.table == 'events':
 
                 results = eventWork(self.download_list)
+
             else:
+
                 results = mp_worker(self.download_list)
+
         else:
 
             if self.table == 'events':
-                p
+
                 pool = Pool(processes=cpu_count())
                 downloaded_dfs = list(pool.imap_unordered(eventWork,
                                                           self.download_list))

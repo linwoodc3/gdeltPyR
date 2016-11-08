@@ -5,7 +5,7 @@ import re
 import time
 import warnings
 from io import BytesIO
-from multiprocessing import current_process
+from multiprocessing import current_process,freeze_support,Process
 
 import pandas as pd
 import requests
@@ -92,3 +92,6 @@ def mp_handler(function, urllist):
 #
 # if __name__ == '__main__':
 #     parallelDownload(function,urlList)
+if __name__ == '__main__':
+    freeze_support()
+    Process(target=mp_worker).start()

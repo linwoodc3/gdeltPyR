@@ -140,7 +140,7 @@ class gdelt(object):
                  gdelt1url='http://data.gdeltproject.org/events/',
                  version=2.0,
                  cores=cpu_count(),
-                 pool=multiprocessing.pool.Pool(processes=cpu_count())
+                 pool=NoDaemonProcessPool(processes=cpu_count())
 
                  ):
 
@@ -309,12 +309,13 @@ class gdelt(object):
 
             if self.table == 'events':
 
-                pool = Pool(processes=cpu_count())
+                # pool = Pool(processes=cpu_count())
+                pool=NoDaemonProcessPool(processes=cpu_count())
                 downloaded_dfs = list(pool.imap_unordered(eventWork,
                                                           self.download_list))
             else:
 
-                pool = Pool(processes=cpu_count())
+                pool = NoDaemonProcessPool(processes=cpu_count())
                 downloaded_dfs = list(pool.imap_unordered(mp_worker,
                                                           self.download_list))
             pool.close()

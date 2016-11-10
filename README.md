@@ -1,3 +1,6 @@
+<h1><font color='red'> Attention Windows Users</h1></font>  
+<h3>`gdeltPyR` multi-day interval pulls works on MacOS and Linux, but I'm having issues with multiprocessing on Windows machines.  The single time interval pulls on GDELT 2.0 or full day pull on GDELT 1.0 works on Windows, but the "coverage=True" pulls will error out.  I should have this fixed within a week or so.  If someone wants to help, appreciate that too. </h3>
+
 # gdeltPyR
 gdeltPyR is a Python-based framework to retrieve [Global Database of Events, Language, and Tone (GDELT) 1.0 or 2.0 data](http://gdeltproject.org/data.html) for analysis in Python Pandas or R dataframes. A user can enter a date, date range (two strings), or individual dates and return a [tidy data set ready for scientific or data-driven exploration](http://vita.had.co.nz/papers/tidy-data.pdf).  
 

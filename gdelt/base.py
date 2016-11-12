@@ -49,21 +49,6 @@ except:
 
 ###############################################################################
 
-#####################
-# Multiprocessing fix
-#####################
-class NoDaemonProcess(multiprocessing.Process):
-    # make 'daemon' attribute always return False
-    def _get_daemon(self):
-        return False
-    def _set_daemon(self, value):
-        pass
-    daemon = property(_get_daemon, _set_daemon)
-
-# We sub-class multiprocessing.pool.Pool instead of multiprocessing.Pool
-# because the latter is only a wrapper function, not a proper class.
-class NoDaemonProcessPool(multiprocessing.pool.Pool):
-    Process = NoDaemonProcess
 
 class gdelt(object):
     """GDELT Object
@@ -140,7 +125,7 @@ class gdelt(object):
                  gdelt1url='http://data.gdeltproject.org/events/',
                  version=2.0,
                  cores=cpu_count(),
-                 pool=NoDaemonProcessPool(processes=cpu_count())
+                 pool=Pool(processes=cpu_count())
 
                  ):
 
@@ -152,6 +137,8 @@ class gdelt(object):
         elif int(version) == 1:
             self.baseUrl = gdelt1url
         self.codes = codes
+
+
 
     ###############################
     # Searcher function for GDELT
@@ -295,6 +282,7 @@ class gdelt(object):
         # Download section
         #########################
 
+
         if isinstance(self.datesString, str):
 
             if self.table == 'events':
@@ -309,8 +297,7 @@ class gdelt(object):
 
             if self.table == 'events':
 
-                # pool = Pool(processes=cpu_count())
-                pool=NoDaemonProcessPool(processes=cpu_count())
+                pool = Pool(processes=cpu_count())
                 downloaded_dfs = list(pool.imap_unordered(eventWork,
                                                           self.download_list))
             else:

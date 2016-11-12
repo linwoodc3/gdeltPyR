@@ -2,10 +2,10 @@ import datetime
 import multiprocessing
 import os
 import re
-import time
+from functools import partial
 import warnings
 from io import BytesIO
-from multiprocessing import current_process,freeze_support
+from multiprocessing import cpu_count,current_process,freeze_support
 
 import pandas as pd
 import requests
@@ -23,6 +23,7 @@ class NoDaemonProcess(multiprocessing.Process):
 # because the latter is only a wrapper function, not a proper class.
 class NoDaemonProcessPool(multiprocessing.pool.Pool):
     Process = NoDaemonProcess
+
 
 def mp_worker(url, table=None):
     """Code to download the urls and blow away the buffer to keep memory usage down"""
@@ -70,41 +71,9 @@ def mp_worker(url, table=None):
             message = "No data returned for {0}".format(r.url)
             warnings.warn(message)
 
-
-def mp_handler(function, urllist):
-    result = []
-    p = multiprocessing.Pool(4)
-    dfs = p.imap_unordered(function, urllist)
-    if dfs:
-        try:
-            result.extend(dfs)
-            time.sleep(1)
-        except:
-            pass
-
-    else:
-        pass
-    return result
-
-# http://stackoverflow.com/questions/5318936/python-multiprocessing-pool-lazy-iteration
-# http://stackoverflow.com/questions/20577472/how-to-keep-track-of-asynchronous-results-returned-from-a-multiprocessing-pool
-
-# http://stackoverflow.com/questions/5318936/python-multiprocessing-pool-lazy-iteration
-# http://stackoverflow.com/questions/20577472/how-to-keep-track-of-asynchronous-results-returned-from-a-multiprocessing-pool
-
-#
-# def parallelDownload():
-#     p = Pool()
-#     results = []
-#     rs = p.imap_unordered(downloadAndExtract, urlList)
-#     for frame in rs:
-#         results.append(frame)
-#     # print results
-#     # print results[0].head()
-#     return pd.concat(results).reset_index(drop=True)
-#
-# if __name__ == '__main__':
-#     parallelDownload(function,urlList)
 if __name__ == '__main__':
     freeze_support()
     Process(target=mp_worker).start()
+
+
+

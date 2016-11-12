@@ -433,33 +433,33 @@ class gdelt(object):
                         dateRanger(self.date))))
 
         #########################
-        # DEBUG Print
+        # DEBUG Print Section
         #########################
         # print (self.version, self.table, self.coverage, self.datesString,
         #
         # print (self.download_list)
-        if self.coverage:
-            coverage = 'True'
-        else:
-            coverage = 'False'
-        if isinstance(self.date, list):
-
-            formattedDates = ["".join(re.split(' |-|;|:', l)) for l in
-                              self.date]
-            path = formattedDates
-            print("gdeltVersion_" + str(self.version) +
-                  "_coverage_" + coverage + "_" +
-                  "_table_" + self.table + '_queryDates_' +
-                  "_".join(path) +
-                  "_queryTime_" +
-                  datetime.datetime.now().strftime('%m-%d-%YT%H%M%S'))
-        else:
-            print("gdeltVersion_" + str(self.version) +
-                  "_coverage_" + coverage + "_" +
-                  "_table_" + self.table + '_queryDates_' +
-                  "".join(re.split(' |-|;|:', self.date)) +
-                  "_queryTime_" +
-                  datetime.datetime.now().strftime('%m-%d-%YT%H%M%S'))
+        # if self.coverage:
+        #     coverage = 'True'
+        # else:
+        #     coverage = 'False'
+        # if isinstance(self.date, list):
+        #
+        #     formattedDates = ["".join(re.split(' |-|;|:', l)) for l in
+        #                       self.date]
+        #     path = formattedDates
+        #     print("gdeltVersion_" + str(self.version) +
+        #           "_coverage_" + coverage + "_" +
+        #           "_table_" + self.table + '_queryDates_' +
+        #           "_".join(path) +
+        #           "_queryTime_" +
+        #           datetime.datetime.now().strftime('%m-%d-%YT%H%M%S'))
+        # else:
+        #     print("gdeltVersion_" + str(self.version) +
+        #           "_coverage_" + coverage + "_" +
+        #           "_table_" + self.table + '_queryDates_' +
+        #           "".join(re.split(' |-|;|:', self.date)) +
+        #           "_queryTime_" +
+        #           datetime.datetime.now().strftime('%m-%d-%YT%H%M%S'))
 
         #########################
         # Download section
@@ -556,7 +556,8 @@ class gdelt(object):
                       datetime.datetime.now().strftime('%m-%d-%YT%H%M%S')+
                            ".feather")
 
-            return feather.api.write_dataframe(results, outPath)
+            feather.api.write_dataframe(results, outPath)
+            return results
 
 
 

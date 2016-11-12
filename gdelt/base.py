@@ -138,8 +138,7 @@ class gdelt(object):
                  gdelt2url='http://data.gdeltproject.org/gdeltv2/',
                  gdelt1url='http://data.gdeltproject.org/events/',
                  version=2.0,
-                 cores=cpu_count(),
-                 pool=NoDaemonProcessPool(processes=cpu_count())
+                 cores=cpu_count()
 
                  ):
 

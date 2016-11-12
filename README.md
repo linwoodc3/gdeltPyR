@@ -19,15 +19,38 @@ The GDELT Project is the largest, most comprehensive, and highest resolution ope
 pip install gdelt
 ```
 
-### Basic Example
+### Basic Examples
 
+**GDELT 1.0 Queries**
 ```python
 import gdelt
 
-gd = gdelt.gdelt(version=2)
+# Version 1 queries
+gd1 = gdelt.gdelt(version=1)
 
-results = gd.Search(['2016 10 19','2016 10 22'],table='events',coverage=True)
+# pull single day, gkg table
+results= gd1.Search('2016 Nov 01',table='gkg')
+print(len(results))
+
+# pull events table, range, output to json format
+results = gd1.Search(['2016 Oct 31','2016 Nov 2'],coverage=True,table='events')
+print(len(results))
 ```
+**GDELT 2.0 Queries**
+```python
+# Version 2 queries
+gd2 = gdelt.gdelt(version=2)
+
+# Single 15 minute interval pull, output to json format with mentions table
+results = gd2.Search('2016 Nov 1',table='mentions',output='json')
+print(len(results))
+
+# Full day pull, output to pandas dataframe, events table
+results = gd2.Search(['2016 11 01'],table='events',coverage=True)
+print(len(results))
+
+```
+
 
 Performance on 4 core, MacOS Sierra 10.12 with 16GB of RAM:
 * 900,000 by 61 (rows x columns) pandas dataframe returned in 36 seconds

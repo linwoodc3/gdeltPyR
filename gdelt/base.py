@@ -351,6 +351,7 @@ class gdelt(object):
                                    '/github.com/wesm/feather'))
 
         ##################################
+
         # Partial Functions
         #################################
 

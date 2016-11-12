@@ -1,3 +1,11 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Author:
+# Linwood Creekmore
+# Email: valinvescap@gmail.com
+
+
 ##############################
 # Filter functions for dataframes
 ##############################

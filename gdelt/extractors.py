@@ -1,3 +1,10 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Author:
+# Linwood Creekmore
+# Email: valinvescap@gmail.com
+
 import re
 import zipfile
 from io import BytesIO

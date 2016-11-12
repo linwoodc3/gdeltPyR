@@ -1,5 +1,11 @@
-from io import BytesIO
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
+# Author:
+# Linwood Creekmore
+# Email: valinvescap@gmail.com
+
+from io import BytesIO
 import pandas as pd
 import requests
 

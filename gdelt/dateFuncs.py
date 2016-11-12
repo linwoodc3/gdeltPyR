@@ -1,3 +1,10 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Author:
+# Linwood Creekmore
+# Email: valinvescap@gmail.com
+
 import datetime
 import warnings
 

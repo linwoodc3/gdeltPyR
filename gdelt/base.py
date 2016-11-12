@@ -330,6 +330,19 @@ class gdelt(object):
                                             version=version,
                                             coverage=self.coverage)
 
+        #################################
+        # R dataframe check; fail early
+        #################################
+        if output == 'r':
+            try:
+                import feather
+
+            except ImportError:
+                raise ImportError('You need to install feather by running\npip '
+                          'install '
+                       'feather\nor if you have Anaconda (preferred)\nconda '
+                       'install feather-format -c conda-forge')
+
         ##################################
         # Partial Functions
         #################################
@@ -530,13 +543,7 @@ class gdelt(object):
         elif output =='csv':
             self.final = results.to_csv(encoding='utf-8')
         elif output == 'r':
-            try:
-                import feather
 
-            except ImportError:
-                raise('You need to install feather by running\npip install '
-                      'feather\nor if you have Anaconda (preferred)\nconda '
-                      'install feather-format -c conda-forge')
 
             if self.coverage:
                 coverage = 'True'

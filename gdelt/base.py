@@ -17,6 +17,20 @@ from gdelt.inputChecks import (dateInputCheck)
 from gdelt.parallel import mp_worker
 from gdelt.vectorizingFuncs import urlBuilder
 
+
+class NoDaemonProcess(multiprocessing.Process):
+    # make 'daemon' attribute always return False
+    def _get_daemon(self):
+        return False
+    def _set_daemon(self, value):
+        pass
+    daemon = property(_get_daemon, _set_daemon)
+
+# We sub-class multiprocessing.pool.Pool instead of multiprocessing.Pool
+# because the latter is only a wrapper function, not a proper class.
+class NoDaemonProcessPool(multiprocessing.pool.Pool):
+    Process = NoDaemonProcess
+
 ##############################################
 #  Admin to load local files
 ##############################################
@@ -125,7 +139,7 @@ class gdelt(object):
                  gdelt1url='http://data.gdeltproject.org/events/',
                  version=2.0,
                  cores=cpu_count(),
-                 pool=Pool(processes=cpu_count())
+                 pool=NoDaemonProcessPool(processes=cpu_count())
 
                  ):
 

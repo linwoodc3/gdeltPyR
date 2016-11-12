@@ -338,10 +338,17 @@ class gdelt(object):
                 import feather
 
             except ImportError:
-                raise ImportError('You need to install feather by running\npip '
-                          'install '
-                       'feather\nor if you have Anaconda (preferred)\nconda '
-                       'install feather-format -c conda-forge')
+                raise ImportError(('You need to install `feather` in order '
+                                   'to output data as an R dataframe. Keep '
+                                   'in mind the function will return a '
+                                   'pandas dataframe but write the R '
+                                   'dataframe to your current working '
+                                   'directory as a `.feather` file.  Install '
+                                   'by running\npip install feather\nor if '
+                                   'you have Anaconda (preferred)\nconda '
+                                   'install feather-format -c conda-forge\nTo '
+                                   'learn more about the library visit https:/'
+                                   '/github.com/wesm/feather'))
 
         ##################################
         # Partial Functions

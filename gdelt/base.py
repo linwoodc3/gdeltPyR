@@ -235,7 +235,6 @@ class gdelt(object):
                      reaction and resonance of an event to be assessed as
                      it sweeps through the world’s media.
 
-
         coverage : bool, default: False
             When set to 'True' and the GDELT version parameter is set to 2,
             gdeltPyR will pull back every 15 minute interval in the day (

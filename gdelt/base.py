@@ -144,7 +144,7 @@ class gdelt(object):
 
         self.version = version
         self.cores = cores
-        self.pool = pool
+
         if int(version) == 2:
             self.baseUrl = gdelt2url
         elif int(version) == 1:

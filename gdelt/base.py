@@ -67,6 +67,7 @@ except:
 class gdelt(object):
     """GDELT Object
         Read more in the :ref:`User Guide <k_means>`.
+
         Parameters
         ----------
         version : int, optional, default: 2
@@ -160,11 +161,135 @@ class gdelt(object):
     def Search(self,
                date,
                table='events',
-               headers=None,
-               coverage=None,
+               coverage=False,
                queryTime=datetime.datetime.now().strftime('%m-%d-%Y %H:%M:%S')
                ):
-        """Placeholder text"""
+        """Core searcher method to set parameters for GDELT data searches
+
+        Keyword arguments
+        ----------
+        date : str, required
+            The string representation of a datetime (single) or date
+            range (list of strings) that is (are) the targeted timelines to
+            pull GDELT data.
+
+        table : string,default: events
+            Select from the table formats offered by the GDELT service:
+
+                * events (1.0 and 2.0)
+
+                    The biggest difference between 1.0 and 2.0 are the
+                    update frequencies.  1.0 data is disseminated daily,
+                    and the most recent data will be published at 6AM
+                    Eastern Standard time of the next day. So, 21 August 2016
+                    results would be available 22 August 2016 at 6AM EST.  2.0
+                    data updates every 15 minutes of the current day.
+
+
+                    Version 1.0  runs from January 1, 1979 through March 31,
+                    2013 contains 57 fields for each record. The Daily
+                    Updates  collection, which begins April 1, 2013 and runs
+                    through present, contains an additional field at the end
+                    of each record, for a total of 58 fields for each
+                    record. The format is dyadic CAMEO format, capturing two
+                    actors and the action performed by Actor1 upon Actor2.
+
+                    Version 2.0 only covers February 19, 2015 onwards,
+                    and is stored in an expanded version of the dyadic CAMEO
+                    format .  See
+                    http://data.gdeltproject.org/documentation/GDELT-Event_
+                    Codebook-V2.0.pdf for more information.
+
+                * gkg  (1.0 and 2.0)
+
+                    **Warning** These tables and queries can be extremely
+                    large and consume a lot of RAM. Consider running a
+                    single days worth of gkg pulls, store to disc,
+                    flush RAM, then proceed to the next day.
+
+                    Table that represents all of the latent dimensions,
+                    geography, and network structure of the global news. It
+                    applies an array of highly sophisticated natural language
+                    processing algorithms to each document to compute a range
+                    of codified metadata encoding key latent and contextual
+                    dimensions of the document.  Version 2.0 includes Global
+                    Content Analysis Measures (GCAM) which reportedly
+                    provides 24 emotional measurement packages that assess
+                    more than 2,300 emotions and themes from every article
+                    in realtime, multilingual  dimensions natively assessing
+                    the emotions of 15 languages (Arabic, Basque, Catalan,
+                    Chinese, French, Galician, German, Hindi, Indonesian,
+                    Korean, Pashto, Portuguese, Russian, Spanish,
+                    and Urdu).See documentation about GKG
+                    1.0 at http://data.gdeltproject.org/documentation/GDELT-
+                    Global_Knowledge_Graph_Codebook.pdf, and GKG 2.0 at http://
+                    data.gdeltproject.org/documentation/GDELT-Global_Knowledge_
+                    Graph_Codebook-V2.1.pdf.
+
+                * mentions  (2.0 only)
+
+                     Mentions table records every mention
+                     of an event over time, along with the timestamp the
+                     article was published. This allows the progression of
+                     an event   through the global media to be tracked,
+                     identifying  outlets that tend to break certain kinds
+                     of events the  earliest or which may break stories
+                     later but are more  accurate in their reporting on
+                     those events. Combined  with the 15 minute update
+                     resolution and GCAM, this also  allows the emotional
+                     reaction and resonance of an event to be assessed as
+                     it sweeps through the world’s media.
+
+
+        coverage : bool, default: False
+
+            When set to 'True' and the GDELT version parameter is set to 2,
+            gdeltPyR will pull back every 15 minute interval in the day (
+            full results) or, if pulling for the current day, pull all 15
+            minute intervals up to the most recent 15 minute interval of the
+            current our.  For example, if the current date is 22 August,
+            2016 and the current time is 0828 HRs Eastern, our pull would
+            get pull every 15 minute interval in the day up to 0815HRs.
+            When coverate is set to true and a date range is entered,
+            we pull every 15 minute interval for historical days and up to
+            the most recent 15 minute interval for the current day, if that
+            day is included.
+
+        queryTime : datetime object, system generated
+            This records the system time when gdeltPyR's query was executed,
+            which can be used for logging purposes.
+
+
+        Examples
+        --------
+        >>> from gdelt
+        >>> gd = gdelt.gdelt(version=1)
+        >>> results = gd.Search(['2016 10 19'],table='events',coverage=True)
+        >>> print(len(results))
+        244767
+        >>> gd = gdelt.gdelt(version=2)
+        >>> results = gd.Search(['2016 Oct 10'], table='gkg')
+        >>> print(len(results))
+        2398
+        >>> print(results.V2Persons.ix[2])
+        Juanita Broaddrick,1202;Monica Lewinsky,1612;Donald Trump,12;Donald Trump,244;Wolf Blitzer,1728;Lucianne Goldberg,3712;Linda Tripp,3692;Bill Clinton,47;Bill Clinton,382;Bill Clinton,563;Bill Clinton,657;Bill Clinton,730;Bill Clinton,1280;Bill Clinton,2896;Bill Clinton,3259;Bill Clinton,4142;Bill Clinton,4176;Bill Clinton,4342;Ken Starr,2352;Ken Starr,2621;Howard Stern,626;Howard Stern,4286;Robin Quivers,4622;Paula Jones,3187;Paula Jones,3808;Gennifer Flowers,1594;Neil Cavuto,3362;Alicia Machado,1700;Hillary Clinton,294;Hillary Clinton,538;Hillary Clinton,808;Hillary Clinton,1802;Hillary Clinton,2303;Hillary Clinton,4226
+
+
+        Notes
+        ------
+        Read more about GDELT data at http://gdeltproject.org/data.html
+
+        gdeltPyR retrieves Global Database of Events, Language, and Tone
+        (GDELT) data (version 1.0 or version 2.0) via parallel HTTP GET
+        requests and is an alternative to accessing GDELT
+        data via Google BigQuery.
+
+        Performance will vary based on the number of available cores
+        (i.e. CPUs), internet connection speed, and available RAM. For
+        systems with limited RAM, Later iterations of gdeltPyR will include
+        an option to store the output directly to disc.
+
+        """
         dateInputCheck(date, self.version)
         self.coverage = coverage
         self.date = date

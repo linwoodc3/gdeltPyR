@@ -162,6 +162,7 @@ class gdelt(object):
                date,
                table='events',
                coverage=False,
+               output=None,
                queryTime=datetime.datetime.now().strftime('%m-%d-%Y %H:%M:%S')
                ):
         """Core searcher method to set parameters for GDELT data searches
@@ -272,7 +273,16 @@ class gdelt(object):
         >>> print(len(results))
         2398
         >>> print(results.V2Persons.ix[2])
-        Juanita Broaddrick,1202;Monica Lewinsky,1612;Donald Trump,12;Donald Trump,244;Wolf Blitzer,1728;Lucianne Goldberg,3712;Linda Tripp,3692;Bill Clinton,47;Bill Clinton,382;Bill Clinton,563;Bill Clinton,657;Bill Clinton,730;Bill Clinton,1280;Bill Clinton,2896;Bill Clinton,3259;Bill Clinton,4142;Bill Clinton,4176;Bill Clinton,4342;Ken Starr,2352;Ken Starr,2621;Howard Stern,626;Howard Stern,4286;Robin Quivers,4622;Paula Jones,3187;Paula Jones,3808;Gennifer Flowers,1594;Neil Cavuto,3362;Alicia Machado,1700;Hillary Clinton,294;Hillary Clinton,538;Hillary Clinton,808;Hillary Clinton,1802;Hillary Clinton,2303;Hillary Clinton,4226
+        Juanita Broaddrick,1202;Monica Lewinsky,1612;Donald Trump,12;Donald
+        Trump,244;Wolf Blitzer,1728;Lucianne Goldberg,3712;Linda Tripp,3692;
+        Bill Clinton,47;Bill Clinton,382;Bill Clinton,563;Bill Clinton,657;Bill
+         Clinton,730;Bill Clinton,1280;Bill Clinton,2896;Bill Clinton,3259;Bill
+          Clinton,4142;Bill Clinton,4176;Bill Clinton,4342;Ken Starr,2352;Ken
+          Starr,2621;Howard Stern,626;Howard Stern,4286;Robin Quivers,4622;
+          Paula Jones,3187;Paula Jones,3808;Gennifer Flowers,1594;Neil Cavuto,
+          3362;Alicia Machado,1700;Hillary Clinton,294;Hillary Clinton,538;
+          Hillary Clinton,808;Hillary Clinton,1802;Hillary Clinton,2303;Hillary
+           Clinton,4226
 
 
         Notes
@@ -469,7 +479,13 @@ class gdelt(object):
             results.insert(27, 'CAMEOCodeDescription',
                            value=cameoDescripts.values)
 
-        self.final = results
+        if output =='json':
+            self.final = results.to_json(orient='records')
+        elif output =='csv':
+            self.final = results.to_csv(encoding='utf-8')
+
+        else:
+            self.final = results
 
         #########################
         # Return the result

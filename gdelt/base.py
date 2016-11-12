@@ -1,14 +1,8 @@
-import datetime
-import json
-import os
+import datetime,json,os,re,requests
 from functools import partial
 from multiprocessing import Pool, cpu_count
 import multiprocessing.pool
-
-
 import pandas as pd
-import requests
-
 from gdelt.dateFuncs import (dateRanger, gdeltRangeString)
 from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads, \
     gkgHeads
@@ -243,7 +237,6 @@ class gdelt(object):
 
 
         coverage : bool, default: False
-
             When set to 'True' and the GDELT version parameter is set to 2,
             gdeltPyR will pull back every 15 minute interval in the day (
             full results) or, if pulling for the current day, pull all 15
@@ -259,6 +252,24 @@ class gdelt(object):
         queryTime : datetime object, system generated
             This records the system time when gdeltPyR's query was executed,
             which can be used for logging purposes.
+
+        output : string, default: None, which outputs Pandas dataframe
+            Select the output format for the returned GDELT data
+
+            Options
+            -------
+
+            json - Javascript Object Notation output; returns list of
+            dictionaries in Python or a list of json objects
+
+            r - writes the cross language dataframe to the current directory.
+            This uses the Feather library found at https://github.com/wesm/
+            feather.  This option returns a pandas dataframe but write the R
+            dataframe to the current working directory. The filename
+            includes all the parameters used to launch the query: version,
+            coverage, table name, query dates, and query time.
+
+            csv- Outputs a CSV format; all dates and columns are joined
 
 
         Examples
@@ -283,6 +294,7 @@ class gdelt(object):
           3362;Alicia Machado,1700;Hillary Clinton,294;Hillary Clinton,538;
           Hillary Clinton,808;Hillary Clinton,1802;Hillary Clinton,2303;Hillary
            Clinton,4226
+        >>> results = gd.Search(['2016 Oct 10'], table='gkg',output='r')
 
 
         Notes
@@ -305,6 +317,7 @@ class gdelt(object):
         self.date = date
         version = self.version
         baseUrl = self.baseUrl
+        self.queryTime=queryTime
         self.table = table
         self.datesString = gdeltRangeString(dateRanger(self.date),
                                             version=version,
@@ -425,6 +438,28 @@ class gdelt(object):
         # print (self.version, self.table, self.coverage, self.datesString,
         #
         # print (self.download_list)
+        if self.coverage:
+            coverage = 'True'
+        else:
+            coverage = 'False'
+        if isinstance(self.date, list):
+
+            formattedDates = ["".join(re.split(' |-|;|:', l)) for l in
+                              self.date]
+            path = formattedDates
+            print("gdeltVersion_" + str(self.version) +
+                  "_coverage_" + coverage + "_" +
+                  "_table_" + self.table + '_queryDates_' +
+                  "_".join(path) +
+                  "_queryTime_" +
+                  datetime.datetime.now().strftime('%m-%d-%YT%H%M%S'))
+        else:
+            print("gdeltVersion_" + str(self.version) +
+                  "_coverage_" + coverage + "_" +
+                  "_table_" + self.table + '_queryDates_' +
+                  "".join(re.split(' |-|;|:', self.date)) +
+                  "_queryTime_" +
+                  datetime.datetime.now().strftime('%m-%d-%YT%H%M%S'))
 
         #########################
         # Download section
@@ -479,10 +514,51 @@ class gdelt(object):
             results.insert(27, 'CAMEOCodeDescription',
                            value=cameoDescripts.values)
 
+        ###############################################
+        # Setting the output options
+        ###############################################
+
         if output =='json':
             self.final = results.to_json(orient='records')
         elif output =='csv':
             self.final = results.to_csv(encoding='utf-8')
+        elif output == 'r':
+            try:
+                import feather
+
+            except ImportError:
+                raise('You need to install feather by running\npip install '
+                      'feather\nor if you have Anaconda (preferred)\nconda '
+                      'install feather-format -c conda-forge')
+
+            if self.coverage:
+                coverage = 'True'
+            else:
+                coverage = 'False'
+            if isinstance(self.date, list):
+
+                formattedDates = ["".join(re.split(' |-|;|:', l)) for l in
+                                  self.date]
+                path = formattedDates
+                outPath = ("gdeltVersion_" + str(self.version) +
+                      "_coverage_" + coverage + "_" +
+                      "_table_" + self.table + '_queryDates_' +
+                      "_".join(path) +
+                      "_queryTime_" +
+                      datetime.datetime.now().strftime('%m-%d-%YT%H%M%S')+
+                           ".feather")
+            else:
+                outPath = ("gdeltVersion_" + str(self.version) +
+                      "_coverage_" + coverage + "_" +
+                      "_table_" + self.table + '_queryDates_' +
+                      "".join(re.split(' |-|;|:', self.date)) +
+                      "_queryTime_" +
+                      datetime.datetime.now().strftime('%m-%d-%YT%H%M%S')+
+                           ".feather")
+
+            return feather.api.write_dataframe(results, outPath)
+
+
 
         else:
             self.final = results

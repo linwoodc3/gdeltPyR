@@ -1,3 +1,10 @@
+#!/usr/bin/python
+
+# Author:
+# Linwood Creekmore
+# Email: valinvescap@gmail.com
+
+
 import datetime,json,os,re,requests
 from functools import partial
 from multiprocessing import Pool, cpu_count

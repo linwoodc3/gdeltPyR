@@ -1,3 +1,10 @@
+#!/usr/bin/python
+
+# Author:
+# Linwood Creekmore
+# Email: valinvescap@gmail.com
+
+
 import datetime
 import sys
 import traceback

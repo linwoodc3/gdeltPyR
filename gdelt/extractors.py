@@ -1,3 +1,9 @@
+#!/usr/bin/python
+
+# Author:
+# Linwood Creekmore
+# Email: valinvescap@gmail.com
+
 import re
 import zipfile
 from io import BytesIO

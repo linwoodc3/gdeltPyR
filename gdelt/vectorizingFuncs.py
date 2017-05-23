@@ -1,7 +1,16 @@
+############################
+# Third Party imports
+#############################
 import numpy as np
 import pandas as pd
 from dateutil.parser import parse
 
+from gdelt.multipdf import parallelize_dataframe
+
+
+################################
+# Local Imports
+################################
 
 def vectorizer(function, dateArray):
     helper = np.vectorize(function)
@@ -80,7 +89,7 @@ def urlBuilder(dateString, version, table='events'):
 
         if not (np.all(list(
                 map(
-                    lambda x: x > parse('2013 04 1'), list(
+                    lambda x: x > parse('2013 04 01'), list(
                         map(
                             parse, dateString)))))):
 
@@ -106,3 +115,29 @@ def urlBuilder(dateString, version, table='events'):
                 caboose = ".zip"
 
         return base + dateString + caboose
+
+
+def geofilter(frame):
+    """Filters dataframe for conversion to geojson or shapefile"""
+    try:
+        import geopandas as gpd
+
+        # Remove rows with no latitude and longitude
+        filresults = frame[(frame['ActionGeo_Lat'].notnull()
+                            ) | (frame['ActionGeo_Long'].notnull()
+                                 )]
+        gdf = gpd.GeoDataFrame(filresults.assign(geometry=parallelize_dataframe(filresults)),
+                               crs={'init': 'epsg:4326'})
+        gdf.columns = list(map(lambda x: (x.replace('_', "")).lower(), gdf.columns))
+        gdf = gdf.assign(sqldate=gdf.sqldate.apply(lambda x: x.isoformat()))
+
+        # final = gpd.GeoDataFrame(filresults.assign(geometry=parallelize_dataframe(filresults)),
+        #                               crs={'init': 'epsg:4326'})
+
+        final = gdf[gdf.geometry.notnull()]
+
+        return final
+
+
+    except:
+        raise ImportError("You need to install geopandas for this feature.")

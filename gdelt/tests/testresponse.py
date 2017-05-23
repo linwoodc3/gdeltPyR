@@ -65,6 +65,7 @@ class testresponse(TestCase):
         #     return None
         answer = response.ok
         exp = True
+
         # Confirm that the request-response cycle completed successfully.
         date_sequence = '2016 10 01'
         ranger_output = dateRanger(date_sequence)

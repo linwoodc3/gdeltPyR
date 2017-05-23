@@ -9,6 +9,7 @@ import datetime
 import multiprocessing
 import os
 import re
+import time
 import warnings
 from io import BytesIO
 from multiprocessing import current_process, freeze_support
@@ -41,6 +42,7 @@ def mp_worker(url, table=None):
     # print (multiprocessing.current_process().name)
     proc = os.getpid()
     # print ('Starting {0}-{1}'.format(proc_name,proc))
+    time.sleep(0.01)
     r = requests.get(url, timeout=10)
     # print (multiprocessing.Process(name=multiprocessing.current_process().name).is_alive())
     try:

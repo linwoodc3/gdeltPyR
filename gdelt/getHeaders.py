@@ -6,6 +6,7 @@
 # Email: valinvescap@gmail.com
 
 from io import BytesIO
+
 import pandas as pd
 import requests
 
@@ -15,7 +16,6 @@ import requests
 #######################################
 
 def events1Heads():
-    # type: () -> object
     """
 
     :rtype: dateframe

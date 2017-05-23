@@ -61,7 +61,7 @@ def dateInputCheck(date, version):
         # GDELT release yesterday's data 6AM today
         if datetime.datetime.now().hour <= 6 and parse(date).date() == (
                     datetime.datetime.now().date() - datetime.timedelta(
-                    days=1)):
+                    days=1)) and version == 1:
             raise BaseException('GDELT 1.0 posts the latest daily update by '
                                 '6AM EST.'
                                 'The next update will appear in {0}'.format(

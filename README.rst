@@ -40,12 +40,6 @@ Basic Usage
     gd = gdelt.gdelt(version=2)
     
     results = gd.Search(['2016 10 19','2016 10 22'],table='events',coverage=True)
-    
-Output Type
---------------
 
-At the moment, ``gdeltPyR`` outputs pandas dataframes with the headers for which ever table/version your set as your input parameters.  Performance and speed of query return depends on your computer.  The more cores you have, the quicker your queries return.  As an example, the query above takes ~36 seconds on a 4  core, MacOS Sierra 10.12 with 16GB of RAM laptop.  It returns 900,000 rows of data with 61 columns (events database table).
-
-    
     
 

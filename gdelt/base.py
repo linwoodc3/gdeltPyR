@@ -339,7 +339,6 @@ class gdelt(object):
            Clinton,4226
         >>> results = gd.Search(['2016 Oct 10'], table='gkg',output='r')
 
-
         Notes
         ------
         Read more about GDELT data at http://gdeltproject.org/data.html
@@ -397,9 +396,7 @@ class gdelt(object):
         v1RangerNoCoverage = partial(gdeltRangeString, version=1,
                                      coverage=False)
         v2RangerNoCoverage = partial(gdeltRangeString, version=2,
-                                     coverage=False)
-
-        urlsv1gkg = partial(urlBuilder, version=1, table='gkg')
+                                     coverage=False); urlsv1gkg = partial(urlBuilder, version=1, table='gkg')
         urlsv2mentions = partial(urlBuilder, version=2, table='mentions')
         urlsv2events = partial(urlBuilder, version=2, table='events')
         urlsv1events = partial(urlBuilder, version=1, table='events')
@@ -441,8 +438,6 @@ class gdelt(object):
                 self.download_list = (urlsv1gkg(v1RangerCoverage(
                     dateRanger(self.date))))
 
-
-
             elif self.table == 'events' or self.table == '':
 
                 if self.coverage is True:
@@ -457,7 +452,6 @@ class gdelt(object):
             else:
                 raise Exception('You entered an incorrect table type for '
                                 'GDELT 1.0.')
-
         #####################################
         # GDELT Version 2.0 Analytics and Download
         #####################################
@@ -595,24 +589,6 @@ class gdelt(object):
         elif output == 'gpd' or output == 'geodataframe' or output == 'geoframe':
             self.final = geofilter(results)
             self.final = self.final[self.final.geometry.notnull()]
-
-        # try:
-        #                 import geopandas as gpd
-        #
-        #                 # Remove rows with no latitude and longitude
-        #                 filresults = results[(results['ActionGeo_Lat'].notnull()
-        # ) | (results['ActionGeo_Long'].isnull()
-        # )]
-        #                 self.final = gpd.GeoDataFrame(filresults.assign(geometry=parallelize_dataframe(filresults)),
-        #                                               crs={'init': 'epsg:4326'})
-        #                 self.final = self.final[self.final['geometry'].notnull()]
-        #
-        #                 # self.final = gpd.GeoDataFrame(results.assign(geometry=parallelize_dataframe(results)),
-        #                 #                               crs={'init': 'epsg:4326'})
-        #
-        #             except:
-        #                 raise ImportError("You need to install geopandas for this feature.")
-
         elif output == 'r':
 
             if self.coverage:

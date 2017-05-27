@@ -16,3 +16,4 @@ class TestDateFormatter(TestCase):
         formatter_test = dateformatter(date_string)
         exp = '2016-03-22'
         self.assertEqual(formatter_test, exp, "dateformatter working")
+

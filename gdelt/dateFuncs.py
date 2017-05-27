@@ -5,12 +5,21 @@
 # Linwood Creekmore
 # Email: valinvescap@gmail.com
 
+##################################
+# Standard library imports
+##################################
 import datetime
 import warnings
 
+##################################
+# Third party imports
+##################################
 import numpy as np
 from dateutil.parser import parse
 
+##################################
+# Local imports
+##################################
 from gdelt.vectorizingFuncs import vectorizer
 
 
@@ -150,6 +159,7 @@ def gdeltRangeString(element, coverage=None, version=2.0):
     # calculate nearest 15 minute interval
     if not isinstance(element, list):
 
+
         if element.date() == datetime.datetime.now().date():
             if coverage and int(version) != 1:
 
@@ -160,11 +170,13 @@ def gdeltRangeString(element, coverage=None, version=2.0):
                             '%Y%m%d%H%M%S'
                         ), times[:hour * 4 + conditioner])))
             else:
+
                 converted = datetime.datetime.now().replace(
                     minute=multiple, second=0).strftime('%Y%m%d%H%M%S')
 
         else:
             if coverage and int(version) != 1:
+
 
                 converted = restOfDay = np.array(
                     list(map(
@@ -176,6 +188,8 @@ def gdeltRangeString(element, coverage=None, version=2.0):
 
                 converted = element.replace(minute=int(
                     multiple), second=0).strftime('%Y%m%d%H%M%S')
+                if parse(converted)< datetime.datetime.now():
+                    converted = element.replace(minute=45, second=0,hour=23).strftime('%Y%m%d%H%M%S')
 
 
     #################################
@@ -197,6 +211,7 @@ def gdeltRangeString(element, coverage=None, version=2.0):
                     minutes=45, hours=23
                 )
             ).strftime('%Y%m%d%H%M%S'), element))
+
         else:
             converted = (datetime.datetime.combine(
                 element, datetime.time.min) +
@@ -270,3 +285,4 @@ def dateMasker(dateString, version):
                               vectorizer(gdeltRangeString, dateRanger(
                                   dateString))[:6]))).tolist()
     return mask
+

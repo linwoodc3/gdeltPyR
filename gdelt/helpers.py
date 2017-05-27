@@ -9,12 +9,13 @@
 # Standard Library Imports
 ##############################
 import re
+import datetime
 
 
 ##############################
-# Standard Library Imports
+# Third party Library Imports
 ##############################
-# from gdelt.multipdf import parallelize_dataframe
+from dateutil.parser import parse
 
 ##############################
 # Filter functions for dataframes
@@ -69,3 +70,13 @@ def rooturl(row):
         return r.search(s).group()
     elif r2.search(s):
         return r2.search(s).group()
+
+def testdate(dateString):
+    """Test dates of different formats"""
+    if len(dateString) == 4:
+        comp = datetime.datetime.strptime(dateString, '%Y')
+    elif len(dateString) == 6:
+        comp = datetime.datetime.strptime(dateString, '%Y%m')
+    else:
+        comp = parse(dateString)
+    return comp

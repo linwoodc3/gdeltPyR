@@ -5,14 +5,23 @@
 # Linwood Creekmore
 # Email: valinvescap@gmail.com
 
+##################################
+# Standard library imports
+##################################
 import argparse
-from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import cpu_count
 
+##################################
+# Third party imports
+##################################
 import numpy as np
 import pandas as pd
+from concurrent.futures import ProcessPoolExecutor
 
-from .helpers import shaper
+##################################
+# Local imports
+##################################
+from gdelt.helpers import shaper
 
 cores = cpu_count()
 e = ProcessPoolExecutor(max_workers=cores)

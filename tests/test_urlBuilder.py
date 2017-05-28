@@ -7,7 +7,7 @@
 
 
 from unittest import TestCase
-
+import numpy as np
 from gdelt.dateFuncs import gdeltRangeString, dateRanger
 from gdelt.vectorizingFuncs import urlBuilder
 
@@ -82,9 +82,10 @@ class TestUrlBuilder(TestCase):
         ranger_output = dateRanger(date_sequence)
         gdeltstring_output = gdeltRangeString(ranger_output, version=2)
         urlbuilder_test = urlBuilder(gdeltstring_output, table='events', version=2)
-        exp =  ['http://data.gdeltproject.org/gdeltv2/20150401234500.export.CSV.zip',
-                'http://data.gdeltproject.org/gdeltv2/20150402234500.export.CSV.zip']
-        return self.assertEqual(exp, urlbuilder_test, "Version 1 Url works.")
+        exp = np.sort(np.array(['http://data.gdeltproject.org/gdeltv2/20150401234500.export.CSV.zip',
+                                'http://data.gdeltproject.org/gdeltv2/20150402234500.export.CSV.zip']))
+        return np.testing.assert_array_equal(exp, np.sort(np.array(gdeltstring_test)))
+        # return self.assertEqual(exp, urlbuilder_test, "Version 1 Url works.")
 
     # def test_urlbuilder_events2_faillist(self):
     #     date_sequence = ['2001 Jan 01','2002 Apr 02']
@@ -101,7 +102,7 @@ class TestUrlBuilder(TestCase):
         ranger_output = dateRanger(date_sequence)
         gdeltstring_output = gdeltRangeString(ranger_output, version=1)
         urlbuilder_test = urlBuilder(gdeltstring_output, table='events', version=1)
-        exp = ['http://data.gdeltproject.org/events/20150401.export.CSV.zip',
-               'http://data.gdeltproject.org/events/20150402.export.CSV.zip']
+        exp = np.sort(np.array(['http://data.gdeltproject.org/events/20150401.export.CSV.zip',
+                                'http://data.gdeltproject.org/events/20150402.export.CSV.zip']))
         # print(urlbuilder_test)
-        return self.assertEqual(exp, urlbuilder_test, "Version 1 Url works.")
+        return self.assertEqual(exp, np.sort(np.array(urlbuilder_test)), "Version 1 Url works.")

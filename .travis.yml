@@ -44,7 +44,7 @@ before_install:
 #  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc     ; fi
 #  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gdal     ; fi
 #  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install geos     ; fi
-#  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; pip install mock        ; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; pip install futures        ; fi
 
 # command to install dependencies
 install:

@@ -5,7 +5,7 @@ six>=1.10.0
 python-dateutil>=2.5.3
 
 # for Python 2.7 and 2.6 (environment marker support as of pip 6.0)
-unittest2 ; python_version < '3.3'
+futures ; python_version < '3.3'
 mock ; python_version < '3.3'
 
 unittest2 ; python_version < '2.7'

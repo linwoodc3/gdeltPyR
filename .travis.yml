@@ -49,9 +49,6 @@ before_install:
 # command to install dependencies
 install:
   - "pip install -r requirements.txt"
-  - "pip install geopandas"
-  - "pip install fiona"
-  - "pip install shapely"
   - if [ "$GDELT" == true ]; then
         echo 'plus testing'; pip install -r requirements_geo.txt;
         else pip install -r requirements.txt;

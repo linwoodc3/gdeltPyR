@@ -1,19 +1,39 @@
 language: python
 os:
-  - linux
+#  - linux
   - osx
+
+compiler:
+  - gcc
+  - clang
+
+
 python:
-  - "2.6"
   - "2.7"
-  - "3.2"
-  - "3.3"
-  - "3.4"
+#  - "3.4"
   - "3.5"
-  - "3.5-dev" # 3.5 development branch
-  - "3.6"
-  - "3.6-dev" # 3.6 development branch
-  - "3.7-dev" # 3.7 development branch
-  - "nightly" # currently points to 3.7-dev
+#  - "3.5-dev" # 3.5 development branch
+#  - "3.6"
+
+#addons:
+#  apt:
+#    packages:
+#    - gdal-bin
+#    - libproj-dev
+#    - libhdf5-serial-dev
+#    - libpng12-dev
+#    - libgdal-dev
+#    - libatlas-dev
+#    - libatlas-base-dev
+#    - gfortran
+
+#before_install:
+#  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc     ; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gdal     ; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install geos     ; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; pip install mock        ; fi
+
 # command to install dependencies
 install:
   - "pip install -r requirements.txt"

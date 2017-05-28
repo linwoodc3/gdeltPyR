@@ -127,7 +127,7 @@ class gdeltSearch(object):
         
         
     @staticmethod
-    def dateInputCheck(date):
+    def date_input_check(date):
         """Function to check date entered by user.
 
         Example
@@ -453,7 +453,7 @@ import datetime
 from dateutil.parser import parse
 import numpy as np
 
-def dateInputCheck(date):
+def date_input_check(date):
     """Function to check date entered by user.
     
     Example
@@ -543,7 +543,7 @@ def dateInputCheck(date):
 
 ```python
 date=['2016 9 12']
-dateInputCheck(date)
+date_input_check(date)
 ```
 
 ### Checking the tblType input
@@ -2485,7 +2485,7 @@ Work with the returned GDELT data.  Specific whether we are pulling the `mention
 
 
 ```python
-results = match_date(gdelt_timeString(dateInputCheck(date)))
+results = match_date(gdelt_timeString(date_input_check(date)))
 ```
 
 
@@ -5332,7 +5332,7 @@ newtestdf = feather.api.read_dataframe(path)
 
 
 ```python
-results = masterListdf[masterListdf[2].str.contains(gdelt_timeString(dateInputCheck(date)))==True]
+results = masterListdf[masterListdf[2].str.contains(gdelt_timeString(date_input_check(date)))==True]
 ```
 
 
@@ -5347,7 +5347,7 @@ results[results[2].str.contains('gkg')]
 
 
 ```python
-gdelt_timeString(dateInputCheck(date))
+gdelt_timeString(date_input_check(date))
 ```
 
 

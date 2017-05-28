@@ -46,7 +46,20 @@ setup(
     platforms=['Any'],
     packages=['gdelt'],
     install_requires=['numpy', 'pandas', 'requests',
-                      'python-dateutil'],
+                      'python-dateutil',
+                      'mock;python_version<"3.3"',
+                      "futures; python_version < '3.0'",
+                      "futures>=3.0.5; python_version == '2.6' or python_version=='2.7'"
+                      ],
+
+    extras_require={
+            # ...
+            ":python_version<'3.3'": ["monotonic"],
+        }
+    extras_require = {
+            'geoSpatial':  ["fiona>=1.6", "shapely>=1.5","geopandas>-1.7"],
+            ":python_version<'3.3'": ["mock","futures"]
+        },
     include_package_data=True,
     package_data={'utils': ['schema_csvs/*']},
     data_files=[('data', ['data/cameoCodes.json'])],

@@ -27,3 +27,15 @@
 
 2016-11-07
   Typo on line 290 of base.py; removed and fixed bug.
+
+2017-05-23
+  Updated to 0.1.10
+  Added geodataframe output
+  Started adding unittests (datefuncs first), added docstrings for functions, and PEP8 adherence.
+  Fixed datecheck error on current day;
+
+2017-05-27
+  Removed datetime parsing
+  Added unittests for events before 2013, gkg v1 before apr 1, etc.
+
+

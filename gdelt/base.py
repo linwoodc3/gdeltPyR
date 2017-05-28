@@ -6,32 +6,58 @@
 # Email: valinvescap@gmail.com
 
 
-import datetime,json,os,re,requests
+##################################
+# Standard library imports
+##################################
+
+import os
+import re
+import json
+import datetime
+import multiprocessing.pool
 from functools import partial
 from multiprocessing import Pool, cpu_count
-import multiprocessing.pool
+from concurrent.futures import ProcessPoolExecutor
+
+
+##################################
+# Third party imports
+##################################
+from dateutil.parser import parse
+import numpy as np
 import pandas as pd
+import requests
+
+##################################
+# Local imports
+##################################
 from gdelt.dateFuncs import (dateRanger, gdeltRangeString)
 from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads, \
     gkgHeads
 from gdelt.helpers import cameos
-from gdelt.inputChecks import (dateInputCheck)
+from gdelt.inputChecks import (date_input_check)
 from gdelt.parallel import mp_worker
-from gdelt.vectorizingFuncs import urlBuilder
+from gdelt.vectorizingFuncs import urlBuilder, geofilter
+
 
 
 class NoDaemonProcess(multiprocessing.Process):
     # make 'daemon' attribute always return False
+    @property
     def _get_daemon(self):
         return False
+
     def _set_daemon(self, value):
         pass
+
     daemon = property(_get_daemon, _set_daemon)
+
 
 # We sub-class multiprocessing.pool.Pool instead of multiprocessing.Pool
 # because the latter is only a wrapper function, not a proper class.
 class NoDaemonProcessPool(multiprocessing.pool.Pool):
     Process = NoDaemonProcess
+
 
 ##############################################
 #  Admin to load local files
@@ -60,11 +86,6 @@ except:
 # Core GDELT class
 ##############################
 
-'''Gig line'''
-
-
-###############################################################################
-
 
 class gdelt(object):
     """GDELT Object
@@ -72,13 +93,13 @@ class gdelt(object):
 
         Parameters
         ----------
-        version : int, optional, default: 2
+        version : int, optional, {2,1}
             The version of GDELT services used by gdelt. 1 or 2
         gdelt2url : string,default: http://data.gdeltproject.org/gdeltv2/
             Base url for GDELT 2.0 services.
         gdelt1url : string, default: http://data.gdeltproject.org/events/
             Base url for GDELT 1.0 services.
-        cores : int, optional, default:
+        cores : int, optional, default: system-generated
             Count of total CPU cores available.
         pool: function
             Standard multiprocessing function to establish Pool workers
@@ -154,8 +175,6 @@ class gdelt(object):
             self.baseUrl = gdelt1url
         self.codes = codes
 
-
-
     ###############################
     # Searcher function for GDELT
     ###############################
@@ -165,7 +184,8 @@ class gdelt(object):
                table='events',
                coverage=False,
                output=None,
-               queryTime=datetime.datetime.now().strftime('%m-%d-%Y %H:%M:%S')
+               queryTime=datetime.datetime.now().strftime('%m-%d-%Y %H:%M:%S'),
+               normcols=False
                ):
         """Core searcher method to set parameters for GDELT data searches
 
@@ -176,7 +196,7 @@ class gdelt(object):
             range (list of strings) that is (are) the targeted timelines to
             pull GDELT data.
 
-        table : string,default: events
+        table : string,{'events','gkg','mentions'}
             Select from the table formats offered by the GDELT service:
 
                 * events (1.0 and 2.0)
@@ -260,7 +280,8 @@ class gdelt(object):
             This records the system time when gdeltPyR's query was executed,
             which can be used for logging purposes.
 
-        output : string, default: None, which outputs Pandas dataframe
+        output : string, {None,'df','gpd','shp','shapefile', 'json', 'geojson'
+                'r','geodataframe'}
             Select the output format for the returned GDELT data
 
             Options
@@ -277,8 +298,21 @@ class gdelt(object):
             coverage, table name, query dates, and query time.
 
             csv- Outputs a CSV format; all dates and columns are joined
+            
+            shp- Writes an ESRI shapefile to current directory or path; output
+            is filtered to exclude rows with no latitude or longitude
+            
+            geojson- 
+            
+            geodataframe- Returns a geodataframe; output is filtered to exclude
+            rows with no latitude or longitude.  This output can be manipulated
+            for geoprocessing/geospatial operations such as reprojecting the 
+            coordinates, creating a thematic map (choropleth map), merging with
+            other geospatial objects, etc.  See http://geopandas.org/ for info.
 
-
+        normcols : bool
+            Applies a generic lambda function to normalize GDELT columns 
+            for compatibility with SQL or Shapefile outputs.  
         Examples
         --------
         >>> from gdelt
@@ -303,7 +337,6 @@ class gdelt(object):
            Clinton,4226
         >>> results = gd.Search(['2016 Oct 10'], table='gkg',output='r')
 
-
         Notes
         ------
         Read more about GDELT data at http://gdeltproject.org/data.html
@@ -319,16 +352,17 @@ class gdelt(object):
         an option to store the output directly to disc.
 
         """
-        dateInputCheck(date, self.version)
+        date_input_check(date, self.version)
         self.coverage = coverage
         self.date = date
         version = self.version
         baseUrl = self.baseUrl
-        self.queryTime=queryTime
+        self.queryTime = queryTime
         self.table = table
         self.datesString = gdeltRangeString(dateRanger(self.date),
                                             version=version,
                                             coverage=self.coverage)
+
 
         #################################
         # R dataframe check; fail early
@@ -351,7 +385,6 @@ class gdelt(object):
                                    '/github.com/wesm/feather'))
 
         ##################################
-
         # Partial Functions
         #################################
 
@@ -363,7 +396,6 @@ class gdelt(object):
                                      coverage=False)
         v2RangerNoCoverage = partial(gdeltRangeString, version=2,
                                      coverage=False)
-
         urlsv1gkg = partial(urlBuilder, version=1, table='gkg')
         urlsv2mentions = partial(urlBuilder, version=2, table='mentions')
         urlsv2events = partial(urlBuilder, version=2, table='events')
@@ -393,7 +425,7 @@ class gdelt(object):
         if int(self.version) == 1:
 
             if self.table is "mentions":
-                raise BaseException('GDELT 1.0 does not have the "mentions'
+                raise BaseException('GDELT 1.0 does not have the "mentions"'
                                     ' table. Specify the "events" or "gkg"'
                                     'table.')
             else:
@@ -401,7 +433,6 @@ class gdelt(object):
 
             self.events_columns = events1Heads()
             columns = self.events_columns
-
 
             if self.table == 'gkg':
                 self.download_list = (urlsv1gkg(v1RangerCoverage(
@@ -418,10 +449,10 @@ class gdelt(object):
                     # print("I'm here at line 125")
                     self.download_list = (urlsv1events(v1RangerNoCoverage(
                         dateRanger(self.date))))
+
             else:
                 raise Exception('You entered an incorrect table type for '
                                 'GDELT 1.0.')
-
         #####################################
         # GDELT Version 2.0 Analytics and Download
         #####################################
@@ -434,6 +465,7 @@ class gdelt(object):
                     self.download_list = (urlsv2events(v2RangerCoverage(
                         dateRanger(self.date))))
                 else:
+
                     self.download_list = (urlsv2events(v2RangerNoCoverage(
                         dateRanger(self.date))))
 
@@ -460,10 +492,22 @@ class gdelt(object):
                     self.download_list = (urlsv2mentions(v2RangerNoCoverage(
                         dateRanger(self.date))))
 
+
         #########################
         # DEBUG Print Section
         #########################
-        # print (self.version, self.table, self.coverage, self.datesString,
+
+
+        # if isinstance(self.datesString,str):
+        #     if parse(self.datesString) < datetime.datetime.now():
+        #         self.datesString = (self.datesString[:8]+"234500")
+        # elif isinstance(self.datesString,list):
+        #     print("it's a list")
+        # elif isinstance(self.datesString,np.ndarray):
+        #     print("it's an array")
+        # else:
+        #     print("don't know what it is")
+        # print (self.version,self.download_list,self.date, self.table, self.coverage, self.datesString)
         #
         # print (self.download_list)
         # if self.coverage:
@@ -492,16 +536,29 @@ class gdelt(object):
         #########################
         # Download section
         #########################
+        # print(self.download_list,type(self.download_list))
 
+        # from gdelt.extractors import normalpull
+        # e=ProcessPoolExecutor()
+        # if isinstance(self.download_list,list) and len(self.download_list)==1:
+        #     from gdelt.extractors import normalpull
+        #
+        #     results=normalpull(self.download_list[0],table=self.table)
+        # elif isinstance(self.download_list,list):
+        #     print(table)
+        #     multilist = list(e.map(normalpull,self.download_list))
+        #     results = pd.concat(multilist)
+        # print(results.head())
 
         if isinstance(self.datesString, str):
-
             if self.table == 'events':
 
                 results = eventWork(self.download_list)
-
             else:
-
+                # if self.table =='gkg':
+                #     results = eventWork(self.download_list)
+                #
+                # else:
                 results = mp_worker(self.download_list)
 
         else:
@@ -523,9 +580,13 @@ class gdelt(object):
             del downloaded_dfs
             results.reset_index(drop=True, inplace=True)
 
+        # print(results.columns,columns,self.table,self.version)
         if self.table == 'gkg' and self.version == 1:
             results.columns = results.ix[0].values.tolist()
             results.drop([0], inplace=True)
+            columns = results.columns
+        if len(results.columns) == 57:
+            results.columns = columns[:-1]
 
         else:
             results.columns = columns
@@ -546,12 +607,16 @@ class gdelt(object):
         # Setting the output options
         ###############################################
 
-        if output =='json':
+        if output == 'df':
+            self.final = results
+        elif output == 'json':
             self.final = results.to_json(orient='records')
-        elif output =='csv':
+        elif output == 'csv':
             self.final = results.to_csv(encoding='utf-8')
+        elif output == 'gpd' or output == 'geodataframe' or output == 'geoframe':
+            self.final = geofilter(results)
+            self.final = self.final[self.final.geometry.notnull()]
         elif output == 'r':
-
 
             if self.coverage:
                 coverage = 'True'
@@ -563,25 +628,26 @@ class gdelt(object):
                                   self.date]
                 path = formattedDates
                 outPath = ("gdeltVersion_" + str(self.version) +
-                      "_coverage_" + coverage + "_" +
-                      "_table_" + self.table + '_queryDates_' +
-                      "_".join(path) +
-                      "_queryTime_" +
-                      datetime.datetime.now().strftime('%m-%d-%YT%H%M%S')+
+                           "_coverage_" + coverage + "_" +
+                           "_table_" + self.table + '_queryDates_' +
+                           "_".join(path) +
+                           "_queryTime_" +
+                           datetime.datetime.now().strftime('%m-%d-%YT%H%M%S') +
                            ".feather")
             else:
                 outPath = ("gdeltVersion_" + str(self.version) +
-                      "_coverage_" + coverage + "_" +
-                      "_table_" + self.table + '_queryDates_' +
-                      "".join(re.split(' |-|;|:', self.date)) +
-                      "_queryTime_" +
-                      datetime.datetime.now().strftime('%m-%d-%YT%H%M%S')+
+                           "_coverage_" + coverage + "_" +
+                           "_table_" + self.table + '_queryDates_' +
+                           "".join(re.split(' |-|;|:', self.date)) +
+                           "_queryTime_" +
+                           datetime.datetime.now().strftime('%m-%d-%YT%H%M%S') +
                            ".feather")
+
+            if normcols:
+                results.columns = list(map(lambda x: (x.replace('_', "")).lower(), results.columns))
 
             feather.api.write_dataframe(results, outPath)
             return results
-
-
 
         else:
             self.final = results
@@ -589,4 +655,7 @@ class gdelt(object):
         #########################
         # Return the result
         #########################
+        if normcols:
+            self.final.columns = list(map(lambda x: (x.replace('_', "")).lower(), self.final.columns))
+
         return self.final

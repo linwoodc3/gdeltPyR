@@ -96,12 +96,12 @@ class TestUrlBuilder(TestCase):
     #     # print(urlbuilder_test)
     #     return self.assertEquals(exp, urlbuilder_test, "Version 1 Url works.")
 
-def test_urlbuilder_events1_passlist(self):
-    date_sequence = ['2015 Apr 01', '2015 Apr 02']
-    ranger_output = dateRanger(date_sequence)
-    gdeltstring_output = gdeltRangeString(ranger_output, version=1)
-    urlbuilder_test = urlBuilder(gdeltstring_output, table='events', version=1)
-    exp = ['http://data.gdeltproject.org/events/20150401.export.CSV.zip',
-           'http://data.gdeltproject.org/events/20150402.export.CSV.zip']
-    # print(urlbuilder_test)
-    return self.assertEqual(exp, urlbuilder_test, "Version 1 Url works.")
+    def test_urlbuilder_events1_passlist(self):
+        date_sequence = ['2015 Apr 01', '2015 Apr 02']
+        ranger_output = dateRanger(date_sequence)
+        gdeltstring_output = gdeltRangeString(ranger_output, version=1)
+        urlbuilder_test = urlBuilder(gdeltstring_output, table='events', version=1)
+        exp = ['http://data.gdeltproject.org/events/20150401.export.CSV.zip',
+               'http://data.gdeltproject.org/events/20150402.export.CSV.zip']
+        # print(urlbuilder_test)
+        return self.assertEqual(exp, urlbuilder_test, "Version 1 Url works.")

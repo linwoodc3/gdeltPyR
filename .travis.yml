@@ -1,7 +1,7 @@
 language: python
 os:
-#  - linux
-  - osx
+  - linux
+#  - osx
 
 compiler:
   - gcc
@@ -52,5 +52,10 @@ install:
   - "pip install geopandas"
   - "pip install fiona"
   - "pip install shapely"
+  - if [ "$GDELT" == true ]; then
+        echo 'plus testing'; pip install -r requirements_plus.txt;
+        else pip install -r requirements.txt;
+    fi;
+  - pip install -r requirements.txt
 # command to run tests
 script: pytest

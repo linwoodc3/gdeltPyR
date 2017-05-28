@@ -10,6 +10,7 @@ from unittest import TestCase
 import numpy as np
 
 from gdelt.dateFuncs import dateRanger, gdeltRangeString
+from gdelt.inputChecks import *
 
 
 class TestGdeltRangeString(TestCase):
@@ -69,3 +70,19 @@ class TestGdeltRangeString(TestCase):
                                 '20161001231500', '20161001233000', '20161001234500'],
                                dtype='<U14'))
         np.testing.assert_array_equal(exp, gdeltstring_test)
+
+    def test_gdeltrange_sequence_v1_2013(self):
+        date_sequence = ['2013 Feb 01', '2013 Feb 05']
+        ranger_output = dateRanger(date_sequence)
+        gdeltstring_test = np.sort(np.array(gdeltRangeString(ranger_output, version=1)))
+        exp = np.array(['201302'])
+        np.testing.assert_array_equal(exp, gdeltstring_test)
+
+
+    def test_gdeltrange_sequence_v1_2005(self):
+        date_sequence = ['2001 Feb 01', '2005 Feb 05']
+        ranger_output = dateRanger(date_sequence)
+        gdeltstring_test = np.sort(np.array(gdeltRangeString(ranger_output, version=1)))
+        exp = np.sort(np.array(['2001', '2002', '2003', '2004', '2005']))
+        np.testing.assert_array_equal(exp, gdeltstring_test)
+

@@ -5,38 +5,41 @@
 # Linwood Creekmore
 # Email: valinvescap@gmail.com
 
+
 ##################################
 # Standard library imports
 ##################################
 
-import datetime
-import json
-import multiprocessing.pool
 import os
 import re
+import json
+import datetime
+import multiprocessing.pool
 from functools import partial
 from multiprocessing import Pool, cpu_count
-
-import pandas as pd
-import requests
-
-from gdelt.dateFuncs import (dateRanger, gdeltRangeString)
-from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads, \
-    gkgHeads
-from gdelt.helpers import cameos
-from gdelt.inputChecks import (dateInputCheck)
-from gdelt.parallel import mp_worker
-from gdelt.vectorizingFuncs import urlBuilder, geofilter
+from concurrent.futures import ProcessPoolExecutor
 
 
 ##################################
 # Third party imports
 ##################################
+from dateutil.parser import parse
+import numpy as np
+import pandas as pd
+import requests
+
 ##################################
 # Local imports
 ##################################
-# # from gdelt.helpers import shaper
-# from gdelt.multipdf import parallelize_dataframe
+from gdelt.dateFuncs import (dateRanger, gdeltRangeString)
+from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads, \
+    gkgHeads
+from gdelt.helpers import cameos
+from gdelt.inputChecks import (date_input_check)
+from gdelt.parallel import mp_worker
+from gdelt.vectorizingFuncs import urlBuilder, geofilter
+
+
 
 class NoDaemonProcess(multiprocessing.Process):
     # make 'daemon' attribute always return False
@@ -82,11 +85,6 @@ except:
 ##############################
 # Core GDELT class
 ##############################
-
-'''Gig line'''
-
-
-###############################################################################
 
 
 class gdelt(object):
@@ -354,7 +352,7 @@ class gdelt(object):
         an option to store the output directly to disc.
 
         """
-        dateInputCheck(date, self.version)
+        date_input_check(date, self.version)
         self.coverage = coverage
         self.date = date
         version = self.version
@@ -364,6 +362,7 @@ class gdelt(object):
         self.datesString = gdeltRangeString(dateRanger(self.date),
                                             version=version,
                                             coverage=self.coverage)
+
 
         #################################
         # R dataframe check; fail early
@@ -396,7 +395,8 @@ class gdelt(object):
         v1RangerNoCoverage = partial(gdeltRangeString, version=1,
                                      coverage=False)
         v2RangerNoCoverage = partial(gdeltRangeString, version=2,
-                                     coverage=False); urlsv1gkg = partial(urlBuilder, version=1, table='gkg')
+                                     coverage=False)
+        urlsv1gkg = partial(urlBuilder, version=1, table='gkg')
         urlsv2mentions = partial(urlBuilder, version=2, table='mentions')
         urlsv2events = partial(urlBuilder, version=2, table='events')
         urlsv1events = partial(urlBuilder, version=1, table='events')
@@ -425,7 +425,7 @@ class gdelt(object):
         if int(self.version) == 1:
 
             if self.table is "mentions":
-                raise BaseException('GDELT 1.0 does not have the "mentions'
+                raise BaseException('GDELT 1.0 does not have the "mentions"'
                                     ' table. Specify the "events" or "gkg"'
                                     'table.')
             else:
@@ -449,6 +449,7 @@ class gdelt(object):
                     # print("I'm here at line 125")
                     self.download_list = (urlsv1events(v1RangerNoCoverage(
                         dateRanger(self.date))))
+
             else:
                 raise Exception('You entered an incorrect table type for '
                                 'GDELT 1.0.')
@@ -464,6 +465,7 @@ class gdelt(object):
                     self.download_list = (urlsv2events(v2RangerCoverage(
                         dateRanger(self.date))))
                 else:
+
                     self.download_list = (urlsv2events(v2RangerNoCoverage(
                         dateRanger(self.date))))
 
@@ -490,10 +492,22 @@ class gdelt(object):
                     self.download_list = (urlsv2mentions(v2RangerNoCoverage(
                         dateRanger(self.date))))
 
+
         #########################
         # DEBUG Print Section
         #########################
-        # print (self.version, self.table, self.coverage, self.datesString,
+
+
+        # if isinstance(self.datesString,str):
+        #     if parse(self.datesString) < datetime.datetime.now():
+        #         self.datesString = (self.datesString[:8]+"234500")
+        # elif isinstance(self.datesString,list):
+        #     print("it's a list")
+        # elif isinstance(self.datesString,np.ndarray):
+        #     print("it's an array")
+        # else:
+        #     print("don't know what it is")
+        # print (self.version,self.download_list,self.date, self.table, self.coverage, self.datesString)
         #
         # print (self.download_list)
         # if self.coverage:
@@ -522,16 +536,29 @@ class gdelt(object):
         #########################
         # Download section
         #########################
+        # print(self.download_list,type(self.download_list))
 
+        # from gdelt.extractors import normalpull
+        # e=ProcessPoolExecutor()
+        # if isinstance(self.download_list,list) and len(self.download_list)==1:
+        #     from gdelt.extractors import normalpull
+        #
+        #     results=normalpull(self.download_list[0],table=self.table)
+        # elif isinstance(self.download_list,list):
+        #     print(table)
+        #     multilist = list(e.map(normalpull,self.download_list))
+        #     results = pd.concat(multilist)
+        # print(results.head())
 
         if isinstance(self.datesString, str):
-
             if self.table == 'events':
 
                 results = eventWork(self.download_list)
-
             else:
-
+                # if self.table =='gkg':
+                #     results = eventWork(self.download_list)
+                #
+                # else:
                 results = mp_worker(self.download_list)
 
         else:

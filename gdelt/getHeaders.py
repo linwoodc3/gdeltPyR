@@ -5,8 +5,14 @@
 # Linwood Creekmore
 # Email: valinvescap@gmail.com
 
+##################################
+# Standard library imports
+##################################
 from io import BytesIO
 
+##################################
+# Third party imports
+##################################
 import pandas as pd
 import requests
 

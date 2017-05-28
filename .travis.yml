@@ -1,4 +1,6 @@
 language: python
+sudo: required
+
 os:
   - linux
 #  - osx
@@ -15,17 +17,20 @@ python:
 #  - "3.5-dev" # 3.5 development branch
 #  - "3.6"
 
-#addons:
-#  apt:
-#    packages:
-#    - gdal-bin
-#    - libproj-dev
-#    - libhdf5-serial-dev
-#    - libpng12-dev
-#    - libgdal-dev
-#    - libatlas-dev
-#    - libatlas-base-dev
-#    - gfortran
+addons:
+  apt:
+    packages:
+    - gdal-bin
+    - libproj-dev
+    - libhdf5-serial-dev
+    - libpng12-dev
+    - libgdal-dev
+    - libatlas-dev
+    - libatlas-base-dev
+    - gfortran
+    - build-essential
+    - python-dev
+    - python3-dev
 
 #before_install:
 #  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi

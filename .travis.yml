@@ -1,7 +1,7 @@
 language: python
 os:
-  - linux
-#  - osx
+#  - linux
+  - osx
 
 compiler:
   - gcc
@@ -15,41 +15,6 @@ python:
 #  - "3.5-dev" # 3.5 development branch
 #  - "3.6"
 
-
-env:
-  - GDELT=false
-  - GDELT=true
-
-before_install:
-  - volumes='ls /Volumes/'; echo $volumes
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -q -y
-  - sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable -y
-  - sudo apt-get install python-dev -y
-  - sudo apt-get install gcc-4.8 -y
-  - sudo apt-get clean	-y
-  - "pip install pip -U"
-  - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b -p ./miniconda
-  - export PATH=`pwd`/miniconda/bin:$PATH
-  - conda update --yes conda
-  - conda config --add channels conda-forge
-  - conda create -y -q -n test-env python=$TRAVIS_PYTHON_VERSION
-  - source activate test-env
-  - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then 2to3 -nw gdeltPyR/ > /dev/null; fi
-
-
-install:
-  - conda install --yes pip
-  - conda install gdal geos gcc -y
-  - if [ "$GDELT" == true ]; then
-        echo 'plus testing'; conda install --yes --file requirements.txt;
-        else conda install --yes --file requirements.txt;
-    fi;
-  - pip install -r requirements.txt
-
-
 #addons:
 #  apt:
 #    packages:
@@ -62,6 +27,18 @@ install:
 #    - libatlas-base-dev
 #    - gfortran
 
+env:
+  - GDELT=false
+  - GDELT=true
+
+before_install:
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get update -q -y
+  - sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable -y
+  - sudo apt-get install python-dev -y
+  - sudo apt-get install gcc-4.8 -y
+  - sudo apt-get clean	-y
+  - "pip install pip -U"
 #before_install:
 #  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
 #  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc     ; fi
@@ -70,20 +47,10 @@ install:
 #  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; pip install mock        ; fi
 
 # command to install dependencies
-#install:
-#  - "pip install -r requirements.txt"
-#  - "pip install geopandas"
-#  - "pip install fiona"
-#  - "pip install shapely"
+install:
+  - "pip install -r requirements.txt"
+  - "pip install geopandas"
+  - "pip install fiona"
+  - "pip install shapely"
 # command to run tests
 script: pytest
-
-notifications:
-    email:
-        recipients:
-            - valinvescap@gmail.com
-        on_success: always
-        on_failure: always
-
-after_success:
-  - coveralls

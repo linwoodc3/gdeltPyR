@@ -18,7 +18,6 @@ before_install:
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update -q
   - sudo apt-get install gcc-4.8 -y
-  - sudo apt-get install geos -y
   - sudo apt-get install libproj-dev libhdf5-serial-dev libpng12-dev -y
   - sudo apt-get install libgdal-dev gdal libatlas-dev libatlas-base-dev gfortran -y
 #addons:

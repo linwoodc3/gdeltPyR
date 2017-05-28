@@ -1,6 +1,4 @@
 language: python
-
-
 os:
   - linux
 #  - osx
@@ -16,28 +14,31 @@ python:
   - "3.5"
 #  - "3.5-dev" # 3.5 development branch
 #  - "3.6"
-
-addons:
-  apt:
-    packages:
-    - gdal-bin
-    - libproj-dev
-    - libhdf5-serial-dev
-    - libpng12-dev
-    - libgdal-dev
-    - libatlas-dev
-    - libatlas-base-dev
-    - gfortran
-    - build-essential
-    - python-dev
-    - python3-dev
+before_install:
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get update -q
+  - sudo apt-get install gcc-4.8 -y
+  - sudo apt-get install gdal-bin -y
+  - sudo apt-get install libproj-dev libhdf5-serial-dev libpng12-dev -y
+  - sudo apt-get install libgdal-dev gdal libatlas-dev libatlas-base-dev gfortran -y
+#addons:
+#  apt:
+#    packages:
+#    - gdal-bin
+#    - libproj-dev
+#    - libhdf5-serial-dev
+#    - libpng12-dev
+#    - libgdal-dev
+#    - libatlas-dev
+#    - libatlas-base-dev
+#    - gfortran
 
 #before_install:
 #  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
 #  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc     ; fi
 #  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gdal     ; fi
 #  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install geos     ; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; pip install mock        ; fi
+#  - if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; pip install mock        ; fi
 
 # command to install dependencies
 install:

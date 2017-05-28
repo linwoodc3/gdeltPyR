@@ -9,7 +9,11 @@ import pickle
 ##################################
 # Standard library imports
 ##################################
-from unittest import TestCase, mock
+try:
+    from unittest import TestCase, mock
+except:
+    from unittest import TestCase
+    import mock
 
 try:
     from urllib.parse import urljoin
@@ -19,8 +23,6 @@ except ImportError:
 ##################################
 # Third party imports
 ##################################
-
-
 import requests
 
 ##################################

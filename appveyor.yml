@@ -39,7 +39,7 @@ install:
 test_script:
   - dir
   #- "%PYTHON%\\python.exe setup.py test"
-  - pytest gdelt -v
+  - pytest 
 after_test:
   - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel"
 

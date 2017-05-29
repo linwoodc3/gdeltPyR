@@ -26,6 +26,7 @@ init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
 
 install:
+  - "set PATH=%PYTHON%\\Scripts;%PATH%"
   - mkdir %systemdrive%\temp
   - cd %systemdrive%\temp
   - appveyor DownloadFile http://download.gisinternals.com/sdk/downloads/release-1600-gdal-1-11-mapserver-6-4/gdal-111-1600-core.msi
@@ -43,7 +44,10 @@ install:
 
 test_script:
   - "%WITH_COMPILER% %PYTHON%/python setup.py test"
-  - "%PYTHON%/pytest gdeltPyR -v"
+  - "%WITH_COMPILER% %PYTHON%/test gdeltPyR -v"
+  - "%PYTHON%/Scripts/pytest.exe"
+  
+  - "%PYTHON%/python pytest gdeltPyR -v"
 
 after_test:
   - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel"

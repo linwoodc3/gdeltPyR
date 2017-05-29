@@ -37,8 +37,6 @@ install:
   - "%PYTHON%/Scripts/pip.exe install -r requirements.txt"
 
 test_script:
-  - "%WITH_COMPILER% %PYTHON%/test"
-  - "%WITH_COMPILER% %PYTHON%/test gdeltPyR -v"
   - "%PYTHON%\\python.exe setup.py test"
   
  

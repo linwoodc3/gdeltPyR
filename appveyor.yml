@@ -6,17 +6,33 @@ environment:
       PYTHON_VERSION: "2.7"
       PYTHON_ARCH: "32"
 
+    - PYTHON: "C:\\Python27-x64"
+      PYTHON_VERSION: "2.7.x" # currently 2.7.9
+      PYTHON_ARCH: "64"
+
     - PYTHON: "C:\\Python34"
       PYTHON_VERSION: "3.4"
       PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python34-x64"
+      PYTHON_VERSION: "3.4.x" # currently 3.4.3
+      PYTHON_ARCH: "64"
 
     - PYTHON: "C:\\Python35"
       PYTHON_VERSION: "3.5"
       PYTHON_ARCH: "32"
 
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.5.x"
+      PYTHON_ARCH: "64"
+
     - PYTHON: "C:\\Python36"
       PYTHON_VERSION: "3.6"
       PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python36-x64"
+      PYTHON_VERSION: "3.6.x"
+      PYTHON_ARCH: "64"
 
       
 init:
@@ -35,14 +51,21 @@ install:
   - "%PYTHON%/Scripts/pip.exe install nose"
   - "%PYTHON%/Scripts/pip.exe install coverage"
   - "%PYTHON%/Scripts/pip.exe install -U pytest"
+  - "%PYTHON%/Scripts/pip.exe install pytest-cov"
   - "%PYTHON%/Scripts/pip.exe install -r requirements.txt"
 
 test_script:
-  - dir
+#  - dir
   #- "%PYTHON%\\python.exe setup.py test"
+  - py.test --cov=./
   - pytest 
 after_test:
   - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel"
+  - rm -rf tests/coverages
+  - if not exist dist mkdir dist
+  - if exist .coverage (cp .coverage dist\) else (echo no .coverage)
+  - codecov
+  - if exist coverage.xml (cp coverage.xml dist\) else (echo no coverage.xml)
 
 artifacts:
   - path: dist\*

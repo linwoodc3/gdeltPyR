@@ -50,7 +50,6 @@ before_install:
 install:
   - "pip install -r requirements.txt"
   - "pip install pytest-cov"
-  - "pip install --user codecov"
   - if [ "$GDELT" == true ]; then
         echo 'plus testing'; pip install -r requirements_geo.txt;
         else pip install -r requirements.txt;

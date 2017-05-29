@@ -40,8 +40,6 @@ install:
   - "%PYTHON%/Scripts/pip.exe install coverage"
   - "%PYTHON%/Scripts/pip.exe install -r requirements.txt"
 
-build: off
-
 test_script:
   - "%WITH_COMPILER% %PYTHON%/python setup.py test"
 

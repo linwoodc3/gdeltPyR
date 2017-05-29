@@ -39,7 +39,7 @@ install:
   - "%PYTHON%/Scripts/pip.exe install nose"
   - "%PYTHON%/Scripts/pip.exe install coverage"
   - "%PYTHON%/Scripts/pip.exe install -U pytest"
-  - "%PYTHON%/Scripts/pip.exe install -r requirements_geo.txt"
+  - "%PYTHON%/Scripts/pip.exe install -r requirements.txt"
 
 test_script:
   - "%WITH_COMPILER% %PYTHON%/python setup.py test"

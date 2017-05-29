@@ -38,6 +38,7 @@ install:
 
 test_script:
   - "%PYTHON%\\python.exe setup.py test"
+  - pytest gdeltPyR -R
   
  
  

@@ -60,7 +60,11 @@ def mp_worker(url, table=None):
 
     r = requests.get(url, timeout=5)
     # print("Request finished in {}".format(datetime.datetime.now() - start))
-    r.raise_for_status()
+    if r.status_code == 404:
+        message = "GDELT does not have a url for date time " \
+                  "{0}".format(re.search('[0-9]{4,18}', url).group())
+        warnings.warn(message)
+
 
     # print (multiprocessing.Process(name=multiprocessing.current_process().name).is_alive())
     start = datetime.datetime.now()

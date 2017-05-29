@@ -245,17 +245,18 @@ def geofilter(frame):
 
         # Remove rows with no latitude and longitude
         try:
+
             filresults = frame[(frame['ActionGeo_Lat'].notnull()
                                 ) | (frame['ActionGeo_Long'].notnull()
                                      )]
         except:
+
             filresults = frame[(frame['actiongeolat'].notnull()
                                 ) | (frame['actiongeolong'].notnull()
                                      )]
         gdf = gpd.GeoDataFrame(filresults.assign(geometry=parallelize_dataframe(filresults)),
                                crs={'init': 'epsg:4326'})
         gdf.columns = list(map(lambda x: (x.replace('_', "")).lower(), gdf.columns))
-        gdf = gdf.assign(sqldate=gdf.sqldate.apply(lambda x: x.isoformat()))
 
         # final = gpd.GeoDataFrame(filresults.assign(geometry=parallelize_dataframe(filresults)),
         #                               crs={'init': 'epsg:4326'})

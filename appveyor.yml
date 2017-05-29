@@ -37,6 +37,7 @@ install:
   - "%PYTHON%/Scripts/pip.exe install -r requirements.txt"
 
 test_script:
+  - dir
   #- "%PYTHON%\\python.exe setup.py test"
   - pytest gdeltPyR -v
   

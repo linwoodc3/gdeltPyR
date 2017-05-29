@@ -51,6 +51,7 @@ setup(
                       "futures; python_version < '3.0'",
                       "futures>=3.0.5; python_version == '2.6' or python_version=='2.7'"
                       ],
+
     extras_require = {
             'geoSpatial':  ["fiona>=1.6", "shapely>=1.5","geopandas>-1.7"],
             ":python_version<'3.3'": ["mock","futures"]

@@ -38,10 +38,12 @@ install:
   - "%PYTHON%\\python.exe -m pip install wheel"
   - "%PYTHON%/Scripts/pip.exe install nose"
   - "%PYTHON%/Scripts/pip.exe install coverage"
-  - "%PYTHON%/Scripts/pip.exe install -r requirements.txt"
+  - "%PYTHON%/Scripts/pip.exe install -U pytest"
+  - "%PYTHON%/Scripts/pip.exe install -r requirements_geo.txt"
 
 test_script:
   - "%WITH_COMPILER% %PYTHON%/python setup.py test"
+  - "%PYTHON%/pytest gdeltPyR -v"
 
 after_test:
   - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel"

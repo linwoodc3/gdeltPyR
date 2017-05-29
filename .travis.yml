@@ -49,10 +49,17 @@ before_install:
 # command to install dependencies
 install:
   - "pip install -r requirements.txt"
+  - "pip install pytest-cov"
+  - "pip install --user codecov"
   - if [ "$GDELT" == true ]; then
         echo 'plus testing'; pip install -r requirements_geo.txt;
         else pip install -r requirements.txt;
     fi;
   - pip install -r requirements.txt
 # command to run tests
-script: pytest
+script:
+  - pytest
+  - py.test --cov=./
+
+after_success:
+  - codecov

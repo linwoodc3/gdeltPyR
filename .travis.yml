@@ -18,7 +18,7 @@ matrix:
           env: GDELT=py35
 install:
     - source travis/install.sh
-    - 'pip install pip -U"
+    - 'pip install pip -U'
     - "pip install pytest-cov"
 script:
   - py.test --cov=./

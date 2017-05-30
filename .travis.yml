@@ -1,65 +1,23 @@
 language: python
-os:
-  - linux
-  - osx
-
-compiler:
-  - gcc
-  - clang
-
-
-python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
-  - "3.6"
-
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - gcc-4.8
-    - g++-4.8
-    - python-dev
-    - libgdal-dev
-    - libgeos-dev
-    - python-gdal
-    - libgeos++-dev
-    - libspatialindex-dev
-
 
 matrix:
-  include:
-    - language: generic
-      os: osx
-      before_install:
-        - brew update
-        - brew install python3
-        - virtualenv env -p python3
-        - source env/bin/activate
-env:
-  - GDELT=false
-  - GDELT=true
-
-before_install:
-  - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install libgdal-dev; else brew install gdal geos; fi
-  - if [ $TRAVIS_OS_NAME = linux ]; then sudo add-apt-repository ppa:ubuntu-toolchain-r/test; else brew install spatialindex; fi
-  - if [ $TRAVIS_OS_NAME = linux ]; then add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable; else brew install gcc; fi
-  - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install python-dev gcc-4.8 g++-4.8 libgeos-dev libgeos++-dev python-gdal libspatialindex-dev; else brew install geos; fi
-  - "pip install pip -U"
-
-
-# command to install dependencies
+    include:
+        - os: linux
+          sudo: required
+          python: 2.7
+          env: TOXENV=py27
+        - os: linux
+          sudo: required
+          python: 3.5
+          env: TOXENV=py35
+        - os: osx
+          language: generic
+          env: TOXENV=py27
+        - os: osx
+          language: generic
+          env: TOXENV=py35
 install:
-  - "pip install pytest-cov"
-  - if [ "$GDELT" == true ]; then
-        echo 'plus testing'; pip install -r requirements_geo.txt;
-        else pip install -r requirements.txt;
-    fi;
-  - pip install -r requirements.txt
-
-# command to run tests
+    - ./travis/install.sh
 script:
   - pytest
   - py.test --cov=./

@@ -9,15 +9,11 @@ if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
     brew install gdal geos spatialindex
 
     case "${TOXENV}" in
-        py34)
+        py27)
             # Install some custom Python 3.2 requirements on OS X
             pip install pip -U
             ;;
         py35)
-            # Install some custom Python 3.3 requirements on OS X
-            pip install pip -U
-            ;;
-        py36)
             # Install some custom Python 3.3 requirements on OS X
             pip install pip -U
             ;;

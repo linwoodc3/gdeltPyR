@@ -4,9 +4,7 @@ if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
 
     # Install some custom requirements on OS X
     # e.g. brew install pyenv-virtualenv
-    brew install python3
-    brew install python2
-    brew install gdal geos spatialindex
+    brew install python3 gdal geos spatialindex
 
     case "${GDELT}" in
         py27)

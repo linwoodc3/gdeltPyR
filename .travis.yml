@@ -1,5 +1,5 @@
 language: python
-
+cache: pip
 matrix:
     include:
         - os: linux
@@ -37,6 +37,12 @@ install:
     - "pip install pytest-cov"
 script:
   - py.test --cov=./
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+before_cache:
+  - rm -f $HOME/.cache/pip/log/debug.log
 
 after_success:
   - codecov

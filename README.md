@@ -1,5 +1,8 @@
-[![Build Status](https://travis-ci.org/linwoodc3/gdeltPyR.svg?branch=master)](https://travis-ci.org/linwoodc3/gdeltPyR)
-[![Build status](https://ci.appveyor.com/api/projects/status/yc6u8v6uvg212dcm?svg=true)](https://ci.appveyor.com/project/linwoodc3/gdeltpyr)
+ | **`Linux and Mac OS`** | **`Windows OS`** | **`Module Version`** |
+|-----------------|---------------------|------------------|
+|[![Build Status](https://travis-ci.org/linwoodc3/gdeltPyR.svg?branch=master)](https://travis-ci.org/linwoodc3/gdeltPyR)|[![Build status](https://ci.appveyor.com/api/projects/status/yc6u8v6uvg212dcm?svg=true)](https://ci.appveyor.com/project/linwoodc3/gdeltpyr/history)|[![PyPI version](https://badge.fury.io/py/gdelt.svg)](https://badge.fury.io/py/gdelt)|
+
+
 # gdeltPyR
 gdeltPyR is a Python-based framework to access and analyze [Global Database of Events, Language, and Tone (GDELT) 1.0 or 2.0 data](http://gdeltproject.org/data.html) for analysis in Python Pandas or R dataframes. A user can enter a date, date range (two strings), or individual dates and return a [tidy data set ready for scientific or data-driven exploration](http://vita.had.co.nz/papers/tidy-data.pdf).  
 
@@ -7,7 +10,7 @@ gdeltPyR is a Python-based framework to access and analyze [Global Database of E
 
 The GDELT Project advertises as the largest, most comprehensive, and highest resolution open database of human society ever created. It monitors print, broadcast, and web news media in over 100 languages from across every country in the world to keep continually updated on breaking developments anywhere on the planet. Its historical archives stretch back to January 1, 1979 and accesses the world’s breaking events and reaction in near-realtime as both the GDELT Event and Global Knowledge Graph update every 15 minutes.  Visit the [GDELT website to learn more about the project](http://gdeltproject.org/#intro).
 
-##New Features (0.1.10)
+## New Features (0.1.10)
 
 
 1.  Added geodataframe output; can be easily converted into a shapefile or [choropleth](https://en.wikipedia.org/wiki/Choropleth_map) visualization.

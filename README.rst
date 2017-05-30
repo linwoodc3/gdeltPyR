@@ -1,5 +1,13 @@
+.. -*- mode: rst -*-
+
 .. image:: https://travis-ci.org/linwoodc3/gdeltPyR.svg?branch=master
 :target: https://travis-ci.org/linwoodc3/gdeltPyR
+
+.. image:: https://ci.appveyor.com/api/projects/status/yc6u8v6uvg212dcm/branch/master?svg=true
+:target: https://ci.appveyor.com/project/linwoodc3/gdeltpyr/history
+
+.. image:: https://badge.fury.io/py/gdelt.svg
+:target: https://pypi.python.org/pypi/gdelt
 
 GDELT in Python with ``gdeltPyR``
 =================================

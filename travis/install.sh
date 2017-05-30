@@ -8,7 +8,7 @@ if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
     brew install python2
     brew install gdal geos spatialindex
 
-    case "${TOXENV}" in
+    case "${GDELT}" in
         py27)
             # Install some custom Python 3.2 requirements on OS X
             pip install pip -U
@@ -30,6 +30,6 @@ else
 fi
 
 if [ "$GDELT" == true ]; then
-        echo 'plus testing'; pip install -r requirements_geo.txt;
+        echo 'geo testing'; pip install -r requirements_geo.txt;
         else pip install -r requirements.txt;
 fi;

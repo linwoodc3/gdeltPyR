@@ -5,17 +5,23 @@ matrix:
         - os: linux
           sudo: required
           python: 2.7
-          env: TOXENV=py27
+          env: GDELT=py27
         - os: linux
           sudo: required
           python: 3.5
-          env: TOXENV=py35
+          env: GDELT=py35
         - os: osx
           language: generic
-          env: TOXENV=py27
+          env: GDELT=py27
         - os: osx
           language: generic
-          env: TOXENV=py35
+          env: GDELT=py35
 install:
     - source travis/install.sh
-script: make test
+    - 'pip install pip -U"
+    - "pip install pytest-cov"
+script:
+  - py.test --cov=./
+
+after_success:
+  - codecov

@@ -58,7 +58,9 @@ test_script:
 #  - dir
   #- "%PYTHON%\\python.exe setup.py test"
   - py.test --cov=./
+  - py.text --doctest-modules --pep8 coveralls -v --cov coveralls --cov-report term-missing
   - pytest 
+  
 after_test:
   - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel"
   - rm -rf tests/coverages

@@ -58,7 +58,7 @@ test_script:
 #  - dir
   #- "%PYTHON%\\python.exe setup.py test"
   - py.test --cov=./
-  - py.text --doctest-modules --pep8 coveralls -v --cov coveralls --cov-report term-missing
+  - py.test --doctest-modules --pep8 coveralls -v --cov coveralls --cov-report term-missing
   - pytest 
   
 after_test:

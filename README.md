@@ -16,6 +16,7 @@ The GDELT Project advertises as the largest, most comprehensive, and highest res
 1.  Added geodataframe output; can be easily converted into a shapefile or [choropleth](https://en.wikipedia.org/wiki/Choropleth_map) visualization.
 2.  Added continuous integration testing for Windows, OSX, and Linux (Ubuntu)
 3.  Normalized columns output; export data with SQL ready columns (no special characters, all lowercase)
+4.  Choosing between the native-english or translated-to-english datasets from GDELT v2.
 
 ```python
 import gdelt

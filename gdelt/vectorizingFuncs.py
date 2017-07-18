@@ -57,7 +57,7 @@ def downloadVectorizer(function, urlList):
     helper = np.vectorize(function)
     return pd.concat(helper(urlList).tolist()).reset_index(drop=True)
 
-def urlBuilder(dateString, version, table='events'):
+def urlBuilder(dateString, version, table='events', translation=False):
     """
     Takes date string from gdeltRange string and creates GDELT urls
 
@@ -84,9 +84,15 @@ def urlBuilder(dateString, version, table='events'):
     if table == "events":
         if version == 1:
             base += 'events/'
-        caboose = ".export.CSV.zip"
+        if not translation:
+            caboose = ".export.CSV.zip"
+        else:
+            caboose = ".translation.export.CSV.zip"
     elif table == "mentions":
-        caboose = ".mentions.CSV.zip"
+        if not translation:
+            caboose = ".mentions.CSV.zip"
+        else:
+            caboose = ".translation.mentions.CSV.zip"
     elif table == "gkg":
         if version == 1:
             base += 'gkg/'
@@ -116,7 +122,10 @@ def urlBuilder(dateString, version, table='events'):
             #                     ' than or equal to April 1 2013')
 
 
-        caboose = ".gkg.csv.zip"
+        if not translation:
+            caboose = ".gkg.csv.zip"
+        else:
+            caboose = ".translation.gkg.csv.zip"
     else:
         raise ValueError('You entered an incorrect GDELT table type.'
                          ' Choose between \"events\",\"mentions\",'

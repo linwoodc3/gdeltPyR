@@ -38,4 +38,6 @@
   Removed datetime parsing
   Added unittests for events before 2013, gkg v1 before apr 1, etc.
 
+2017-07-18
+  Added support for translated-to-english datasets in gdelt v2 for gkg, events en mentions.
 

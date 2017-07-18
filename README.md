@@ -16,6 +16,7 @@ The GDELT Project advertises as the largest, most comprehensive, and highest res
 1.  Added geodataframe output; can be easily converted into a shapefile or [choropleth](https://en.wikipedia.org/wiki/Choropleth_map) visualization.
 2.  Added continuous integration testing for Windows, OSX, and Linux (Ubuntu)
 3.  Normalized columns output; export data with SQL ready columns (no special characters, all lowercase)
+4.  Choosing between the native-english or translated-to-english datasets from GDELT v2.
 
 ```python
 import gdelt
@@ -98,13 +99,14 @@ Performance on 4 core, MacOS Sierra 10.12 with 16GB of RAM:
 ## `gdeltPyR` Parameters
 `gdeltPyR` provides access to 1.0 and 2.0 data.  Four basic parameters guide the query syntax:
 
-| **Name** | Description                                                                                                                                                                                                                                                       | Input Possibilities/Examples    |
-|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------|
-| version  | (integer)  - Selects the version of GDELT data to query; defaults to version 2.                                                                                                                                                                                   | 1 or 2                          |
-| date     | (string or list of strings) - Dates to query                                                                                                                                                                                                                      | "2016 10 23" or "2016 Oct 23"   |
-| coverage | (bool) - For GDELT 2.0, pulls every 15 minute interval in the dates passed in the 'date' parameter. Default coverage is False or None.  `gdeltPyR` will pull the latest 15 minute interval for the current day or the last 15 minute interval for a historic day. | True or False or None           |
-| tables   | (string) - The specific GDELT table to pull.  The default table is the 'events' table.  See the [GDELT documentation page for more information](http://gdeltproject.org/data.html#documentation)                                                                  | 'events' or 'mentions' or 'gkg' |
-| output   | (string) - The output type for the results                                                                 | 'json' or 'csv' or 'gpd' |
+| **Name**    | Description                                                                                                                                                                                                                                                       | Input Possibilities/Examples    |
+|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------|
+| version     | (integer)  - Selects the version of GDELT data to query; defaults to version 2.                                                                                                                                                                                   | 1 or 2                          |
+| date        | (string or list of strings) - Dates to query                                                                                                                                                                                                                      | "2016 10 23" or "2016 Oct 23"   |
+| coverage    | (bool) - For GDELT 2.0, pulls every 15 minute interval in the dates passed in the 'date' parameter. Default coverage is False or None.  `gdeltPyR` will pull the latest 15 minute interval for the current day or the last 15 minute interval for a historic day. | True or False or None           |
+| translation | (bool) - For GDELT 2.0, if the english or translated-to-english dataset should be downloaded                                                                                                                                                                      | True or False                   |
+| tables      | (string) - The specific GDELT table to pull.  The default table is the 'events' table.  See the [GDELT documentation page for more information](http://gdeltproject.org/data.html#documentation)                                                                  | 'events' or 'mentions' or 'gkg' |
+| output      | (string) - The output type for the results                                                                 | 'json' or 'csv' or 'gpd' |
 These parameter values can be mixed and matched to return the data you want.  the `coverage` parameter is used with GDELT version 2; when set to "True", the `gdeltPyR` will query all available 15 minute intervals for the dates passed.  For the current day, the query will return the most recent 15 minute interval. 
   
 *Facts*
@@ -113,6 +115,7 @@ These parameter values can be mixed and matched to return the data you want.  th
      *  1.0 posts the previous day's data at 6AM EST of next day (i.e. Monday's data will be available 6AM Tuesday EST)
 * GDELT 2.0 is updated every 15 minutes  
      *  2.0 has 'events','gkg', and 'mentions' tables
+     *  2.0 has a distinction between native english and translated-to-english news
      *  2.0 has more columns
 
 

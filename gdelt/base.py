@@ -175,6 +175,8 @@ class gdelt(object):
             self.baseUrl = gdelt1url
         self.codes = codes
 
+        self.translation = None
+
     ###############################
     # Searcher function for GDELT
     ###############################
@@ -183,6 +185,7 @@ class gdelt(object):
                date,
                table='events',
                coverage=False,
+               translation=False,
                output=None,
                queryTime=datetime.datetime.now().strftime('%m-%d-%Y %H:%M:%S'),
                normcols=False
@@ -275,6 +278,11 @@ class gdelt(object):
             we pull every 15 minute interval for historical days and up to
             the most recent 15 minute interval for the current day, if that
             day is included.
+            
+        translation : bool, default: False
+            Whether or not to pull the translation database available from
+            version 2 of GDELT. If translation is True, the translated set
+            is downloaded, if set to False the english set is downloaded. 
 
         queryTime : datetime object, system generated
             This records the system time when gdeltPyR's query was executed,
@@ -359,6 +367,7 @@ class gdelt(object):
         baseUrl = self.baseUrl
         self.queryTime = queryTime
         self.table = table
+        self.translation = translation
         self.datesString = gdeltRangeString(dateRanger(self.date),
                                             version=version,
                                             coverage=self.coverage)
@@ -397,10 +406,10 @@ class gdelt(object):
         v2RangerNoCoverage = partial(gdeltRangeString, version=2,
                                      coverage=False)
         urlsv1gkg = partial(urlBuilder, version=1, table='gkg')
-        urlsv2mentions = partial(urlBuilder, version=2, table='mentions')
-        urlsv2events = partial(urlBuilder, version=2, table='events')
+        urlsv2mentions = partial(urlBuilder, version=2, table='mentions', translation=self.translation)
+        urlsv2events = partial(urlBuilder, version=2, table='events', translation=self.translation)
         urlsv1events = partial(urlBuilder, version=1, table='events')
-        urlsv2gkg = partial(urlBuilder, version=2, table='gkg')
+        urlsv2gkg = partial(urlBuilder, version=2, table='gkg', translation=self.translation)
 
         eventWork = partial(mp_worker, table='events')
         codeCams = partial(cameos, codes=codes)

@@ -5,28 +5,73 @@
 # Linwood Creekmore
 # Email: valinvescap@gmail.com
 
+##################################
+# Standard library imports
+##################################
 import datetime
 import warnings
 
+##################################
+# Third party imports
+##################################
 import numpy as np
 from dateutil.parser import parse
 
+##################################
+# Local imports
+##################################
 from gdelt.vectorizingFuncs import vectorizer
 
 
-def parse_date(var):
-    """Return datetime object from string."""
+def parse_date(date_string):
+    """Convert a date string to a Python datetime object.
+
+    Parameters
+    ----------
+    date_string : string
+        A date, written as a string
+
+    Returns
+    -------
+    datetime object
+        Python datetime object.
+
+    Example
+    --------
+    This is a simple function to return a datetime object from a string.
+
+    >>> parse_date('2016 10 01')
+    datetime.datetime(2016, 10, 1, 0, 0)
+    """
 
     try:
-        return np.where(isinstance(parse(var), datetime.datetime),
-                        parse(var), "Error")
+        return np.where(isinstance(parse(date_string), datetime.datetime),
+                        parse(date_string), "Error")
     except Exception as e:
         return "You entered an incorrect date.  Check your date format."
 
 
-def dateFormatter(datearray):
-    """Function to format strings for numpy arange"""
-    return parse(datearray).strftime("%Y-%m-%d")
+def dateformatter(date_string):
+    """Converts arbritary date string into standardized date string
+
+    Parameters
+    ----------
+    date_string : string
+        A date, written as a string
+
+    Returns
+    -------
+    string
+        Standardized date string in YYYY-MM-DD format.
+
+    Example
+    --------
+    This is a simple function to convert entered date strings into a standard date string format.
+
+    >>> dateformatter('2016 10 01')
+    '2016-10-01'
+    """
+    return parse(date_string).strftime("%Y-%m-%d")
 
 
 def dateRanger(originalArray):
@@ -34,17 +79,6 @@ def dateRanger(originalArray):
     Creates datetime.date objects for each day in the range
     and stores in a numpy array.
 
-    Example
-
-    Parameters
-        ----------
-        originalArray : {array-like, sparse matrix}, shape (n_samples, n_features)
-            Input data, where ``n_samples`` is the number of samples and
-            ``n_features`` is the number of features.
-    Returns
-    -------
-    self : object
-        Returns self.
     """
 
     minutes = list(map(str, range(00, 60, 15)))
@@ -74,7 +108,7 @@ def dateRanger(originalArray):
             return np.array(list(map(lambda x: parse(x), originalArray)))
         else:
 
-            cleaner = np.vectorize(dateFormatter)
+            cleaner = np.vectorize(dateformatter)
             converted = cleaner(originalArray).tolist()
             dates = np.arange(converted[0], converted[1],
                               dtype='datetime64[D]')
@@ -125,6 +159,7 @@ def gdeltRangeString(element, coverage=None, version=2.0):
     # calculate nearest 15 minute interval
     if not isinstance(element, list):
 
+
         if element.date() == datetime.datetime.now().date():
             if coverage and int(version) != 1:
 
@@ -135,11 +170,13 @@ def gdeltRangeString(element, coverage=None, version=2.0):
                             '%Y%m%d%H%M%S'
                         ), times[:hour * 4 + conditioner])))
             else:
+
                 converted = datetime.datetime.now().replace(
                     minute=multiple, second=0).strftime('%Y%m%d%H%M%S')
 
         else:
             if coverage and int(version) != 1:
+
 
                 converted = restOfDay = np.array(
                     list(map(
@@ -151,6 +188,8 @@ def gdeltRangeString(element, coverage=None, version=2.0):
 
                 converted = element.replace(minute=int(
                     multiple), second=0).strftime('%Y%m%d%H%M%S')
+                if parse(converted)< datetime.datetime.now():
+                    converted = element.replace(minute=45, second=0,hour=23).strftime('%Y%m%d%H%M%S')
 
 
     #################################
@@ -172,6 +211,7 @@ def gdeltRangeString(element, coverage=None, version=2.0):
                     minutes=45, hours=23
                 )
             ).strftime('%Y%m%d%H%M%S'), element))
+
         else:
             converted = (datetime.datetime.combine(
                 element, datetime.time.min) +
@@ -245,3 +285,4 @@ def dateMasker(dateString, version):
                               vectorizer(gdeltRangeString, dateRanger(
                                   dateString))[:6]))).tolist()
     return mask
+

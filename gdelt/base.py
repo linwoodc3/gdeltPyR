@@ -31,7 +31,7 @@ import requests
 ##################################
 # Local imports
 ##################################
-from gdelt.dateFuncs import (dateRanger, gdeltRangeString)
+from gdelt.dateFuncs import (_dateRanger, _gdeltRangeString)
 from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads, \
     gkgHeads
 from gdelt.helpers import cameos
@@ -368,7 +368,7 @@ class gdelt(object):
         self.queryTime = queryTime
         self.table = table
         self.translation = translation
-        self.datesString = gdeltRangeString(dateRanger(self.date),
+        self.datesString = _gdeltRangeString(_dateRanger(self.date),
                                             version=version,
                                             coverage=self.coverage)
 
@@ -397,13 +397,13 @@ class gdelt(object):
         # Partial Functions
         #################################
 
-        v1RangerCoverage = partial(gdeltRangeString, version=1,
+        v1RangerCoverage = partial(_gdeltRangeString, version=1,
                                    coverage=True)
-        v2RangerCoverage = partial(gdeltRangeString, version=2,
+        v2RangerCoverage = partial(_gdeltRangeString, version=2,
                                    coverage=True)
-        v1RangerNoCoverage = partial(gdeltRangeString, version=1,
+        v1RangerNoCoverage = partial(_gdeltRangeString, version=1,
                                      coverage=False)
-        v2RangerNoCoverage = partial(gdeltRangeString, version=2,
+        v2RangerNoCoverage = partial(_gdeltRangeString, version=2,
                                      coverage=False)
         urlsv1gkg = partial(urlBuilder, version=1, table='gkg')
         urlsv2mentions = partial(urlBuilder, version=2, table='mentions', translation=self.translation)
@@ -445,19 +445,19 @@ class gdelt(object):
 
             if self.table == 'gkg':
                 self.download_list = (urlsv1gkg(v1RangerCoverage(
-                    dateRanger(self.date))))
+                    _dateRanger(self.date))))
 
             elif self.table == 'events' or self.table == '':
 
                 if self.coverage is True:
 
                     self.download_list = (urlsv1events(v1RangerCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
 
                 else:
                     # print("I'm here at line 125")
                     self.download_list = (urlsv1events(v1RangerNoCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
 
             else:
                 raise Exception('You entered an incorrect table type for '
@@ -472,21 +472,21 @@ class gdelt(object):
                 if self.coverage is True:
 
                     self.download_list = (urlsv2events(v2RangerCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
                 else:
 
                     self.download_list = (urlsv2events(v2RangerNoCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
 
             if self.table == 'gkg':
                 columns = self.gkg_columns
                 if self.coverage is True:
 
                     self.download_list = (urlsv2gkg(v2RangerCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
                 else:
                     self.download_list = (urlsv2gkg(v2RangerNoCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
                     # print ("2 gkg", urlsv2gkg(self.datesString))
 
             if self.table == 'mentions':
@@ -494,12 +494,12 @@ class gdelt(object):
                 if self.coverage is True:
 
                     self.download_list = (urlsv2mentions(v2RangerCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
 
                 else:
 
                     self.download_list = (urlsv2mentions(v2RangerNoCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
 
 
         #########################

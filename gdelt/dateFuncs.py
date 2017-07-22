@@ -23,7 +23,7 @@ from dateutil.parser import parse
 from gdelt.vectorizingFuncs import vectorizer
 
 
-def parse_date(date_string):
+def _parse_date(date_string):
     """Convert a date string to a Python datetime object.
 
     Parameters
@@ -40,7 +40,7 @@ def parse_date(date_string):
     --------
     This is a simple function to return a datetime object from a string.
 
-    >>> parse_date('2016 10 01')
+    >>> _parse_date('2016 10 01')
     datetime.datetime(2016, 10, 1, 0, 0)
     """
 
@@ -51,7 +51,7 @@ def parse_date(date_string):
         return "You entered an incorrect date.  Check your date format."
 
 
-def dateformatter(date_string):
+def _dateformatter(date_string):
     """Converts arbritary date string into standardized date string
 
     Parameters
@@ -68,13 +68,13 @@ def dateformatter(date_string):
     --------
     This is a simple function to convert entered date strings into a standard date string format.
 
-    >>> dateformatter('2016 10 01')
+    >>> _dateformatter('2016 10 01')
     '2016-10-01'
     """
     return parse(date_string).strftime("%Y-%m-%d")
 
 
-def dateRanger(originalArray):
+def _dateRanger(originalArray):
     """Function to vectorize date formatting function.
     Creates datetime.date objects for each day in the range
     and stores in a numpy array.
@@ -96,7 +96,7 @@ def dateRanger(originalArray):
         """Check user input to retrieve date query."""
 
         return np.where(len(originalArray) == 0, "crazy",
-                        parse_date(originalArray))
+                        _parse_date(originalArray))
 
     elif isinstance(originalArray, list):
 
@@ -108,7 +108,7 @@ def dateRanger(originalArray):
             return np.array(list(map(lambda x: parse(x), originalArray)))
         else:
 
-            cleaner = np.vectorize(dateformatter)
+            cleaner = np.vectorize(_dateformatter)
             converted = cleaner(originalArray).tolist()
             dates = np.arange(converted[0], converted[1],
                               dtype='datetime64[D]')
@@ -125,7 +125,7 @@ def dateRanger(originalArray):
             return np.array(dates)
 
 
-def gdeltRangeString(element, coverage=None, version=2.0):
+def _gdeltRangeString(element, coverage=None, version=2.0):
     """Takes a numpy datetime and converts to string"""
 
     ########################
@@ -274,15 +274,15 @@ def gdeltRangeString(element, coverage=None, version=2.0):
     return converted
 
 
-def dateMasker(dateString, version):
+def _dateMasker(dateString, version):
     mask = (np.where((int(version == 1) and parse(dateString) >= parse(
         '2013 04 01')) or (int(version) == 2),
-                     vectorizer(gdeltRangeString, dateRanger(dateString))[:8],
+                     vectorizer(_gdeltRangeString, _dateRanger(dateString))[:8],
                      np.where(int(version) == 1 and parse(
                          dateString) < parse('2006 01'),
-                              vectorizer(gdeltRangeString, dateRanger(
+                              vectorizer(_gdeltRangeString, _dateRanger(
                                   dateString))[:4],
-                              vectorizer(gdeltRangeString, dateRanger(
+                              vectorizer(_gdeltRangeString, _dateRanger(
                                   dateString))[:6]))).tolist()
     return mask
 

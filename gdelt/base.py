@@ -34,7 +34,7 @@ import requests
 from gdelt.dateFuncs import (_dateRanger, _gdeltRangeString)
 from gdelt.getHeaders import _events1Heads, _events2Heads, _mentionsHeads, \
     _gkgHeads
-from gdelt.helpers import cameos
+from gdelt.helpers import _cameos
 from gdelt.inputChecks import (date_input_check)
 from gdelt.parallel import mp_worker
 from gdelt.vectorizingFuncs import urlBuilder, geofilter
@@ -412,7 +412,7 @@ class gdelt(object):
         urlsv2gkg = partial(urlBuilder, version=2, table='gkg', translation=self.translation)
 
         eventWork = partial(mp_worker, table='events')
-        codeCams = partial(cameos, codes=codes)
+        codeCams = partial(_cameos, codes=codes)
 
         #####################################
         # GDELT Version 2.0 Headers

@@ -32,8 +32,8 @@ import requests
 # Local imports
 ##################################
 from gdelt.dateFuncs import (_dateRanger, _gdeltRangeString)
-from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads, \
-    gkgHeads
+from gdelt.getHeaders import _events1Heads, _events2Heads, _mentionsHeads, \
+    _gkgHeads
 from gdelt.helpers import cameos
 from gdelt.inputChecks import (date_input_check)
 from gdelt.parallel import mp_worker
@@ -423,9 +423,9 @@ class gdelt(object):
             # Download 2.0 Headers
             ###################################
 
-            self.events_columns = events2Heads()
-            self.mentions_columns = mentionsHeads()
-            self.gkg_columns = gkgHeads()
+            self.events_columns = _events2Heads()
+            self.mentions_columns = _mentionsHeads()
+            self.gkg_columns = _gkgHeads()
 
         #####################################
         # GDELT Version 1.0 Analytics, Header, Downloads
@@ -440,7 +440,7 @@ class gdelt(object):
             else:
                 pass
 
-            self.events_columns = events1Heads()
+            self.events_columns = _events1Heads()
             columns = self.events_columns
 
             if self.table == 'gkg':

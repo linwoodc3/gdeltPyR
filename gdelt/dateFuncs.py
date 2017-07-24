@@ -20,7 +20,7 @@ from dateutil.parser import parse
 ##################################
 # Local imports
 ##################################
-from gdelt.vectorizingFuncs import vectorizer
+from gdelt.vectorizingFuncs import _vectorizer
 
 
 def _parse_date(date_string):
@@ -277,12 +277,12 @@ def _gdeltRangeString(element, coverage=None, version=2.0):
 def _dateMasker(dateString, version):
     mask = (np.where((int(version == 1) and parse(dateString) >= parse(
         '2013 04 01')) or (int(version) == 2),
-                     vectorizer(_gdeltRangeString, _dateRanger(dateString))[:8],
+                     _vectorizer(_gdeltRangeString, _dateRanger(dateString))[:8],
                      np.where(int(version) == 1 and parse(
                          dateString) < parse('2006 01'),
-                              vectorizer(_gdeltRangeString, _dateRanger(
+                              _vectorizer(_gdeltRangeString, _dateRanger(
                                   dateString))[:4],
-                              vectorizer(_gdeltRangeString, _dateRanger(
+                              _vectorizer(_gdeltRangeString, _dateRanger(
                                   dateString))[:6]))).tolist()
     return mask
 

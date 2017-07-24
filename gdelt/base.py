@@ -37,7 +37,7 @@ from gdelt.getHeaders import _events1Heads, _events2Heads, _mentionsHeads, \
 from gdelt.helpers import _cameos
 from gdelt.inputChecks import (date_input_check)
 from gdelt.parallel import _mp_worker
-from gdelt.vectorizingFuncs import urlBuilder, geofilter
+from gdelt.vectorizingFuncs import _urlBuilder, _geofilter
 
 
 
@@ -405,11 +405,11 @@ class gdelt(object):
                                      coverage=False)
         v2RangerNoCoverage = partial(_gdeltRangeString, version=2,
                                      coverage=False)
-        urlsv1gkg = partial(urlBuilder, version=1, table='gkg')
-        urlsv2mentions = partial(urlBuilder, version=2, table='mentions', translation=self.translation)
-        urlsv2events = partial(urlBuilder, version=2, table='events', translation=self.translation)
-        urlsv1events = partial(urlBuilder, version=1, table='events')
-        urlsv2gkg = partial(urlBuilder, version=2, table='gkg', translation=self.translation)
+        urlsv1gkg = partial(_urlBuilder, version=1, table='gkg')
+        urlsv2mentions = partial(_urlBuilder, version=2, table='mentions', translation=self.translation)
+        urlsv2events = partial(_urlBuilder, version=2, table='events', translation=self.translation)
+        urlsv1events = partial(_urlBuilder, version=1, table='events')
+        urlsv2gkg = partial(_urlBuilder, version=2, table='gkg', translation=self.translation)
 
         eventWork = partial(_mp_worker, table='events')
         codeCams = partial(_cameos, codes=codes)
@@ -623,7 +623,7 @@ class gdelt(object):
         elif output == 'csv':
             self.final = results.to_csv(encoding='utf-8')
         elif output == 'gpd' or output == 'geodataframe' or output == 'geoframe':
-            self.final = geofilter(results)
+            self.final = _geofilter(results)
             self.final = self.final[self.final.geometry.notnull()]
         elif output == 'r':
 

@@ -24,7 +24,7 @@ from gdelt.multipdf import _parallelize_dataframe
 from gdelt.helpers import _testdate
 
 
-def vectorizer(function, dateArray):
+def _vectorizer(function, dateArray):
     helper = np.vectorize(function)
 
     final = helper(dateArray.tolist()).tolist()
@@ -43,21 +43,21 @@ def vectorizer(function, dateArray):
 # Finds the urls from an array of dates
 
 
-def urlFinder(dataframe, targetDate, col):
+def _urlFinder(dataframe, targetDate, col):
     return dataframe[col][dataframe[col].str.contains(targetDate)]
 
 
-def vectorizedUrlFinder(function, urlList, frame):
+def _vectorizedUrlFinder(function, urlList, frame):
     helper = np.vectorize(function)
     return pd.concat(helper(urlList, frame).tolist())
 
 
-def downloadVectorizer(function, urlList):
+def _downloadVectorizer(function, urlList):
     """Vectorized function to download urls"""
     helper = np.vectorize(function)
     return pd.concat(helper(urlList).tolist()).reset_index(drop=True)
 
-def urlBuilder(dateString, version, table='events', translation=False):
+def _urlBuilder(dateString, version, table='events', translation=False):
     """
     Takes date string from gdeltRange string and creates GDELT urls
 
@@ -247,7 +247,7 @@ def urlBuilder(dateString, version, table='events', translation=False):
 
         return base + dateString + caboose
 
-def geofilter(frame):
+def _geofilter(frame):
     """Filters dataframe for conversion to geojson or shapefile"""
     try:
         import geopandas as gpd

@@ -36,7 +36,7 @@ from gdelt.getHeaders import _events1Heads, _events2Heads, _mentionsHeads, \
     _gkgHeads
 from gdelt.helpers import _cameos
 from gdelt.inputChecks import (date_input_check)
-from gdelt.parallel import mp_worker
+from gdelt.parallel import _mp_worker
 from gdelt.vectorizingFuncs import urlBuilder, geofilter
 
 
@@ -411,7 +411,7 @@ class gdelt(object):
         urlsv1events = partial(urlBuilder, version=1, table='events')
         urlsv2gkg = partial(urlBuilder, version=2, table='gkg', translation=self.translation)
 
-        eventWork = partial(mp_worker, table='events')
+        eventWork = partial(_mp_worker, table='events')
         codeCams = partial(_cameos, codes=codes)
 
         #####################################
@@ -568,7 +568,7 @@ class gdelt(object):
                 #     results = eventWork(self.download_list)
                 #
                 # else:
-                results = mp_worker(self.download_list)
+                results = _mp_worker(self.download_list)
 
         else:
 
@@ -580,7 +580,7 @@ class gdelt(object):
             else:
 
                 pool = NoDaemonProcessPool(processes=cpu_count())
-                downloaded_dfs = list(pool.imap_unordered(mp_worker,
+                downloaded_dfs = list(pool.imap_unordered(_mp_worker,
                                                           self.download_list))
             pool.close()
             pool.terminate()

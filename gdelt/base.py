@@ -35,7 +35,7 @@ from gdelt.dateFuncs import (_dateRanger, _gdeltRangeString)
 from gdelt.getHeaders import _events1Heads, _events2Heads, _mentionsHeads, \
     _gkgHeads
 from gdelt.helpers import _cameos
-from gdelt.inputChecks import (date_input_check)
+from gdelt.inputChecks import (_date_input_check)
 from gdelt.parallel import _mp_worker
 from gdelt.vectorizingFuncs import _urlBuilder, _geofilter
 
@@ -360,7 +360,7 @@ class gdelt(object):
         an option to store the output directly to disc.
 
         """
-        date_input_check(date, self.version)
+        _date_input_check(date, self.version)
         self.coverage = coverage
         self.date = date
         version = self.version

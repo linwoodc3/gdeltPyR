@@ -14,6 +14,7 @@ import os
 import re
 import json
 import datetime
+from io import BytesIO
 import multiprocessing.pool
 from functools import partial
 from multiprocessing import Pool, cpu_count
@@ -31,6 +32,7 @@ import requests
 ##################################
 # Local imports
 ##################################
+import gdelt
 from gdelt.dateFuncs import (dateRanger, gdeltRangeString)
 from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads, \
     gkgHeads
@@ -668,3 +670,27 @@ class gdelt(object):
             self.final.columns = list(map(lambda x: (x.replace('_', "")).lower(), self.final.columns))
 
         return self.final
+
+    def cameo(self):
+
+        """Core searcher method to set parameters for GDELT data searches
+
+        Keyword arguments
+        ----------
+        self : None
+            Method to return a dataframe with descriptions of the CAMEO coding system.
+        :return:
+        """
+        import os
+
+        df = pd.read_json(os.path.join(BASE_DIR,'data','cameoCodes.json'))
+        codes = df
+
+        return codes
+
+    def eventheadersv1(self):
+
+        df = pd.read_csv(os.path.join(BASE_DIR, 'utils', 'schema_csvs',
+                         'GDELT_1.0_event_'
+        'Column_Labels_Header_Row_Sep2016.tsv'),sep='\t')
+        return df

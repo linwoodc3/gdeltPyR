@@ -107,6 +107,7 @@ Performance on 4 core, MacOS Sierra 10.12 with 16GB of RAM:
 | translation | (bool) - For GDELT 2.0, if the english or translated-to-english dataset should be downloaded                                                                                                                                                                      | True or False                   |
 | tables      | (string) - The specific GDELT table to pull.  The default table is the 'events' table.  See the [GDELT documentation page for more information](http://gdeltproject.org/data.html#documentation)                                                                  | 'events' or 'mentions' or 'gkg' |
 | output      | (string) - The output type for the results                                                                 | 'json' or 'csv' or 'gpd' |
+
 These parameter values can be mixed and matched to return the data you want.  the `coverage` parameter is used with GDELT version 2; when set to "True", the `gdeltPyR` will query all available 15 minute intervals for the dates passed.  For the current day, the query will return the most recent 15 minute interval. 
   
 *Facts*
@@ -121,10 +122,27 @@ These parameter values can be mixed and matched to return the data you want.  th
 
 ## Known Issues
 
-*  None
+*  "Running out of memory"
+    *  **Fix 1**: Use Version 1 data
+        *  **Why**:  Version 2 has more fields of data so consumes more memory. Version 1 has less fields.  Visit [the GDELT data page to learn about `Version 1` and `Version 2` differences](http://gdeltproject.org/data.html)
+    *  **Fix 2**: Get more memory or write to disk and flu
+        *  **Why**:  If you **MUST** use `Version 2` and pull full days of data, you need more memory as the gdeltPyR return is held in memory.  One day of GDELT `Version 2` data can be 500 MB. Get more RAM, you have less problems. Or, pull a day, write to disk, flush, then continue. 
 
 ## Coming Soon
 
 * Query [Google BigQuery copy of GDELT directly](https://bigquery.cloud.google.com/table/gdelt-bq:full.events) from `gdeltPyR`; will require project ID and authentication using `pandas gbq` inteface.
 * Adding a query for [GDELT Visual Knowledge Graph (VGKG)](http://blog.gdeltproject.org/gdelt-visual-knowledge-graph-vgkg-v1-0-available/)
 * Adding a query for [GDELT American Television Global Knowledge Graph (TV-GKG)](http://blog.gdeltproject.org/announcing-the-american-television-global-knowledge-graph-tv-gkg/)
+
+
+## Contributing to gdelPyR
+
+All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome.
+
+A detailed overview on how to contribute is forthcoming.
+
+Our main requirement (and advice) is to make sure you write a unittest for your enhancement or addition.  Moreover, we can't accept a commit until existing unittests are passing in Travis CI (OSX and Linux) and Appveyor (Windows).  
+
+If you are simply looking to start working with the `gdeltPyR` codebase, navigate to the []GitHub “issues”](https://github.com/linwoodc3/gdeltPyR/issues) tab and start looking through interesting issues. There are a number of issues listed where you could start out.
+
+Or maybe through using gdeltPyR you have an idea of your own or are looking for something in the documentation and thinking ‘this can be improved’...you can do something about it!

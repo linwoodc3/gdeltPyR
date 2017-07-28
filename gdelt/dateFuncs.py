@@ -159,7 +159,6 @@ def gdeltRangeString(element, coverage=None, version=2.0):
     # calculate nearest 15 minute interval
     if not isinstance(element, list):
 
-
         if element.date() == datetime.datetime.now().date():
             if coverage and int(version) != 1:
 
@@ -177,7 +176,6 @@ def gdeltRangeString(element, coverage=None, version=2.0):
         else:
             if coverage and int(version) != 1:
 
-
                 converted = restOfDay = np.array(
                     list(map(
                         lambda x: np.datetime64(parse(str(element) + " " + x)
@@ -188,8 +186,8 @@ def gdeltRangeString(element, coverage=None, version=2.0):
 
                 converted = element.replace(minute=int(
                     multiple), second=0).strftime('%Y%m%d%H%M%S')
-                if parse(converted)< datetime.datetime.now():
-                    converted = element.replace(minute=45, second=0,hour=23).strftime('%Y%m%d%H%M%S')
+                if parse(converted) < datetime.datetime.now():
+                    converted = element.replace(minute=45, second=0, hour=23).strftime('%Y%m%d%H%M%S')
 
 
     #################################
@@ -285,4 +283,3 @@ def dateMasker(dateString, version):
                               vectorizer(gdeltRangeString, dateRanger(
                                   dateString))[:6]))).tolist()
     return mask
-

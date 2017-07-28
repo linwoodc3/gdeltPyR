@@ -146,3 +146,18 @@ Our main requirement (and advice) is to make sure you write a unittest for your 
 If you are simply looking to start working with the `gdeltPyR` codebase, navigate to the []GitHub “issues”](https://github.com/linwoodc3/gdeltPyR/issues) tab and start looking through interesting issues. There are a number of issues listed where you could start out.
 
 Or maybe through using gdeltPyR you have an idea of your own or are looking for something in the documentation and thinking ‘this can be improved’...you can do something about it!
+
+## Styles for Submitting Issues/Pull Requests
+
+We follow the [`pandas`](https://pandas.pydata.org/pandas-docs/stable/contributing.html#contributing-your-changes-to-pandas)  coding style for issues and pull requests.  Use the following style:
+
+* ENH: Enhancement, new functionality
+* BUG: Bug fix
+* DOC: Additions/updates to documentation
+* TST: Additions/updates to tests
+* BLD: Updates to the build process/scripts
+* PERF: Performance improvement
+* CLN: Code cleanup
+
+
+See [this issue as an example](https://github.com/linwoodc3/gdeltPyR/issues/8).

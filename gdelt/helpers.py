@@ -11,11 +11,11 @@
 import re
 import datetime
 
-
 ##############################
 # Third party Library Imports
 ##############################
 from dateutil.parser import parse
+
 
 ##############################
 # Filter functions for dataframes
@@ -70,6 +70,7 @@ def rooturl(row):
         return r.search(s).group()
     elif r2.search(s):
         return r2.search(s).group()
+
 
 def testdate(dateString):
     """Test dates of different formats"""

@@ -5,19 +5,22 @@
 # Linwood Creekmore
 # Email: valinvescap@gmail.com
 
+
 ##################################
 # Standard library imports
 ##################################
 import re
+import warnings
 import zipfile
+import datetime
 from io import BytesIO
-import warnings, datetime
 
 ##################################
 # Third party imports
 ##################################
 import pandas as pd
 import requests
+
 
 ##################################
 # Local imports
@@ -38,7 +41,7 @@ def downloadAndExtract(gdeltUrl):
     return pd.read_csv(BytesIO(data), delimiter='\t', header=None)
 
 
-def normalpull(url,table=None):
+def normalpull(url, table=None):
     """When single string url, just download it"""
     r = requests.get(url, timeout=5)
     # print(len(r.content))

@@ -4,7 +4,7 @@ Welcome to gdeltPyR's documentation!
 
 ====
 gdeltPyR
-====
+========
 
 *gdeltPyR is Python based framework to retreive Global Database of Events, 
 Language, and Tone (GDELT) version 1.0 and version 2.0 data.*

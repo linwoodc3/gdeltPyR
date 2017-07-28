@@ -6,6 +6,7 @@
 # Email: valinvescap@gmail.com
 
 import pickle
+
 ##################################
 # Standard library imports
 ##################################
@@ -46,16 +47,15 @@ gdelt2 = urljoin(BASEURL, 'gdeltv2/masterfilelist.txt')
 gd2 = gdelt.gdelt(version=2)
 gd1 = gdelt.gdelt(version=1)
 
-class testresponse(TestCase):
 
+class testresponse(TestCase):
     @mock.patch('gdelt.gdelt.Search')
-    def test_request_response_version2_events(self,mock_get):
+    def test_request_response_version2_events(self, mock_get):
         """Send a request to the API server and store the response."""
         gd2 = gdelt.gdelt(version=2)
 
-
         # loading the mock dataframe return
-        events2 = pickle.load(open('../data/gdv2events.pkl','rb'))
+        events2 = pickle.load(open('../data/gdv2events.pkl', 'rb'))
 
         # Creating the mock object
         mock_get.return_value = mock.Mock()
@@ -64,13 +64,13 @@ class testresponse(TestCase):
         mock_get.return_value.dataframe = events2
 
         # real response for testing
-        response = gd2.Search('2017 March 12',table='events',coverage=False)
+        response = gd2.Search('2017 March 12', table='events', coverage=False)
 
         # Use dataframe method to test for equality
         return (self.assertTrue(response.dataframe.equals(events2)))
 
     @mock.patch('gdelt.gdelt.Search')
-    def test_request_response_version1_events(self,mock_get):
+    def test_request_response_version1_events(self, mock_get):
         """Send a request to the API server and store the response."""
 
         gd1 = gdelt.gdelt(version=1)
@@ -89,4 +89,3 @@ class testresponse(TestCase):
 
         # Use dataframe method to test for equality
         return (self.assertTrue(response.dataframe.equals(events1)))
-

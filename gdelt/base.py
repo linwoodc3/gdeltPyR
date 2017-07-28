@@ -18,8 +18,6 @@ from io import BytesIO
 import multiprocessing.pool
 from functools import partial
 from multiprocessing import Pool, cpu_count
-from concurrent.futures import ProcessPoolExecutor
-
 
 ##################################
 # Third party imports
@@ -40,7 +38,6 @@ from gdelt.helpers import cameos
 from gdelt.inputChecks import (date_input_check)
 from gdelt.parallel import mp_worker
 from gdelt.vectorizingFuncs import urlBuilder, geofilter
-
 
 
 class NoDaemonProcess(multiprocessing.Process):
@@ -83,6 +80,7 @@ except:
         '/utils/' \
         'schema_csvs/cameoCodes.json'
     codes = json.loads((requests.get(a).content.decode('utf-8')))
+
 
 ##############################
 # Core GDELT class
@@ -374,7 +372,6 @@ class gdelt(object):
                                             version=version,
                                             coverage=self.coverage)
 
-
         #################################
         # R dataframe check; fail early
         #################################
@@ -502,7 +499,6 @@ class gdelt(object):
 
                     self.download_list = (urlsv2mentions(v2RangerNoCoverage(
                         dateRanger(self.date))))
-
 
         #########################
         # DEBUG Print Section
@@ -671,7 +667,8 @@ class gdelt(object):
 
         return self.final
 
-    def cameo(self):
+    @staticmethod
+    def cameo():
 
         """Core searcher method to set parameters for GDELT data searches
 
@@ -683,14 +680,15 @@ class gdelt(object):
         """
         import os
 
-        df = pd.read_json(os.path.join(BASE_DIR,'data','cameoCodes.json'))
+        df = pd.read_json(os.path.join(BASE_DIR, 'data', 'cameoCodes.json'))
         codes = df
 
         return codes
 
-    def eventheadersv1(self):
+    @staticmethod
+    def eventheadersv1():
 
         df = pd.read_csv(os.path.join(BASE_DIR, 'utils', 'schema_csvs',
-                         'GDELT_1.0_event_'
-        'Column_Labels_Header_Row_Sep2016.tsv'),sep='\t')
+                                      'GDELT_1.0_event_'
+                                      'Column_Labels_Header_Row_Sep2016.tsv'), sep='\t')
         return df

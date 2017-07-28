@@ -78,11 +78,9 @@ class TestGdeltRangeString(TestCase):
         exp = np.array(['201302'])
         np.testing.assert_array_equal(exp, gdeltstring_test)
 
-
     def test_gdeltrange_sequence_v1_2005(self):
         date_sequence = ['2001 Feb 01', '2005 Feb 05']
         ranger_output = dateRanger(date_sequence)
         gdeltstring_test = np.sort(np.array(gdeltRangeString(ranger_output, version=1)))
         exp = np.sort(np.array(['2001', '2002', '2003', '2004', '2005']))
         np.testing.assert_array_equal(exp, gdeltstring_test)
-

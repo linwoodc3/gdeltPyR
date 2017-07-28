@@ -77,7 +77,7 @@ def date_input_check(date, version):
                     datetime.datetime.now())))
 
     elif isinstance(date, list) or isinstance(date, np.ndarray):
-        newdate =[]
+        newdate = []
 
         for l in date:
             if len(l) == 4:

@@ -69,7 +69,7 @@ class TestUrlBuilder(TestCase):
         date_sequence = '2013 Apr 01'
         ranger_output = dateRanger(date_sequence)
         gdeltstring_output = gdeltRangeString(ranger_output, version=1)
-        urlbuilder_test = urlBuilder(gdeltstring_output, table='gkg',version=1)
+        urlbuilder_test = urlBuilder(gdeltstring_output, table='gkg', version=1)
         exp = 'http://data.gdeltproject.org/gkg/20130401.gkg.csv.zip'
         return self.assertEqual(exp, urlbuilder_test, "Version 1 Url works.")
 
@@ -90,7 +90,7 @@ class TestUrlBuilder(TestCase):
         return self.assertEqual(exp, urlbuilder_test, "Version 2 Url works with translation.")
 
     def test_urlbuilder_events2_passlist(self):
-        date_sequence = ['2015 Apr 01','2015 Apr 02']
+        date_sequence = ['2015 Apr 01', '2015 Apr 02']
         ranger_output = dateRanger(date_sequence)
         gdeltstring_output = gdeltRangeString(ranger_output, version=2)
         urlbuilder_test = urlBuilder(gdeltstring_output, table='events', version=2)
@@ -99,7 +99,7 @@ class TestUrlBuilder(TestCase):
         return np.testing.assert_array_equal(np.sort(np.array(urlbuilder_test)), np.sort(np.array(exp)))
 
     def test_urlbuilder_events2_passlist_translation(self):
-        date_sequence = ['2015 Apr 01','2015 Apr 02']
+        date_sequence = ['2015 Apr 01', '2015 Apr 02']
         ranger_output = dateRanger(date_sequence)
         gdeltstring_output = gdeltRangeString(ranger_output, version=2)
         urlbuilder_test = urlBuilder(gdeltstring_output, table='events', version=2, translation=True)

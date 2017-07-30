@@ -3,7 +3,7 @@
 """A library that provides a Python interface to the GDELT 1.0 and 2.0 API"""
 from __future__ import absolute_import
 
-from gdelt.base import gdelt
+from gdelt.base import gdelt,tableInfo
 
 __name__ = 'gdelt'
 __author__ = 'Linwood Creekmore III'

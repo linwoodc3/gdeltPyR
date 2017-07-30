@@ -14,7 +14,6 @@ import os
 import re
 import json
 import datetime
-from io import BytesIO
 import multiprocessing.pool
 from functools import partial
 from multiprocessing import Pool, cpu_count
@@ -22,7 +21,7 @@ from multiprocessing import Pool, cpu_count
 ##################################
 # Third party imports
 ##################################
-from dateutil.parser import parse
+
 import numpy as np
 import pandas as pd
 import requests
@@ -70,12 +69,11 @@ UTIL_FILES_PATH = os.path.join(BASE_DIR, "gdeltPyR", "utils", "schema_csvs")
 
 try:
 
-    codes = json.load(open(os.path.join(UTIL_FILES_PATH,
-                                        "cameoCodes.json")))
-
+    codes = pd.read_json(os.path.join(BASE_DIR, 'data', 'cameoCodes.json'),
+                      dtype={'cameoCode': 'str', "GoldsteinScale": np.float64})
+    codes.set_index('cameoCode', drop=False, inplace=True)
 
 except:
-
     a = 'https://raw.githubusercontent.com/linwoodc3/gdeltPyR/master' \
         '/utils/' \
         'schema_csvs/cameoCodes.json'
@@ -166,16 +164,15 @@ class gdelt(object):
 
                  ):
 
+        self.codes = codes
+        self.translation = None
         self.version = version
         self.cores = cores
-
         if int(version) == 2:
             self.baseUrl = gdelt2url
         elif int(version) == 1:
             self.baseUrl = gdelt1url
-        self.codes = codes
 
-        self.translation = None
 
     ###############################
     # Searcher function for GDELT
@@ -680,7 +677,9 @@ class gdelt(object):
         """
         import os
 
-        df = pd.read_json(os.path.join(BASE_DIR, 'data', 'cameoCodes.json'))
+        df = pd.read_json(os.path.join(BASE_DIR, 'data', 'cameoCodes.json'),
+                          dtype={'cameoCode': 'str',"GoldsteinScale":np.float64})
+        df.set_index('cameoCode',drop=False,inplace=True)
         codes = df
 
         return codes
@@ -692,3 +691,46 @@ class gdelt(object):
                                       'GDELT_1.0_event_'
                                       'Column_Labels_Header_Row_Sep2016.tsv'), sep='\t')
         return df
+
+class tableInfo(object):
+
+    def __init__(self,version=2.0
+                 ):
+        self.version = version
+
+    ###############################
+    # Information function for GDELT
+    ###############################
+
+    def gettable(self,table='cameo'):
+        import os
+
+        if table == 'cameo':
+            tabs = pd.read_json(os.path.join(BASE_DIR, 'data', 'cameoCodes.json'),
+                              dtype={'cameoCode': 'str', "GoldsteinScale": np.float64})
+            tabs.set_index('cameoCode', drop=False, inplace=True)
+        elif table == 'events' and float(self.version)==1.0:
+            tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'events1.csv'))
+
+        elif table == 'events' and float(self.version)==2.0:
+                tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'events2.csv'))
+
+        elif table == 'gkg' or table == 'graph':
+            if float(self.version)!= 2.0:
+                raise ValueError('We do not have a schema for GKG 1.0; use GKG 2.0\'s schema.')
+            else:
+                tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'gkg2.csv'))
+        elif table == 'mentions' or table == 'ments':
+            if float(self.version)!= 2.0:
+                raise ValueError('GDELT 1.0 does not have a mentions table.')
+            else:
+                tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'mentions.csv'))
+
+        elif table == 'cloud vision' or table == 'vgkg' or table == 'cloudviz':
+            tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'visualgkg.csv'))
+
+        elif table == 'iatv' or table == 'tv':
+            tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'iatv.csv'))
+
+        return tabs
+

@@ -58,7 +58,10 @@ setup(
     },
     include_package_data=True,
     package_data={'utils': ['schema_csvs/*']},
-    data_files=[('data', ['data/cameoCodes.json'])],
+    data_files=[('data', ['data/cameoCodes.json','data/events1.csv',
+                          'data/events2.csv','data/gkg2.csv',
+                          'data/iatv.csv','data/mentions.csv',
+                          'data/visualgkg.csv'])],
     keywords='gdelt pandas tidy data api',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

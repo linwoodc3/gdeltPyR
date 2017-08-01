@@ -166,6 +166,7 @@ class gdelt(object):
 
         self.codes = codes
         self.translation = None
+        self.interval = None
         self.version = version
         self.cores = cores
         if int(version) == 2:
@@ -183,6 +184,7 @@ class gdelt(object):
                table='events',
                coverage=False,
                translation=False,
+               # interval=False,
                output=None,
                queryTime=datetime.datetime.now().strftime('%m-%d-%Y %H:%M:%S'),
                normcols=False
@@ -357,11 +359,17 @@ class gdelt(object):
         an option to store the output directly to disc.
 
         """
+        #check for valid table names; fail early
+        valid = ['events','gkg','vgkg','iatv','mentions']
+        if table not in valid:
+            raise ValueError('You entered "{}"; this is not a valid table name.'
+                             ' Choose from "events", "mentions", or "gkg".'.format(table))
         date_input_check(date, self.version)
         self.coverage = coverage
         self.date = date
         version = self.version
         baseUrl = self.baseUrl
+        # inteval = self.interval
         self.queryTime = queryTime
         self.table = table
         self.translation = translation
@@ -554,10 +562,25 @@ class gdelt(object):
         #     results = pd.concat(multilist)
         # print(results.head())
 
+        #############################
+        # Interval Check
+        #############################
+        #
+        # if interval:
+        #     return self.download_list,"Yes interval"
+        # else:
+        #     return self.download_list,"No interval"
+
+
+        #########################
+        # Download section
+        #########################
+
         if isinstance(self.datesString, str):
             if self.table == 'events':
 
                 results = eventWork(self.download_list)
+
             else:
                 # if self.table =='gkg':
                 #     results = eventWork(self.download_list)
@@ -584,18 +607,21 @@ class gdelt(object):
             del downloaded_dfs
             results.reset_index(drop=True, inplace=True)
 
-        # print(results.columns,columns,self.table,self.version)
+
         if self.table == 'gkg' and self.version == 1:
             results.columns = results.ix[0].values.tolist()
             results.drop([0], inplace=True)
             columns = results.columns
-        if len(results.columns) == 57:
-            results.columns = columns[:-1]
 
-        else:
-            results.columns = columns
+        if results is not None:
+            if len(results.columns) == 57:
+                results.columns = columns[:-1]
 
-        if (len(results)) == 0:
+            else:
+                results.columns = columns
+
+        elif results is None or len(results) == 0:
+
             raise ValueError("This GDELT query returned no data. Check "
                              "internet connection or query parameters and "
                              "retry")
@@ -664,33 +690,75 @@ class gdelt(object):
 
         return self.final
 
-    @staticmethod
-    def cameo():
+    # @staticmethod
+    # def cameo():
+    #
+    #     """Core searcher method to set parameters for GDELT data searches
+    #
+    #     Keyword arguments
+    #     ----------
+    #     self : None
+    #         Method to return a dataframe with descriptions of the CAMEO coding system.
+    #     :return:
+    #     """
+    #     import os
+    #
+    #     df = pd.read_json(os.path.join(BASE_DIR, 'data', 'cameoCodes.json'),
+    #                       dtype={'cameoCode': 'str',"GoldsteinScale":np.float64})
+    #     df.set_index('cameoCode',drop=False,inplace=True)
+    #     codes = df
+    #
+    #     return codes
+    #
+    # @staticmethod
+    # def eventheadersv1():
+    #
+    #     df = pd.read_csv(os.path.join(BASE_DIR, 'utils', 'schema_csvs',
+    #                                   'GDELT_1.0_event_'
+    #                                   'Column_Labels_Header_Row_Sep2016.tsv'), sep='\t')
+    #     return df
 
-        """Core searcher method to set parameters for GDELT data searches
-
-        Keyword arguments
-        ----------
-        self : None
-            Method to return a dataframe with descriptions of the CAMEO coding system.
-        :return:
-        """
+    def tableinfo(self,table='cameo'):
         import os
 
-        df = pd.read_json(os.path.join(BASE_DIR, 'data', 'cameoCodes.json'),
-                          dtype={'cameoCode': 'str',"GoldsteinScale":np.float64})
-        df.set_index('cameoCode',drop=False,inplace=True)
-        codes = df
+        table = table.lower()
 
-        return codes
+        valid = ['cameo','events', 'gkg', 'vgkg', 'iatv',
+                 'graph','ments','mentions','cloudviz',
+                 'cloud vision','vision']
+        if table not in valid:
+            raise ValueError('You entered "{}"; this is not a valid table name.'
+                             ' Choose from "events", "mentions", or "gkg".'.format(table))
 
-    @staticmethod
-    def eventheadersv1():
+        if table == 'cameo':
+            tabs = pd.read_json(os.path.join(BASE_DIR, 'data', 'cameoCodes.json'),
+                              dtype={'cameoCode': 'str', "GoldsteinScale": np.float64})
+            tabs.set_index('cameoCode', drop=False, inplace=True)
+        elif table == 'events' and float(self.version)==1.0:
+            tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'events1.csv'))
 
-        df = pd.read_csv(os.path.join(BASE_DIR, 'utils', 'schema_csvs',
-                                      'GDELT_1.0_event_'
-                                      'Column_Labels_Header_Row_Sep2016.tsv'), sep='\t')
-        return df
+        elif table == 'events' and float(self.version)==2.0:
+                tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'events2.csv'))
+
+        elif table == 'gkg' or table == 'graph':
+            if float(self.version)!= 2.0:
+                raise ValueError('We do not have a schema for GKG 1.0; use GKG 2.0\'s schema.')
+            else:
+                tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'gkg2.csv'))
+        elif table == 'mentions' or table == 'ments':
+            if float(self.version)!= 2.0:
+                raise ValueError('GDELT 1.0 does not have a mentions table.')
+            else:
+                tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'mentions.csv'))
+
+        elif table == 'cloud vision' or table == 'vgkg' or table == 'cloudviz' \
+                or table == 'vision':
+            tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'visualgkg.csv'))
+
+        elif table == 'iatv' or table == 'tv':
+            tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'iatv.csv'))
+
+        return tabs
 
 class tableInfo(object):
 
@@ -704,6 +772,15 @@ class tableInfo(object):
 
     def gettable(self,table='cameo'):
         import os
+
+        table = table.lower()
+
+        valid = ['cameo','events', 'gkg', 'vgkg', 'iatv',
+                 'graph','ments','mentions','cloudviz',
+                 'cloud vision']
+        if table not in valid:
+            raise ValueError('You entered "{}"; this is not a valid table name.'
+                             ' Choose from "events", "mentions", or "gkg".'.format(table))
 
         if table == 'cameo':
             tabs = pd.read_json(os.path.join(BASE_DIR, 'data', 'cameoCodes.json'),

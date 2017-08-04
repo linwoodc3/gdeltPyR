@@ -32,11 +32,12 @@ matrix:
           env: GDELT=py36
 
 install:
+    - pip install coveralls
     - source travis/install.sh
     - 'pip install pip -U'
     - "pip install pytest-cov"
     - "pip install python-coveralls"
-    - "pip install coveralls"
+
 
 script:
   - py.test --cov=./

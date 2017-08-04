@@ -16,7 +16,7 @@ from unittest import TestCase
 # Third party imports
 ##############################
 
-import numpy as np
+import coveralls
 
 ##############################
 # Local imports

@@ -32,11 +32,16 @@ matrix:
           env: GDELT=py36
 
 install:
+    - pip install coveralls
     - source travis/install.sh
     - 'pip install pip -U'
     - "pip install pytest-cov"
+    - "pip install python-coveralls"
+
+
 script:
   - py.test --cov=./
+  - py.test tests/ --doctest-modules -v --cov gdelt --cov-report term-missing
 
 cache:
   directories:
@@ -46,3 +51,4 @@ before_cache:
 
 after_success:
   - codecov
+  - coveralls

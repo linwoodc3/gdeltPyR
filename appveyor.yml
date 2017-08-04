@@ -60,7 +60,8 @@ test_script:
 #  - dir
   #- "%PYTHON%\\python.exe setup.py test"
   - py.test --cov=./
-  - pytest 
+  - pytest
+  - py.test tests/ --doctest-modules -v --cov gdelt --cov-report term-missing
   
 after_test:
   - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel"

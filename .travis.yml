@@ -37,6 +37,7 @@ install:
     - "pip install pytest-cov"
 script:
   - py.test --cov=./
+  - coverage run --source=gdelt setup.py test
 
 cache:
   directories:
@@ -46,3 +47,4 @@ before_cache:
 
 after_success:
   - codecov
+  - coveralls

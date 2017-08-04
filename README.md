@@ -120,7 +120,7 @@ Performance on 4 core, MacOS Sierra 10.12 with 16GB of RAM:
     * data is a merged pandas dataframe of GDELT 2.0 events database data
 
 ## `gdeltPyR` Parameters
-`gdeltPyR` provides access to 1.0 and 2.0 data.  Four basic parameters guide the query syntax:
+`gdeltPyR` provides access to 1.0 and 2.0 data.  Six parameters guide the query syntax:
 
 | **Name**    | Description                                                                                                                                                                                                                                                       | Input Possibilities/Examples    |
 |-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------|

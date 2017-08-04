@@ -36,6 +36,8 @@ install:
     - 'pip install pip -U'
     - "pip install pytest-cov"
     - "pip install python-coveralls"
+    - "pip install coveralls"
+
 script:
   - py.test --cov=./
   - py.test tests/ --doctest-modules -v --cov gdelt --cov-report term-missing

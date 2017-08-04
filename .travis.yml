@@ -35,9 +35,10 @@ install:
     - source travis/install.sh
     - 'pip install pip -U'
     - "pip install pytest-cov"
+    - "pip install python-coveralls"
 script:
   - py.test --cov=./
-  - coverage run --source=gdelt setup.py test
+  - py.test tests/ --doctest-modules -v --cov gdelt --cov-report term-missing
 
 cache:
   directories:

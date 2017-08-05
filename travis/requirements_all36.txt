@@ -5,8 +5,10 @@ flake8
 sphinx=1.5*
 nbsphinx
 ipython
+jupyter
 python-dateutil
 pytz
+notebook
 openpyxl
 xlsxwriter
 xlrd

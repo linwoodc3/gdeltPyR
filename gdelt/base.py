@@ -71,12 +71,11 @@ UTIL_FILES_PATH = os.path.join(BASE_DIR, "gdeltPyR", "utils", "schema_csvs")
 
 try:
 
-    codes = json.load(open(os.path.join(UTIL_FILES_PATH,
-                                        "cameoCodes.json")))
-
+    codes = pd.read_json(os.path.join(BASE_DIR, 'data', 'cameoCodes.json'),
+                         dtype=dict(cameoCode='str', GoldsteinScale=np.float64))
+    codes.set_index('cameoCode', drop=False, inplace=True)
 
 except:
-
     a = 'https://raw.githubusercontent.com/linwoodc3/gdeltPyR/master' \
         '/utils/' \
         'schema_csvs/cameoCodes.json'
@@ -166,16 +165,14 @@ class gdelt(object):
 
                  ):
 
+        self.codes = codes
+        self.translation = None
         self.version = version
         self.cores = cores
-
         if int(version) == 2:
             self.baseUrl = gdelt2url
         elif int(version) == 1:
             self.baseUrl = gdelt1url
-        self.codes = codes
-
-        self.translation = None
 
     ###############################
     # Searcher function for GDELT
@@ -360,6 +357,14 @@ class gdelt(object):
         an option to store the output directly to disc.
 
         """
+
+        # check for valid table names; fail early
+        valid = ['events', 'gkg', 'vgkg', 'iatv', 'mentions']
+        if table not in valid:
+            raise ValueError('You entered "{}"; this is not a valid table name.'
+                             ' Choose from "events", "mentions", or "gkg".'
+                .format(table))
+
         date_input_check(date, self.version)
         self.coverage = coverage
         self.date = date

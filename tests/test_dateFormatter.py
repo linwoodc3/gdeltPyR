@@ -5,10 +5,24 @@
 # Linwood Creekmore
 # Email: valinvescap@gmail.com
 
+#########################
+# Standard Library Import
+#########################
+
 from unittest import TestCase
 
-from gdelt.dateFuncs import _dateformatter
 
+#########################
+# Third Party Import
+#########################
+
+import coveralls
+
+############################
+# Custom Import
+############################
+
+from gdelt.dateFuncs import _dateformatter
 
 class TestDateFormatter(TestCase):
     def test_dateFormatter(self):

@@ -1,5 +1,25 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Author:
+# Linwood Creekmore
+# Email: valinvescap@gmail.com
+
+#########################
+# Standard Library Import
+#########################
 import datetime
 from unittest import TestCase
+
+#########################
+# Third Party Import
+#########################
+
+import coveralls
+
+############################
+# Custom Import
+############################
 
 from gdelt.dateFuncs import _parse_date
 

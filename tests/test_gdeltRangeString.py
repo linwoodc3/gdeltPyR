@@ -5,9 +5,21 @@
 # Linwood Creekmore
 # Email: valinvescap@gmail.com
 
+#########################
+# Standard Library Import
+#########################
+
 from unittest import TestCase
 
-import numpy as np
+#########################
+# Third Party Import
+#########################
+
+import coveralls
+
+############################
+# Custom Import
+############################
 
 from gdelt.dateFuncs import _dateRanger, _gdeltRangeString
 from gdelt.inputChecks import *

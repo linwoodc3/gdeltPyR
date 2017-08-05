@@ -5,10 +5,11 @@
 # Linwood Creekmore
 # Email: valinvescap@gmail.com
 
-import pickle
+
 ##################################
 # Standard library imports
 ##################################
+
 try:
     from unittest import TestCase, mock
 except:
@@ -19,11 +20,14 @@ try:
     from urllib.parse import urljoin
 except ImportError:
     from urlparse import urljoin
+import pickle
+import os
 
 ##################################
 # Third party imports
 ##################################
-import requests
+
+import coveralls
 
 ##################################
 # Local imports
@@ -36,6 +40,9 @@ from tests.constants import BASEURL
 # import .constants
 
 # BASEURL = 'http://data.gdeltproject.org/'
+this_dir, this_filename = os.path.split(__file__)
+BASE_DIR = os.path.dirname(this_dir)
+
 
 ##################################
 # Unit Tests
@@ -55,7 +62,9 @@ class testresponse(TestCase):
 
 
         # loading the mock dataframe return
-        events2 = pickle.load(open('../data/gdv2events.pkl','rb'))
+        f = open(os.path.join(BASE_DIR, 'data', 'gdv2events.pkl'), 'rb')
+        events2 = pickle.load(f)
+        f.close()
 
         # Creating the mock object
         mock_get.return_value = mock.Mock()
@@ -76,7 +85,9 @@ class testresponse(TestCase):
         gd1 = gdelt.gdelt(version=1)
 
         # loading the mock dataframe return
-        events1 = pickle.load(open('../data/gdv1events.pkl', 'rb'))
+        f = open(os.path.join(BASE_DIR, 'data', 'gdv1events.pkl'), 'rb')
+        events1 = pickle.load(f)
+        f.close()
 
         # Creating the mock object
         mock_get.return_value = mock.Mock()

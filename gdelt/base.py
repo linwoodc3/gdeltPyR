@@ -31,13 +31,13 @@ import requests
 ##################################
 # Local imports
 ##################################
-from gdelt.dateFuncs import (dateRanger, gdeltRangeString)
-from gdelt.getHeaders import events1Heads, events2Heads, mentionsHeads, \
-    gkgHeads
-from gdelt.helpers import cameos
-from gdelt.inputChecks import (date_input_check)
-from gdelt.parallel import mp_worker
-from gdelt.vectorizingFuncs import urlBuilder, geofilter
+from gdelt.dateFuncs import (_dateRanger, _gdeltRangeString)
+from gdelt.getHeaders import _events1Heads, _events2Heads, _mentionsHeads, \
+    _gkgHeads
+from gdelt.helpers import _cameos
+from gdelt.inputChecks import (_date_input_check)
+from gdelt.parallel import _mp_worker
+from gdelt.vectorizingFuncs import _urlBuilder, _geofilter
 
 
 
@@ -365,7 +365,7 @@ class gdelt(object):
                              ' Choose from "events", "mentions", or "gkg".'
                 .format(table))
 
-        date_input_check(date, self.version)
+        _date_input_check(date, self.version)
         self.coverage = coverage
         self.date = date
         version = self.version
@@ -373,7 +373,7 @@ class gdelt(object):
         self.queryTime = queryTime
         self.table = table
         self.translation = translation
-        self.datesString = gdeltRangeString(dateRanger(self.date),
+        self.datesString = _gdeltRangeString(_dateRanger(self.date),
                                             version=version,
                                             coverage=self.coverage)
 
@@ -402,22 +402,22 @@ class gdelt(object):
         # Partial Functions
         #################################
 
-        v1RangerCoverage = partial(gdeltRangeString, version=1,
+        v1RangerCoverage = partial(_gdeltRangeString, version=1,
                                    coverage=True)
-        v2RangerCoverage = partial(gdeltRangeString, version=2,
+        v2RangerCoverage = partial(_gdeltRangeString, version=2,
                                    coverage=True)
-        v1RangerNoCoverage = partial(gdeltRangeString, version=1,
+        v1RangerNoCoverage = partial(_gdeltRangeString, version=1,
                                      coverage=False)
-        v2RangerNoCoverage = partial(gdeltRangeString, version=2,
+        v2RangerNoCoverage = partial(_gdeltRangeString, version=2,
                                      coverage=False)
-        urlsv1gkg = partial(urlBuilder, version=1, table='gkg')
-        urlsv2mentions = partial(urlBuilder, version=2, table='mentions', translation=self.translation)
-        urlsv2events = partial(urlBuilder, version=2, table='events', translation=self.translation)
-        urlsv1events = partial(urlBuilder, version=1, table='events')
-        urlsv2gkg = partial(urlBuilder, version=2, table='gkg', translation=self.translation)
+        urlsv1gkg = partial(_urlBuilder, version=1, table='gkg')
+        urlsv2mentions = partial(_urlBuilder, version=2, table='mentions', translation=self.translation)
+        urlsv2events = partial(_urlBuilder, version=2, table='events', translation=self.translation)
+        urlsv1events = partial(_urlBuilder, version=1, table='events')
+        urlsv2gkg = partial(_urlBuilder, version=2, table='gkg', translation=self.translation)
 
-        eventWork = partial(mp_worker, table='events')
-        codeCams = partial(cameos, codes=codes)
+        eventWork = partial(_mp_worker, table='events')
+        codeCams = partial(_cameos, codes=codes)
 
         #####################################
         # GDELT Version 2.0 Headers
@@ -428,9 +428,9 @@ class gdelt(object):
             # Download 2.0 Headers
             ###################################
 
-            self.events_columns = events2Heads()
-            self.mentions_columns = mentionsHeads()
-            self.gkg_columns = gkgHeads()
+            self.events_columns = _events2Heads()
+            self.mentions_columns = _mentionsHeads()
+            self.gkg_columns = _gkgHeads()
 
         #####################################
         # GDELT Version 1.0 Analytics, Header, Downloads
@@ -445,24 +445,24 @@ class gdelt(object):
             else:
                 pass
 
-            self.events_columns = events1Heads()
+            self.events_columns = _events1Heads()
             columns = self.events_columns
 
             if self.table == 'gkg':
                 self.download_list = (urlsv1gkg(v1RangerCoverage(
-                    dateRanger(self.date))))
+                    _dateRanger(self.date))))
 
             elif self.table == 'events' or self.table == '':
 
                 if self.coverage is True:
 
                     self.download_list = (urlsv1events(v1RangerCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
 
                 else:
                     # print("I'm here at line 125")
                     self.download_list = (urlsv1events(v1RangerNoCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
 
             else:
                 raise Exception('You entered an incorrect table type for '
@@ -477,21 +477,21 @@ class gdelt(object):
                 if self.coverage is True:
 
                     self.download_list = (urlsv2events(v2RangerCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
                 else:
 
                     self.download_list = (urlsv2events(v2RangerNoCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
 
             if self.table == 'gkg':
                 columns = self.gkg_columns
                 if self.coverage is True:
 
                     self.download_list = (urlsv2gkg(v2RangerCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
                 else:
                     self.download_list = (urlsv2gkg(v2RangerNoCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
                     # print ("2 gkg", urlsv2gkg(self.datesString))
 
             if self.table == 'mentions':
@@ -499,12 +499,12 @@ class gdelt(object):
                 if self.coverage is True:
 
                     self.download_list = (urlsv2mentions(v2RangerCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
 
                 else:
 
                     self.download_list = (urlsv2mentions(v2RangerNoCoverage(
-                        dateRanger(self.date))))
+                        _dateRanger(self.date))))
 
 
         #########################
@@ -573,7 +573,7 @@ class gdelt(object):
                 #     results = eventWork(self.download_list)
                 #
                 # else:
-                results = mp_worker(self.download_list)
+                results = _mp_worker(self.download_list)
 
         else:
 
@@ -585,7 +585,7 @@ class gdelt(object):
             else:
 
                 pool = NoDaemonProcessPool(processes=cpu_count())
-                downloaded_dfs = list(pool.imap_unordered(mp_worker,
+                downloaded_dfs = list(pool.imap_unordered(_mp_worker,
                                                           self.download_list))
             pool.close()
             pool.terminate()
@@ -639,7 +639,7 @@ class gdelt(object):
 
         # geopandas dataframe output
         elif output == 'gpd' or output == 'geodataframe' or output == 'geoframe':
-            self.final = geofilter(results)
+            self.final = _geofilter(results)
             self.final = self.final[self.final.geometry.notnull()]
 
         # r dataframe output

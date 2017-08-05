@@ -21,7 +21,7 @@ import requests
 # Headers for GDELT 1.0 Events
 #######################################
 
-def events1Heads():
+def _events1Heads():
     """
 
     :rtype: dateframe
@@ -40,7 +40,7 @@ def events1Heads():
 # Headers for GDELT 2.0 Events
 #######################################
 
-def events2Heads():
+def _events2Heads():
     eventsDbHeaders = pd.read_csv(
         BytesIO(
             requests.get(
@@ -56,7 +56,7 @@ def events2Heads():
 # Headers for GDELT 2.0 Mentions
 #######################################
 
-def mentionsHeads():
+def _mentionsHeads():
     eventsMentionsHeaders = pd.read_csv(
         BytesIO(
             requests.get(
@@ -73,7 +73,7 @@ def mentionsHeads():
 # Headers for GDELT 2.0 GKG
 #######################################
 
-def gkgHeads():
+def _gkgHeads():
     gkgHeaders = pd.read_csv(
         BytesIO(
             requests.get(

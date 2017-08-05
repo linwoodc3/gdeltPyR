@@ -3,6 +3,7 @@ pandas>=0.18.1
 requests>=2.11.1
 six>=1.10.0
 python-dateutil>=2.5.3
+beautifulsoup4
 
 Cython>=0.16
 shapely>=1.2.18

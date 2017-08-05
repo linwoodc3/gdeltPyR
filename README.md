@@ -1,6 +1,17 @@
- | **`Linux and Mac OS`** | **`Windows OS`** | **`Module Version`** | **`Coverage`**|
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-104139146-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+| **`Linux and Mac OS`** | **`Windows OS`** | **`Module Version`** | **`Coverage`**|
 |-----------------|---------------------|------------------|------------------|
-|[![Build Status](https://travis-ci.org/linwoodc3/gdeltPyR.svg?branch=master)](https://travis-ci.org/linwoodc3/gdeltPyR)|[![Build status](https://ci.appveyor.com/api/projects/status/yc6u8v6uvg212dcm?svg=true)](https://ci.appveyor.com/project/linwoodc3/gdeltpyr/history)|[![PyPI version](https://badge.fury.io/py/gdelt.svg)](https://badge.fury.io/py/gdelt)|[![Coverage Status](https://coveralls.io/repos/github/linwoodc3/gdeltPyR/badge.svg?branch=nodata_fix)](https://coveralls.io/github/linwoodc3/gdeltPyR?branch=nodata_fix)|
+|[![Build Status](https://travis-ci.org/linwoodc3/gdeltPyR.svg?branch=master)](https://travis-ci.org/linwoodc3/gdeltPyR)|[![Build status](https://ci.appveyor.com/api/projects/status/yc6u8v6uvg212dcm?svg=true)](https://ci.appveyor.com/project/linwoodc3/gdeltpyr/history)|[![PyPI version](https://badge.fury.io/py/gdelt.svg)](https://badge.fury.io/py/gdelt)|[![Coverage Status](https://coveralls.io/repos/github/linwoodc3/gdeltPyR/badge.svg?branch=master)](https://coveralls.io/github/linwoodc3/gdeltPyR?branch=master)|
 
 
 # gdeltPyR
@@ -27,11 +38,11 @@ The GDELT Project advertises as the largest, most comprehensive, and highest res
 This project will evolve in [two phases](https://github.com/linwoodc3/gdeltPyR/projects). Moreover, if you want to contribute to the project, this section can help prioritize where to put efforts.  
 > Phase 1 focuses on providing consistent, stable, and reliable access to GDELT data.
 
-Therefore, most [issues](https://github.com/linwoodc3/gdeltPyR/issues) in this phase will build out the main `Search` class to return [GDELT data, version 1.0 or version 2.0](http://gdeltproject.org/data.html#intro), or equally important, give a relevant error message when no data is returned.  This also means the project will focus on building documentation, a unit testing framework (shooting for 90% coverage), and creating a helper class that provides helpful information on column names/table descriptions.  
+`gdeltPyR` will help data scientists, researchers, data enthusiasts, and curious Python coders in this phase.  Therefore, most [issues](https://github.com/linwoodc3/gdeltPyR/issues) in this phase will build out the main [`Search` method of the `gdelt` class](https://github.com/linwoodc3/gdeltPyR/blob/master/gdelt/base.py#L181-L690) to return [GDELT data, version 1.0 or version 2.0](http://gdeltproject.org/data.html#intro), or equally important, give a relevant error message when no data is returned.  This also means the project will focus on building documentation, a unit testing framework (shooting for 90% coverage), and creating a helper class that provides helpful information on column names/table descriptions.  
 
 > Phase 2 brings analytics to `gdeltPyR` to expand the library beyond a simple data retrieval functionality
 
-This phase is what will make `gdeltPyR` useful to a wider audience. The major addition will be an `Analysis` class.  For the data-literate users (data scientists, researchers, students, data journalists, etc), enhancements in this phase will save time by providing summary statistics and extraction methods of GDELT data, and as a result reduce the time a user would spend writing code to perform routine data cleanup/analysis.  For the non-technical audience (students, journalists, business managers, etc.), enhancesments in this phase will provide outputs that summarize GDELT data, which can in turn be used in reports, articles, etc.  Areas of focus include descriptive statistics (mean, split-apply-combine stats, etc), spatial analysis, and time series.
+This phase is what will make `gdeltPyR` useful to a wider audience. The major addition will be an `Analysis` method of the `gdelt` class which will analyze outputs of the `Search` method.  For data-literate users (data scientists, researchers, students, data journalists, etc), enhancements in this phase will save time by providing summary statistics and extraction methods of GDELT data, and as a result reduce the time a user would spend writing code to perform routine data cleanup/analysis.  For the non-technical audience (students, journalists, business managers, etc.), enhancesments in this phase will provide outputs that summarize GDELT data, which can in turn be used in reports, articles, etc.  Areas of focus include descriptive statistics (mean, split-apply-combine stats, etc), spatial analysis, and time series.
 
 
 ## New Features (0.1.10)
@@ -141,7 +152,7 @@ These parameter values can be mixed and matched to return the data you want.  th
         *  **Why**:  Drastically reduces the memory footprint as all processing is pushed to server side; returns subset of GDELT data but requires SQL familiarity
     *  **Fix 2**: Use Version 1 data
         *  **Why**:  Version 2 has more fields of data so consumes more memory. Version 1 has less fields.  Visit [the GDELT data page to learn about `Version 1` and `Version 2` differences](http://gdeltproject.org/data.html)
-    *  **Fix 3**: Get more memory or write to disk and flu
+    *  **Fix 3**: Get more memory or write to disk, flush RAM, then continue iterating until done. 
         *  **Why**:  If you **MUST** use `Version 2` and pull full days of data, you need more memory as the gdeltPyR return is held in memory.  One day of GDELT `Version 2` data can be 500 MB. Get more RAM, you have less problems. Or, pull a day, write to disk, flush, then continue. 
 
 ## Coming Soon
@@ -151,7 +162,7 @@ These parameter values can be mixed and matched to return the data you want.  th
 * Adding a query for [GDELT American Television Global Knowledge Graph (TV-GKG)](http://blog.gdeltproject.org/announcing-the-american-television-global-knowledge-graph-tv-gkg/)
 
 
-## Contributing to gdelPyR
+# Contributing to gdeltPyR
 
 All contributions, bug reports, bug fixes, documentation improvements, enhancements and ideas are welcome.
 
@@ -159,13 +170,128 @@ A detailed overview on how to contribute is forthcoming.
 
 Our main requirement (and advice) is to make sure you write a unit test for your enhancement or addition (or just make one to help get the project to 90% unit tests!!!).  Moreover, we can't accept a commit until existing unittests are passing in Travis CI (OSX and Linux) and Appveyor (Windows).  
 
-If you are simply looking to start working with the `gdeltPyR` codebase, navigate to the []GitHub “issues”](https://github.com/linwoodc3/gdeltPyR/issues) tab and start looking through interesting issues. There are a number of issues listed where you could start out.
+If you are simply looking to start working with the `gdeltPyR` codebase, navigate to the [gdeltPyR's Issues](https://github.com/linwoodc3/gdeltPyR/issues) tab and start looking through interesting issues. There are a number of issues listed where you could start out.
 
-Or maybe through using gdeltPyR you have an idea of your own or are looking for something in the documentation and thinking ‘this can be improved’...you can do something about it!
+Or maybe through using `gdeltPyR` you have an idea of your own or are looking for something in the documentation and thinking ‘this can be improved’...you can do something about it!
 
-## `gdelPyR` Dev Environment
+## `gdeltPyR` Dev Environment
 
-We advise using the [pandas](https://pandas.pydata.org/pandas-docs/stable/contributing.html#getting-started-with-git) instructions as a guide to build a `gdeltPyR` development environment.  Just replace `gdeltPyR` project urls with `pandas` urls and you should be up and running.
+We follow the [pandas](https://pandas.pydata.org/pandas-docs/stable/contributing.html#getting-started-with-git) instructions as a guide to build a `gdeltPyR` development environment. Windows users [should look at the instructions below for environment set up.](#windows_environment)  
+
+An easy way to create a `gdeltPyR` development environment is as follows.
+
+* Install either [Anaconda](https://www.continuum.io/downloads) or [miniconda](https://conda.io/miniconda.html)
+* Make sure that you have [cloned the repository](https://github.com/linwoodc3/gdeltPyR/)
+* cd to the `gdeltPyR` source directory
+
+After completing all steps above, tell conda to create a new environment, named `gdelt_dev`, or any other name you would like for this environment, by running:
+
+
+* For Python 2.7 
+```bash
+ conda create -n gdelt_dev python=2 -c conda-forge --file travis/requirements_all.txt
+
+```
+
+* For Python 3.5 
+```bash
+ conda create -n gdelt_dev python=3 -c conda-forge --file travis/requirements_all.txt
+```
+
+* For Python 3.6
+```bash
+ conda create -n gdelt_dev python=3.6 -c conda-forge --file travis/requirements_all36.txt
+```
+
+<h3> <a id="windows_environment"></a>Windows Dev Environment</h3>
+
+For Windows, we will again follow the `pandas` documentation (let me know if this doesn't work for `gdeltPyR`).  To build on Windows, you need to have compilers installed to build the extensions. You will need to install the appropriate Visual Studio compilers, VS 2008 for Python 2.7, VS 2010 for 3.4, and VS 2015 for Python 3.5 and 3.6.
+
+For Python 2.7, you can install the mingw compiler which will work equivalently to VS 2008:
+
+```bash
+conda install -n gdelt_dev libpython
+```
+
+or use the Microsoft Visual Studio VC++ compiler for Python. Note that you have to check the x64 box to install the x64 extension building capability as this is not installed by default.
+
+For Python 3.4, you can download and install the Windows 7.1 SDK. Read the references below as there may be various gotchas during the installation.
+
+For Python 3.5 and 3.6, you can download and install the Visual Studio 2015 Community Edition.
+
+Here are some references and blogs:
+
+* https://blogs.msdn.microsoft.com/pythonengineering/2016/04/11/unable-to-find-vcvarsall-bat/
+* https://github.com/conda/conda-recipes/wiki/Building-from-Source-on-Windows-32-bit-and-64-bit
+* https://cowboyprogrammer.org/building-python-wheels-for-windows/
+* https://blog.ionelmc.ro/2014/12/21/compiling-python-extensions-on-windows/
+* https://support.enthought.com/hc/en-us/articles/204469260-Building-Python-extensions-with-Canopy
+
+This will create the new environment, and not touch any of your existing environments, **nor any existing Python installation**. It will install all of the basic dependencies of `gdeltPyR`, as well as the development and testing tools. To enter this new environment:
+
+* On Windows
+```bash
+activate gdelt_dev
+```
+
+* On Linux/Mac OS
+```bash
+source activate gdelt_dev
+```
+
+You will then see a confirmation message to indicate you are in the new development environment.
+
+To view your environments:
+
+```bash
+conda info -e
+```
+
+To return to your home root environment in Windows:
+```bash
+deactivate
+```
+To return to your home root environment in OSX / Linux:
+
+```bash
+source deactivate
+```
+
+## Building `gdeltPyR`
+
+See the [full conda docs here](http://conda.pydata.org/docs).
+
+The last step is installing the gdelt development source into this new directory. First, make sure that you cd into the gdeltPyR source directory.  You have two options to build the code:
+
+1.  The best way to develop 'gdeltPyR' is to build the extensions in-place by running:
+
+```bash
+python setup.py build_ext --inplace
+```
+
+If you startup the Python interpreter in the pandas source directory you will call the built C extensions
+
+2.  Another very common option is to do a develop install of pandas:
+
+```bash
+python setup.py develop
+```
+
+This makes a symbolic link that tells the Python interpreter to import pandas from your development directory. Thus, you can always be using the development version on your system without being inside the clone directory.
+
+You should have a fully functional development environment!
+
+## Continuous Integration
+
+`pandas` has a fantastic write up on Continuous Integration (CI).  Because `gdeltPyR` embraces the same CI concepts, please [read `pandas` introduction and explanation of CI if you have issues](https://pandas.pydata.org/pandas-docs/stable/contributing.html#testing-with-continuous-integration). All builds of your branch or Pull Request should pass with `greens` before it can be merged with the master branch.
+
+![CI Greens](data/allgreensci.png)
+
+## Committing Your Code
+
+There's no point in reinventing the wheel; [read the `pandas` documentation on committing code for instructions](https://pandas.pydata.org/pandas-docs/stable/contributing.html#contributing-your-changes-to-pandas) on how to contribute to `gdeltPyR`.
+
+If you completed everything above, you should be ready to contribute.  
 
 
 ## Styles for Submitting Issues/Pull Requests

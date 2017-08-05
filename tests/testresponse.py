@@ -34,7 +34,7 @@ import coveralls
 ##################################
 
 import gdelt
-from gdelt.vectorizingFuncs import geofilter
+from gdelt.vectorizingFuncs import _geofilter
 from tests.constants import BASEURL
 
 # import .constants

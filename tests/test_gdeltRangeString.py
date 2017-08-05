@@ -21,22 +21,22 @@ import coveralls
 # Custom Import
 ############################
 
-from gdelt.dateFuncs import dateRanger, gdeltRangeString
+from gdelt.dateFuncs import _dateRanger, _gdeltRangeString
 from gdelt.inputChecks import *
 
 
 class TestGdeltRangeString(TestCase):
     def test_gdeltrange_sequence_v1(self):
         date_sequence = ['2016 10 01', '2016 10 05']
-        ranger_output = dateRanger(date_sequence)
-        gdeltstring_test = np.sort(gdeltRangeString(ranger_output, version=1))
+        ranger_output = _dateRanger(date_sequence)
+        gdeltstring_test = np.sort(_gdeltRangeString(ranger_output, version=1))
         exp = np.sort(np.array(['20161003', '20161001', '20161002', '20161005', '20161004']))
         np.testing.assert_array_equal(exp, gdeltstring_test)
 
     def test_gdeltrange_sequence_v2(self):
         date_sequence = ['2016 10 01', '2016 10 05']
-        ranger_output = dateRanger(date_sequence)
-        gdeltstring_test = np.sort(np.array(gdeltRangeString(ranger_output, version=2)))
+        ranger_output = _dateRanger(date_sequence)
+        gdeltstring_test = np.sort(np.array(_gdeltRangeString(ranger_output, version=2)))
         exp = np.sort(np.array(['20161001234500',
                                 '20161002234500',
                                 '20161003234500',
@@ -46,8 +46,8 @@ class TestGdeltRangeString(TestCase):
 
     def test_gdeltrange_sequence_v2_with_coverage(self):
         date_sequence = ['2016 10 01']
-        ranger_output = dateRanger(date_sequence)
-        gdeltstring_test = np.sort(np.array(gdeltRangeString(ranger_output, coverage=True, version=2)))
+        ranger_output = _dateRanger(date_sequence)
+        gdeltstring_test = np.sort(np.array(_gdeltRangeString(ranger_output, coverage=True, version=2)))
         exp = np.sort(np.array(['20161001000000', '20161001001500', '20161001003000',
                                 '20161001004500', '20161001010000', '20161001011500',
                                 '20161001013000', '20161001014500', '20161001020000',
@@ -85,16 +85,16 @@ class TestGdeltRangeString(TestCase):
 
     def test_gdeltrange_sequence_v1_2013(self):
         date_sequence = ['2013 Feb 01', '2013 Feb 05']
-        ranger_output = dateRanger(date_sequence)
-        gdeltstring_test = np.sort(np.array(gdeltRangeString(ranger_output, version=1)))
+        ranger_output = _dateRanger(date_sequence)
+        gdeltstring_test = np.sort(np.array(_gdeltRangeString(ranger_output, version=1)))
         exp = np.array(['201302'])
         np.testing.assert_array_equal(exp, gdeltstring_test)
 
 
     def test_gdeltrange_sequence_v1_2005(self):
         date_sequence = ['2001 Feb 01', '2005 Feb 05']
-        ranger_output = dateRanger(date_sequence)
-        gdeltstring_test = np.sort(np.array(gdeltRangeString(ranger_output, version=1)))
+        ranger_output = _dateRanger(date_sequence)
+        gdeltstring_test = np.sort(np.array(_gdeltRangeString(ranger_output, version=1)))
         exp = np.sort(np.array(['2001', '2002', '2003', '2004', '2005']))
         np.testing.assert_array_equal(exp, gdeltstring_test)
 

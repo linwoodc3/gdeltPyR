@@ -1,0 +1,544 @@
+name,type,description
+GKGRECORDID,STRING,"Each GKG record is assigned a globally unique identifier. Unlike the
+EVENT system, which uses semi-sequential numbering to assign numeric IDs to each event
+record, the GKG system uses a date-oriented serial number. Each GKG record ID takes the form
+“YYYYMMDDHHMMSS-X” or “YYYYMMDDHHMMSS-TX” in which the first portion of the ID is the
+full date+time of the 15 minute update batch that this record was created in, followed by a
+dash, followed by sequential numbering for all GKG records created as part of that update
+batch. Records originating from a document that was translated by GDELT Translingual will have
+a capital “T” appearing immediately after the dash to allow filtering of English/non-English
+material simply by its record identifier. Thus, the fifth GKG record created as part of the update
+batch generated at 3:30AM on February 3, 2015 would have a GKGRECORDID of
+“20150203033000-5” and if it was based on a French-language document that was translated, it
+would have the ID “20150203033000-T5”. This ID can be used to uniquely identify this
+particular record across the entire GKG database. Note that due to the presence of the dash,
+this field should be treated as a string field and NOT as a numeric field."
+DATE,INTEGER,"This is the date in YYYYMMDDHHMMSS format on which the news media
+used to construct this GKG file was published. NOTE that unlike the main GDELT event stream
+files, this date represents the date of publication of the document from which the information
+was extracted – if the article discusses events in the past, the date is NOT time-shifted as it is for
+the GDELT event stream. This date will be the same for all rows in a file and is redundant from a
+data processing standpoint, but is provided to make it easier to load GKG files directly into an
+SQL database for analysis. NOTE: for some special collections this value may be 0 indicating that
+the field is either not applicable or not known for those materials. For example, OCR’d historical
+document collections may not have robust metadata on publication date. NOTE: the GKG 2.0
+format still encoded this date in YYYYMMDD format, while under GKG 2.1 it is now in
+YYYYMMDDHHMMSS format"
+SourceCollectionIdentifier,INTEGER,"This is a numeric identifier that refers to the
+source collection the document came from and is used to interpret the DocumentIdentifier in
+the next column. In essence, it specifies how to interpret the DocumentIdentifier to locate the
+actual document. At present, it can hold one of the following values:
+
+
+    *1 = WEB (The document originates from the open web and the DocumentIdentifier is a
+fully-qualified URL that can be used to access the document on the web).
+
+    *2 = CITATIONONLY (The document originates from a broadcast, print, or other offline
+source in which only a textual citation is available for the document. In this case the
+DocumentIdentifier contains the textual citation for the document).
+
+    *3 = CORE (The document originates from the CORE archive and the DocumentIdentifier
+contains its DOI, suitable for accessing the original document through the CORE
+website).
+
+    *4 = DTIC (The document originates from the DTIC archive and the DocumentIdentifier
+contains its DOI, suitable for accessing the original document through the DTIC website).
+
+    *5 = JSTOR (The document originates from the JSTOR archive and the DocumentIdentifier
+contains its DOI, suitable for accessing the original document through your JSTOR
+subscription if your institution subscribes to it).
+
+    *6 = NONTEXTUALSOURCE (The document originates from a textual proxy (such as closed
+captioning) of a non-textual information source (such as a video) available via a URL and
+the DocumentIdentifier provides the URL of the non-textual original source. At present,
+this Collection Identifier is used for processing of the closed captioning streams of the
+Internet Archive Television News Archive in which each broadcast is available via a URL,
+but the URL offers access only to the video of the broadcast and does not provide any
+access to the textual closed captioning used to generate the metadata. This code is
+used in order to draw a distinction between URL-based textual material (Collection
+Identifier 1 (WEB) and URL-based non-textual material like the Television News Archive)."
+SourceCommonName,STRING,"This is a human-friendly identifier of the source of the
+document. For material originating from the open web with a URL this field will contain the toplevel
+domain the page was from. For BBC Monitoring material it will contain “BBC Monitoring”
+and for JSTOR material it will contain “JSTOR.” This field is intended for human display of major
+sources as well as for network analysis of information flows by source, obviating the
+requirement to perform domain or other parsing of the DocumentIdentifier field."
+DocumentIdentifier,STRING,"This is the unique external identifier for the source document.
+It can be used to uniquely identify the document and access it if you have the necessary
+subscriptions or authorizations and/or the document is public access. This field can contain a
+range of values, from URLs of open web resources to textual citations of print or broadcast
+material to DOI identifiers for various document repositories. For example, if
+SOURCECOLLECTION is equal to 1, this field will contain a fully-qualified URL suitable for direct
+access. If SOURCECOLLECTION is equal to 2, this field will contain a textual citation akin to what
+would appear in an academic journal article referencing that document (NOTE that the actual
+citation format will vary (usually between APA, Chicago, Harvard, or MLA) depending on a
+number of factors and no assumptions should be made on its precise format at this time due to
+the way in which this data is currently provided to GDELT – future efforts will focus on
+normalization of this field to a standard citation format). If SOURCECOLLECTION is 3, the field
+will contain a numeric or alpha-numeric DOI that can be typed into JSTOR’s search engine to
+access the document if your institution has a JSTOR subscription."
+Counts,STRING,"This is the list of Counts found in this document. Each Count found is separated with
+ a semicolon, while the fields within a Count are separated by the pound symbol (“#”). Unlike the primary GDELT
+event stream, these records are not issued unique identifier numbers, nor are they dated. As an
+example of how to interpret this file, an entry with CountType=KILL, Number=47,
+ObjectType=”jihadists” indicates that the article stated that 47 jihadists were killed. This field is
+identical in format and population as the corresponding field in the GKG 1.0 format.
+
+.
+
+    *Count Type. (text) This is the value of the NAME field from the Category List
+spreadsheet indicating which category this count is of. At the time of this writing, this is
+most often AFFECT, ARREST, KIDNAP, KILL, PROTEST, SEIZE, or WOUND, though other
+categories may appear here as well in certain circumstances when they appear in
+context with one of these categories, or as other Count categories are added over time.
+A value of “PROTEST” in this field would indicate that this is a count of the number of
+protesters at a protest.
+
+    *Count. (integer) This is the actual count being reported. If CountType is “PROTEST”
+and Number is 126, this means that the source article contained a mention of 126
+protesters.
+
+    *Object Type. (text) This records any identifying information as to what the number
+refers to. For example, a mention of “20 Christian missionaries were arrested” will
+result in “Christian missionaries” being captured here. This field will be blank in cases
+where no identifying information could be identified.
+
+    *Location Type. See the documentation for V1Locations below.
+
+    *Location FullName. See the documentation for V1Locations below.
+
+    *Location CountryCode. See the documentation for V1Locations below.
+
+    *Location ADM1Code. See the documentation for V1Locations below.
+
+    *Location Latitude. See the documentation for V1Locations below.
+
+    *Location Longitude. See the documentation for V1Locations below.
+
+    *Location FeatureID. See the documentation for V1Locations below."
+V2Counts,STRING,"This field is identical to the V1COUNTS field except that it adds a final additional field to the end of each
+entry that records its approximate character offset in the document, allowing it to be associated
+with other entries from other “V2ENHANCED” fields (or Events) that appear in closest proximity
+to it. Note: unlike the other location-related fields, the Counts field does NOT add ADM2
+support at this time. This is to maintain compatibility with assumptions that many applications
+make about the contents of the Count field. Those applications needing ADM2 support for
+Counts should cross-reference the FeatureID field of a given Count against the V2Locations field
+to determine its ADM2 value. "
+Themes,STRING,"This is the list of all Themes found in the document. For the
+complete list of possible themes, see the Category List spreadsheet. At the time of this writing
+there are over 275 themes currently recognized by the system. This field is identical in format
+and population as the corresponding field in the GKG 1.0 format."
+V2Themes,STRING,"This contains a list of all GKG themes referenced in the document, along with the character offsets of
+approximately where in the document they were found. For the complete list of possible
+themes, see the Category List spreadsheet. At the time of this writing there are over 300
+themes currently recognized by the system. Each theme reference is separated by a semicolon,
+and within each reference, the name of the theme is specified first, followed by a comma, and
+then the approximate character offset of the reference of that theme in the document, allowing
+it to be associated with other entries from other “V2ENHANCED” fields that appear in closest
+proximity to it. If a theme is mentioned multiple times in a document, each mention will appear
+separately in this field."
+Locations,STRING,"This is a list of all locations found in the text, extracted through the Leetaru (2012) algorithm. The
+algorithm is run in a more aggressive stance here than ordinary in order to extract every
+possible locative referent, so may have a slightly elevated level of false positives. NOTE: some
+locations have multiple accepted formal or informal names and this field is collapsed on name,
+rather than feature (since in some applications the understanding of a geographic feature differs
+based on which name was used to reference it). In cases where it is necessary to collapse by
+feature, the Geo_FeatureID column should be used, rather than the Geo_Fullname column. This
+is because the Geo_Fullname column captures the name of the location as expressed in the text
+and thus reflects differences in transliteration, alternative spellings, and alternative names for
+the same location. For example, Mecca is often spelled Makkah, while Jeddah is commonly
+spelled Jiddah or Jaddah. The Geo_Fullname column will reflect each of these different
+spellings, while the Geo_FeatureID column will resolve them all to the same unique GNS or GNIS
+feature identification number. For more information on the GNS and GNIS identifiers,
+This field is identical in format and population as the corresponding field in the
+GKG 1.0 format. NOTE: there was an error in this field from 2/19/2015 through midday
+3/1/2015 that caused the CountryCode field to list the wrong country code in some cases.
+o Location Type. (integer) This field specifies the geographic resolution of the match type
+and holds one of the following values: 1=COUNTRY (match was at the country level),
+2=USSTATE (match was to a US state), 3=USCITY (match was to a US city or landmark),
+4=WORLDCITY (match was to a city or landmark outside the US), 5=WORLDSTATE
+(match was to an Administrative Division 1 outside the US – roughly equivalent to a US
+state). This can be used to filter counts by geographic specificity, for example,
+extracting only those counts with a landmark-level geographic resolution for mapping.
+Note that matches with codes 1 (COUNTRY), 2 (USSTATE), and 5 (WORLDSTATE) will still
+provide a latitude/longitude pair, which will be the centroid of that country or state, but
+the FeatureID field below will contain its textual country or ADM1 code instead of a
+numeric featureid.
+
+
+
+    *Location FullName. (text) This is the full human-readable name of the matched
+location. In the case of a country it is simply the country name. For US and World states
+it is in the format of “State, Country Name”, while for all other matches it is in the
+format of “City/Landmark, State, Country”. This can be used to label locations when
+placing counts on a map. Note: this field reflects the precise name used to refer to the
+location in the text itself, meaning it may contain multiple spellings of the same location
+– use the FeatureID column to determine whether two location names refer to the same
+place.
+
+    *Location CountryCode. (text) This is the 2-character FIPS10-4 country code for the
+location. Note: GDELT continues to use the FIPS10-4 codes under USG guidance while
+GNS continues its formal transition to the successor Geopolitical Entities, Names, and
+Codes (GENC) Standard (the US Government profile of ISO 3166).
+
+    *Location ADM1Code. (text) This is the 2-character FIPS10-4 country code followed by
+the 2-character FIPS10-4 administrative division 1 (ADM1) code for the administrative
+division housing the landmark. In the case of the United States, this is the 2-character
+shortform of the state’s name (such as “TX” for Texas). Note: see the notice above for
+CountryCode regarding the FIPS10-4 / GENC transition. Note: to obtain ADM2 (districtlevel)
+assignments for locations, you can either perform a spatial join against a ShapeFile
+template in any GIS software, or cross-walk the FeatureID to the GNIS/GNS databases –
+this will provide additional fields such as ADM2 codes and MGRS grid references for
+GNS.
+
+    *Location Latitude. (floating point number) This is the centroid latitude of the landmark
+for mapping. In the case of a country or administrative division this will reflect the
+centroid of that entire country/division.
+
+    *Location Longitude. (floating point number) This is the centroid longitude of the
+landmark for mapping. In the case of a country or administrative division this will reflect
+the centroid of that entire country/division.
+
+    *Location FeatureID. (text OR signed integer) This is the numeric GNS or GNIS FeatureID
+for this location OR a textual country or ADM1 code. More information on these values
+can be found in Leetaru (2012).4 Note: This field will be blank or contain a textual ADM1
+code for country or ADM1-level matches – see above. Note: For numeric GNS or GNIS
+FeatureIDs, this field can contain both positive and negative numbers, see Leetaru
+(2012) for more information on this."
+V2Locations,STRING,"This field is identical to the V1LOCATIONS field with the primary exception of an extra
+field appended to the end of each location block after its FeatureID that lists the approximate
+character offset of the reference to that location in the text. In addition, if a location appears
+multiple times in the article, it will be listed multiple times in this field. The only other
+modification from V1LOCATIONS is the addition of a single new field “Location ADM2Code” in
+between “Location ADM1Code” and “Location Latitude”. 5
+ NOTE: there was an error in this field
+from 2/19/2015 through midday 3/1/2015 that caused the CountryCode field to list the wrong
+country code in some cases."
+Persons,STRING,"This is the list of all person names found in the text,
+extracted through the Leetaru (2012) algorithm. 6
+ This name recognition algorithm is unique in
+that it is specially designed to recognize the African, Asian, and Middle Eastern names that yield
+significantly reduced accuracy with most name recognition engines. This field is identical in
+format and population as the corresponding field in the GKG 1.0 format."
+V2Persons,STRING,"This contains a list of all person names referenced in the document, along with the character offsets
+of approximately where in the document they were found. Each person reference is separated
+by a semicolon, and within each reference, the person name is specified first, followed by a
+comma, and then the approximate character offset of the reference of that person in the
+document, allowing it to be associated with other entries from other “V2ENHANCED” fields that
+appear in closest proximity to it. If a person is mentioned multiple times in a document, each
+mention will appear separately in this field."
+Organizations,STRING,"This is the list of all company and organization
+names found in the text, extracted through the Leetaru (2012) algorithm.
+ This is a combination of corporations, IGOs, NGOs, and any other local organizations such as a local fair
+or council. This engine is highly adaptive and is currently tuned to err on the side of inclusion
+when it is less confident about a match to ensure maximal recall of smaller organizations around
+the world that are of especial interest to many users of the GKG. Conversely, certain smaller
+companies with names and contexts that do not provide a sufficient recognition latch may be
+missed or occasionally misclassified as a person name depending on context. It is highly
+recommended that users of the Persons and Organizations fields histogram the results and
+discard names appearing just once or twice to eliminate most of these false positive matches.
+This field is identical in format and population as the corresponding field in the GKG 1.0 format."
+V2Organizations,STRING,"This contains a list of all organizations/companies referenced in the document, along with the
+character offsets of approximately where in the document they were found. Each organization
+reference is separated by a semicolon, and within each reference, the name of the organization
+is specified first, followed by a comma, and then the approximate character offset of the
+reference of that organization in the document, allowing it to be associated with other entries
+from other “V2ENHANCED” fields that appear in closest proximity to it. If an organization is
+mentioned multiple times in a document, each mention will appear separately in this field."
+V2Tone,STRING,"This field contains a comma-delimited
+list of six core emotional dimensions, described in more detail below. Each is recorded as a
+single precision floating point number. This field is nearly identical in format and population as
+the corresponding field in the GKG 1.0 format with the sole exception of adding the single new
+WordCount variable at the end.
+
+
+
+    *Tone. (floating point number) This is the average “tone” of the document as a whole.
+The score ranges from -100 (extremely negative) to +100 (extremely positive). Common
+values range between -10 and +10, with 0 indicating neutral. This is calculated as
+Positive Score minus Negative Score. Note that both Positive Score and Negative Score
+are available separately below as well. A document with a Tone score close to zero may
+either have low emotional response or may have a Positive Score and Negative Score
+that are roughly equivalent to each other, such that they nullify each other. These
+situations can be detected either through looking directly at the Positive Score and
+Negative Score variables or through the Polarity variable.
+
+    *Positive Score. (floating point number) This is the percentage of all words in the article
+that were found to have a positive emotional connotation. Ranges from 0 to +100.
+
+    *Negative Score. (floating point number) This is the percentage of all words in the
+article that were found to have a positive emotional connotation. Ranges from 0 to
++100.
+
+    *Polarity. (floating point number) This is the percentage of words that had matches in
+the tonal dictionary as an indicator of how emotionally polarized or charged the text is.
+If Polarity is high, but Tone is neutral, this suggests the text was highly emotionally
+charged, but had roughly equivalent numbers of positively and negatively charged
+emotional words.
+
+    *Activity Reference Density. (floating point number) This is the percentage of words
+that were active words offering a very basic proxy of the overall “activeness” of the text
+compared with a clinically descriptive text.
+
+    *Self/Group Reference Density. (floating point number) This is the percentage of all
+words in the article that are pronouns, capturing a combination of self-references and
+group-based discourse. News media material tends to have very low densities of such
+language, but this can be used to distinguish certain classes of news media and certain
+contexts.
+
+    *Word Count. (integer) This is the total number of words in the document. This field
+was added in version 1.5 of the format."
+Dates,STRING,"This contains a list of all date references in the document, along with the character offsets of
+approximately where in the document they were found. If a date was mentioned multiple times
+in a document, it will appear multiple times in this field, once for each mention. Each date
+reference is separated by a semicolon, while the fields within a date are separated by commas.
+NOTE: this field is identical to GKG 2.0 with the sole exception of the addition of one additional
+Date Resolution type (4 = dates that include a month and day, but not a year).
+
+
+
+    *Date Resolution. This indicates whether the date was a month-day date that did not
+specify a year (4), a fully-resolved day-level date that included the year (3), a monthlevel
+date that included the year but not a day (2), or a year-level (1) date that did not
+include month or day-level information.
+
+    *Month. This is the month of the date represented as 1-12. For year dates this field will
+contain a 0.
+
+    *Day. This is the day of the date represented as 1-31. For month and year dates this field
+will contain a 0.
+
+    *Year. This is the year of the date. For Resolution=4 dates that include a month and day,
+but not a year, this field will contain a 0.
+
+    *Offset. This is the character offset of the date within the document, indicating
+approximately where it was found in the body. This can be used to associate the date
+with the entries from other “V2ENHANCED” fields that appeared in closest proximity to
+it."
+GCAM,STRING,"The Global Content Analysis Measures (GCAM) system runs an array of content analysis systems over each
+document and compiles their results into this field. New content analysis systems will be
+constantly added to the GCAM pipeline over time, meaning the set of available fields will
+constantly grow over time. Given that the GCAM system is debuting with over 2,300 dimensions
+and will likely grow to include several thousand more dimensions within the coming months, it
+differs in its approach to encoding matches from the GKG’s native thematic coding system.
+Instead of displaying the full English name of a content analysis dictionary or dimension, it
+assigns each dictionary a unique numeric identifier (DictionaryID) and each dimension within
+that dictionary is assigned a unique identifier from 1 to the number of dimensions in the
+dictionary (DimensionID). Each dimension of each dictionary is assessed on a document and
+ONLY those dimensions that had one or more matches onto the document are reported. If a
+dimension did not register any matches on a document, it is not reported in order to save space.
+Thus, the absence of a dimension in this field can be interpreted as a score of 0. Each
+dimension’s score is written to the V2GCAM field separated by a comma. For each dimension, a
+numeric “key” identifies it of the form “DictionaryID.DimensionID”, followed by a colon,
+followed by its score. Most dictionaries are count-based, meaning they report how many words
+in the document were found in that dictionary. Thus, a score of 18 would mean that 18 words
+from the document were found in that dictionary. Count-based dimensions have a key that
+begins with “c”. Some dictionaries, such as SentiWordNet and SentiWords actually assign each
+word a numeric score and the output of the tool is the average of those scores for that
+document. For those dictionaries, an entry will report the number of words in the document
+that matched into that dictionary, and a separate entry, beginning with a “v” instead of a “c” will
+report its floating-point average value. The very first entry in the field has the special reserved
+key of “wc” and reports the total number of words in the document – this can be used to divide
+the score of any word-count field to convert to a percentage density score. As an example,
+assume a document with 125 words. The General Inquirer dictionary has been assigned the
+DictionaryID of 2 and its “Bodypt” dimension has a DimensionID of 21. SentiWordNet has a
+DictionaryID of 10 and its “Positive” dimension has a DimensionID of 1. Thus, the V2GCAM field
+for a document might look like “wc:125,c2.21:4,c10.1:40,v10.1:3.21111111” indicating that the
+document had 125 words, that 4 of those words were found the General Inquirer “Bodypt”
+lexicon, that 40 of those words were found in the SentiWordNet lexicon, and that the average
+numeric score of all of the words found in the SentiWordNet lexicon was 3.21111111. For a
+complete list of the available dimensions, along with their assigned DictionaryID and
+DimensionID codes, their assigned key, and their human name and full citation to cite that
+dimension, please see the GCAM Master Codebook. 8
+ NOTE: the scores for all dimensions, both
+English and non-English dimensions, will be listed together in this field – please see the
+codebooks to determine the source language of a specific dimension. NOTE: if non-English
+dictionaries are available for a given language and generated at least one match for that
+document, an additional “nwc” entry will be added which reflects the word count in the native
+language, since languages may have differing word counts in their native and translated forms.
+This count will be absent if no native dictionaries yielded a match for the document."
+SharingImage,STRING,"Many news websites specify a so-called “sharing image” for
+each article in which the news outlet manually specifies a particular image to be displayed when
+that article is shared via social media or other formats. Not all news outlets specify a sharing
+image and some sites simply use their logo, but for those that do use this field, it represents the
+outlet’s selection of the single image that best captures the overall focus and contents of the
+story. GDELT currently recognizes a variety of formats for specifying this image, including Open
+Graph, Twitter Cards, Google+, IMAGE_SRC, and SailThru formats, among others. "
+RelatedImages,STRING,"News articles frequently include photographs, figures, and other imagery to illustrate the story, ranging from a single illustrative
+photograph at top, to lengthy photo essays interspersed through the entirety of an article. Such
+imagery lends a rich visual tapestry to a news report, helping to clarify, for example, whether an
+article about a “protest blocking a highway” involves hundreds of activists along its length, or
+just a handful of people in one location, or whether a gas explosion leveled a building or merely
+shattered its windows. GDELT uses a suite of highly sophisticated algorithms to actually “read”
+through each article in the way a human would, evaluating each image on to determine its
+relevance, based on positioning, captioning, referencing, and context, and compiles a list of the
+URLs of the images it deems to be most relevant to the article. Thus, unrelated inset boxes,
+advertisements, and other imagery are ignored and this field contains only a list of images most
+illustrative of the core of the story. This feature is in alpha release and involves a number of
+highly complex algorithms working together in concert and thus may make mistakes. We will be
+improving this algorithm over time and would appreciate any feedback you may have on the
+kinds of images it incorrectly includes and those that it misses."
+SocialImageEmbeds,STRING,"News websites are increasingly embedding image-based social media posts inline in their articles to illustrate them with
+realtime reaction or citizen reporting from the ground. GDELT currently recognizes embedded
+image-based Twitter and Instagram posts and records their URLs in this field. Only those posts
+containing imagery are included in this field. This acts as a form of social media “curation” in
+which news outlets are wading through the deluge of social media reaction or reporting about a
+specific situation and hand-selecting key image posts deemed of greatest relevance,
+significance, credibly, and/or interest to their audiences. Only image-based embedded posts are
+included in this field – videos are identified in the following field."
+SocialVideoEmbeds,STRING,"News websites are increasingly
+embedding videos inline in their articles to illustrate them with realtime reaction or citizen
+reporting from the ground. Some news outlets that also have television properties may crosslink
+their television reporting into their web-based presentation. GDELT currently recognizes
+YouTube, DailyMotion, Vimeo, and Vine videos embedded in articles and records their URLs in
+this field. Similarly to the field above, this allows for a form of social media “curation” of the
+videos deemed by the mainstream media to be of greatest relevance, significance, credibly,
+and/or interest to their audiences. "
+Quotations,STRING,"News coverage frequently features excerpted statements from participants in an event and/or those
+affected by it and these quotations can offer critical insights into differing perspectives and
+emotions surrounding that event. GDELT identifies and extracts all quoted statements from
+each article and additionally attempts to identify the verb introducing the quote to help lend
+additional context, separating “John retorted…” from “John agreed…” to show whether the
+speaker was agreeing with or rejecting the statement being made. Each quoted statement is
+separated by a “#” character, and within each block the following fields appear, separated by
+pipe (“|”) symbols:
+
+
+
+    *Offset. This is the character offset of the quoted statement within the document,
+indicating approximately where it was found in the body. This can be used to associate
+the date with the entries from other “V2ENHANCED” fields that appeared in closest
+proximity to it.
+
+    *Length. This is the length of the quoted statement in characters.
+
+    *Verb. This is the verb used to introduce the quote, allowing for separation of
+agreement versus disagreement quotes. May not be present for all quotes and not all
+verbs are recognized for this field.
+
+    *Quote. The actual quotation itself."
+AllNames,STRING,"This field contains a list of all proper names referenced in the document, along with the character offsets of
+approximately where in the document they were found. Unlike the V2ENHANCEDPERSONS and
+V2ENHANCEDORGANIZATIONS fields, which are restricted to person and organization names,
+respectively, this field records ALL proper names referenced in the article, ranging from named
+events like the Orange Revolution, Umbrella Movement, and Arab Spring, to movements like the
+Civil Rights Movement, to festivals and occurrences like the Cannes Film Festival and World Cup,
+to named wars like World War I, to named dates like Martin Luther King Day and Holocaust
+Remembrance Day, to named legislation like Iran Nuclear Weapon Free Act, Affordable Care Act
+and Rouge National Urban Park Initiative. This field goes beyond people and organizations to
+capturing a much broader view of the named events, objects, initiatives, laws, and other types
+of names in each article. Each name reference is separated by a semicolon, and within each
+reference, the name is specified first, followed by a comma, and then the approximate character
+offset of the reference of that name in the document, allowing it to be associated with other
+entries from other “V2ENHANCED” fields that appear in closest proximity to it. If a name is
+mentioned multiple times in a document, each mention will appear separately in this field. This
+field is designed to be maximally inclusive and in cases of ambiguity, to err on the side of
+inclusion of a name."
+Amounts,STRING,"This field contains a list of all precise numeric amounts referenced in the document, along with the character
+offsets of approximately where in the document they were found. Its primary role is to allow
+for rapid numeric assessment of evolving situations (such as mentions of everything from the
+number of affected households to the estimated dollar amount of damage to the number of
+relief trucks and troops being sent into the area, to the price of food and medicine in the
+affected zone) and general assessment of geographies and topics. Both textual and numeric
+formats are supported (“twenty-five trucks”, “two million displaced civilians”, “hundreds of
+millions of dollars”, “$1.25 billion was spent”, “75 trucks were dispatched”, “1,345 houses were
+affected”, “we spent $25m on it”, etc). At this time, percentages are not supported due to the
+large amount of additional document context required for meaningful deciphering (“reduced by
+45%” is meaningless without understanding what was reduced and whether the reduction was
+good or bad, often requiring looking across the entire enclosing paragraph for context). This
+field is designed to be maximally inclusive and in cases of ambiguity, to err on the side of
+inclusion of an amount even if the object of the amount is more difficult to decipher.
+
+
+    *Amount. This is the precise numeric value of the amount. Embedded commas are
+removed (“1,345,123” becomes 1345123), but decimal numbers are left as is (thus this
+field can range from a floating point number to a “long long” integer). Numbers in
+textual or mixed numeric-textual format (“such as “2m” or “two million” or “tens of
+millions”) are converted to numeric digit representation.
+
+    *Object. This is the object that the amount is of or refers to. Thus, “20,000 combat
+soldiers” will result in “20000” in the Amount field and “combat soldiers” in this field.
+
+    *Offset. This is the character offset of the quoted statement within the document,
+indicating approximately where it was found in the body. This can be used to associate
+the date with t"
+TranslationInfo,STRING,"This field is used to record provenance information for machine translated documents indicating the original source language and the
+citation of the translation system used to translate the document for processing. It will be blank
+for documents originally in English. At this time the field will also be blank for documents
+translated by a human translator and provided to GDELT in English (such as BBC Monitoring
+materials) – in future this field may be expanded to include information on human translation
+pipelines, but at present it only captures information on machine translated materials. An
+example of the contents of this field might be “srclc:fra; eng:Moses 2.1.1 / MosesCore Europarl
+fr-en / GT-FRA 1.0”.
+
+
+    *SRCLC. This is the Source Language Code, representing the three-letter ISO639-2 code of
+the language of the original source material.
+
+    *ENG. This is a textual citation string that indicates the engine(s) and model(s) used to
+translate the text. The format of this field will vary across engines and over time and no
+expectations should be made on the ordering or formatting of this field. In the example
+above, the string “Moses 2.1.1 / MosesCore Europarl fr-en / GT-FRA 1.0” indicates that
+the document was translated using version 2.1.1 of the Moses 9
+SMT platform, using the
+“MosesCore Europarl fr-en” translation and language models, with the final translation
+enhanced via GDELT Translingual’s own version 1.0 French translation and language
+models. A value of “GT-ARA 1.0” indicates that GDELT Translingual’s version 1.0 Arabic
+translation and language models were the sole resources used for translation.
+Additional language systems used in the translation pipeline such as word segmentation
+systems are also captured in this field such that a value of “GT-ZHO 1.0 / Stanford PKU”
+indicates that the Stanford Chinese Word Segmenter 10 was used to segment the text
+into individual words and sentences, which were then translated by GDELT
+Translingual’s own version 1.0 Chinese (Traditional or Simplified) translation and
+language models."
+Extras,STRING,"This field is reserved to hold special non-standard data applicable to special subsets of the GDELT collection. It is unique among the other GKG fields in
+that it is XML-formatted and the specific format of a given block within this field is highly
+customized. At the time of this writing it currently is used to hold the citations list for the
+academic journal article subcollection 11 and is blank for news content.
+
+
+    *CITEDREFERENCESLIST. This block holds the results of the parsed cited references list
+that appeared at the bottom of the article, as extracted by the ParsCit software.
+ The ParsCit system is based on machine learning algorithms which can exhibit a significant
+amount of error and/or vary by source material. Within this block, each citation is
+enclosed in a <CITATION></CITATION> block. Within that block appear the following
+fields. Note: the fields may not appear in precisely this order and not all fields may be
+present for all citations, so parsing of this field should be flexible. For more information
+on the meaning of each field, please see the documentation for ParsCit.
+ This block is only available for the academic journal article subcollection.
+
+
+
+    * Authors. This is a nested block with an outer set of tags of <AUTHORS>
+</AUTHORS> containing one or more inner blocks of <AUTHOR></AUTHOR>.
+Each inner block contains the name of an author of the cited paper. If a paper
+has multiple authors, there will be an <AUTHOR></AUTHOR> inner block for
+each author. Author names are order-standardized (“Leetaru, Kalev Hannes”
+will be normalized to “Kalev Hannes Leetaru”) but are not otherwise normalized
+and thus “K Leetaru”, “Kalev Leetaru”, “Kalev H. Leetaru” and “Kalev Hannes
+Leetaru” would all appear as distinct author entries. Applications requiring
+name disambiguation will need to perform that task themselves.
+
+    * Title. This is the title of the cited work if it is an article.
+
+    * BookTitle. This is the title of the cited work if it is a book.
+
+    * Date. This is the date of the cited work.
+
+    * Journal. The journal the cited work was published in.
+
+    * Volume. The volume of the journal issue the cited work was published in.
+
+    * Issue. The issue of the journal issue the cited work was published in.
+
+    * Pages. This is the page range of the cited work.
+
+    * Institution. This is the institutional affiliation of the cited work.
+
+    * Publisher. The publisher of the cited work.
+
+    * Location. The location of the publisher of the cited work.
+
+    * Marker. This is the textual marker used to identify the work in the text (such as
+“Leetaru et al, 2014”). This can be used if you have access to the original article
+to locate references to the cited work in the article."

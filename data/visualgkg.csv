@@ -1,0 +1,110 @@
+name,type,description
+DATE,INTEGER,"This is the full date and time that the article containing this image was monitored by
+GDELT in 15 minute resolution. It is in YYYYMMDDHHMMSS format."
+DocumentIdentifier,STRING,"This is the URL of the article in which the image was found. It is
+identical to the URL used in the main GKG and EVENT tables, allowing cross-referencing and
+joining."
+ImageURL,STRING,"This is the URL of the specific image within the article that was analyzed, since an
+article may contain multiple images. As of this writing, we are currently processing only the
+SocialSharingImage for each article."
+Labels,STRING,". (“<RECORD>” delimited blocks, with “<FIELD>” delimited fields) This is the list of label
+annotations describing the contents of the image. Each label contains three fields delimited by
+“<FIELD>” and multiple labels are separated with “<RECORD>”. Each record provides the
+following fields:
+
+
+    o Description. This is the human-friendly description of the label.
+
+    o Score. This is a numeric score of the confidence the API had in its assignment of that
+label to the image.
+
+    o MID. This is the unique ID key of the label in Google’s knowledge graph."
+GeoLandmarks,STRING," (“<RECORD>” delimited blocks, with “<FIELD>” delimited fields) This is the
+list of estimated geographic locations where the image was taken. Each label contains three
+fields delimited by “<FIELD>” and multiple labels are separated with “<RECORD>”. Each record
+provides the following fields:
+
+
+    o Description. This is the human-friendly name for the location. Note that this field may
+be blank for street-level matches and in certain other cases.
+
+    o Score. This is a numeric score of the confidence the API had in its assignment of that
+label to the image.
+
+    o Latitude. This is the general area geographic latitude estimated for the image’s location.
+
+    o Longitude. This is the general area geographic longitude estimated for the image’s
+location."
+Logos,STRING," (“<RECORD>” delimited blocks, with “<FIELD>” delimited fields) This is the list of logos
+found in the image. Each label contains three fields delimited by “<FIELD>” and multiple labels
+are separated with “<RECORD>”. Each record provides the following fields:
+
+
+    o Description. This is the human-friendly description of the label.
+
+    o Score. This is a numeric score of the confidence the API had in its assignment of that
+label to the image.
+
+    o MID. This is the unique ID key of the label in Google’s knowledge graph."
+SafeSearch,STRING," (“<FIELD>” delimited fields). This is the output of the Google SafeSearch
+algorithms on the image. It contains the following fields:
+
+
+    o ViolenceLikelihood. Estimated likelihood that the image contains violence. Value is
+either -2 (Very Unlikely), -1 (Unlikely), 1 (Likely), or 2 (Very Likely).
+
+    o MedicalLikelihood. Estimated likelihood that the image is medical in nature. Value is
+either -2 (Very Unlikely), -1 (Unlikely), 1 (Likely), or 2 (Very Likely).
+
+    o SpoofLikelihood. Estimated likelihood that the image is a spoof. Value is either -2 (Very
+Unlikely), -1 (Unlikely), 1 (Likely), or 2 (Very Likely).
+
+    o AdultLikelihood. Estimated likelihood that the image is adult in nature. Value is either -2
+(Very Unlikely), -1 (Unlikely), 1 (Likely), or 2 (Very Likely)."
+Faces,STRING,"(“<RECORD>” delimited blocks, with “<FIELD>” delimited fields) This is the list of faces
+found in the image. Each record contains a series of fields delimited by “<FIELD>” and multiple
+faces are separated with “<RECORD>”. Each record provides the following fields:
+
+
+    o DetectionConfidence. The algorithm’s confidence that this is a human face.
+
+    o RollAngle. The estimated roll angle of the face.
+
+    o PanAngle. The estimated pan angle of the face.
+
+    o TiltAngle. The estimated tilt angle of the face.
+
+    o LandmarkingConfidence. The algorithm’s confidence in its landmark determination
+(facial feature annotation) for this face.
+
+    o BoundingBox. The estimated bounding box in pixels containing the majority of the face.
+Contains four X,Y coordinates separated by semicolons.
+
+    o EmotionSorrowLikelihood. Estimated likelihood that this face is expressing the emotion
+“sorrow.” Value is either -2 (Very Unlikely), -1 (Unlikely), 1 (Likely), or 2 (Very Likely).
+
+    o EmotionAngerLikelihood. Estimated likelihood that this face is expressing the emotion
+“anger.” Value is either -2 (Very Unlikely), -1 (Unlikely), 1 (Likely), or 2 (Very Likely).
+
+    o HeadwearLikelihood. Estimated likelihood that this face is wearing some kind of
+headwear such as a hat. Value is either -2 (Very Unlikely), -1 (Unlikely), 1 (Likely), or 2
+(Very Likely).
+
+    o EmotionJoyLikelihood. Estimated likelihood that this face is expressing the emotion
+“joy.” Value is either -2 (Very Unlikely), -1 (Unlikely), 1 (Likely), or 2 (Very Likely).
+
+    o EmotionSurpriseLikelihood. Estimated likelihood that this face is expressing the
+emotion “surprise.” Value is either -2 (Very Unlikely), -1 (Unlikely), 1 (Likely), or 2 (Very
+Likely).
+
+    o UnderExposedLikelihood. Estimated likelihood that this face is underexposed. Value is
+either -2 (Very Unlikely), -1 (Unlikely), 1 (Likely), or 2 (Very Likely).
+
+    o BlurredLikelihood. Estimated likelihood that this face is blurred. Value is either -2 (Very
+Unlikely), -1 (Unlikely), 1 (Likely), or 2 (Very Likely)."
+OCR,STRING," (“<RECORD>” delimited fields). This is the list of detected text regions found in the image.
+Each region is separated by “<RECORD>” delimiter and contains a block of contiguous text found
+in the image."
+LangHints,STRING,Bigraph that represents the potential language or cultural affiliation of this record
+WidthHeight,STRING,Dimensions of the image
+RawJSON,STRING,Metadata tied to the record.

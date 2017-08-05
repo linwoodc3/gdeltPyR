@@ -71,12 +71,11 @@ UTIL_FILES_PATH = os.path.join(BASE_DIR, "gdeltPyR", "utils", "schema_csvs")
 
 try:
 
-    codes = json.load(open(os.path.join(UTIL_FILES_PATH,
-                                        "cameoCodes.json")))
-
+    codes = pd.read_json(os.path.join(BASE_DIR, 'data', 'cameoCodes.json'),
+                         dtype=dict(cameoCode='str', GoldsteinScale=np.float64))
+    codes.set_index('cameoCode', drop=False, inplace=True)
 
 except:
-
     a = 'https://raw.githubusercontent.com/linwoodc3/gdeltPyR/master' \
         '/utils/' \
         'schema_csvs/cameoCodes.json'
@@ -166,16 +165,14 @@ class gdelt(object):
 
                  ):
 
+        self.codes = codes
+        self.translation = None
         self.version = version
         self.cores = cores
-
         if int(version) == 2:
             self.baseUrl = gdelt2url
         elif int(version) == 1:
             self.baseUrl = gdelt1url
-        self.codes = codes
-
-        self.translation = None
 
     ###############################
     # Searcher function for GDELT
@@ -360,6 +357,14 @@ class gdelt(object):
         an option to store the output directly to disc.
 
         """
+
+        # check for valid table names; fail early
+        valid = ['events', 'gkg', 'vgkg', 'iatv', 'mentions']
+        if table not in valid:
+            raise ValueError('You entered "{}"; this is not a valid table name.'
+                             ' Choose from "events", "mentions", or "gkg".'
+                .format(table))
+
         date_input_check(date, self.version)
         self.coverage = coverage
         self.date = date
@@ -589,20 +594,24 @@ class gdelt(object):
             del downloaded_dfs
             results.reset_index(drop=True, inplace=True)
 
-        # print(results.columns,columns,self.table,self.version)
+
         if self.table == 'gkg' and self.version == 1:
             results.columns = results.ix[0].values.tolist()
             results.drop([0], inplace=True)
             columns = results.columns
-        if len(results.columns) == 57:
-            results.columns = columns[:-1]
 
-        else:
-            results.columns = columns
+        # check for empty dataframe
+        if results is not None:
+            if len(results.columns) == 57:
+                results.columns = columns[:-1]
 
-        if (len(results)) == 0:
+            else:
+                results.columns = columns
+
+        # if dataframe is empty, raise error
+        elif results is None or len(results) == 0:
             raise ValueError("This GDELT query returned no data. Check "
-                             "internet connection or query parameters and "
+                             "query parameters and "
                              "retry")
 
         # Add column of human readable codes; need updated CAMEO
@@ -616,15 +625,24 @@ class gdelt(object):
         # Setting the output options
         ###############################################
 
+        # dataframe output
         if output == 'df':
             self.final = results
+
+        # json output
         elif output == 'json':
             self.final = results.to_json(orient='records')
+
+        # csv output
         elif output == 'csv':
             self.final = results.to_csv(encoding='utf-8')
+
+        # geopandas dataframe output
         elif output == 'gpd' or output == 'geodataframe' or output == 'geoframe':
             self.final = geofilter(results)
             self.final = self.final[self.final.geometry.notnull()]
+
+        # r dataframe output
         elif output == 'r':
 
             if self.coverage:
@@ -664,6 +682,8 @@ class gdelt(object):
         #########################
         # Return the result
         #########################
+
+        # normalized columns
         if normcols:
             self.final.columns = list(map(lambda x: (x.replace('_', "")).lower(), self.final.columns))
 

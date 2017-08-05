@@ -5,7 +5,21 @@
 # Linwood Creekmore
 # Email: valinvescap@gmail.com
 
+#########################
+# Standard Library Import
+#########################
+
 from unittest import TestCase
+
+#########################
+# Third Party Import
+#########################
+
+import coveralls
+
+############################
+# Custom Import
+############################
 
 from gdelt.dateFuncs import dateformatter
 

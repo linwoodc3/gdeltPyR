@@ -22,7 +22,7 @@ import coveralls
 # Local imports
 ##############################
 
-from gdelt.inputChecks import *
+from gdelt.inputChecks import _date_input_check
 import gdelt
 
 
@@ -34,7 +34,7 @@ class TestGdeltDateInputs(TestCase):
         date_sequence = ['2011 10 01', '2016 10 05']
         exp = "GDELT 2.0 only supports 'Feb 18 2015 - Present'queries currently. Try another date."
         with self.assertRaises(Exception) as context:
-            checked = date_input_check(date_sequence,version=2)
+            checked = _date_input_check(date_sequence,version=2)
         the_exception = context.exception
         return self.assertEqual(exp, str(the_exception), "Dates for version 2 fail outside of Feb 18 2015")
 
@@ -42,6 +42,6 @@ class TestGdeltDateInputs(TestCase):
         date_sequence = ['2011 10 01', '2016 10 05']
         exp = "GDELT 2.0 only supports 'Feb 18 2015 - Present'queries currently. Try another date."
         with self.assertRaises(Exception) as context:
-            checked = date_input_check(date_sequence,version=2)
+            checked = _date_input_check(date_sequence,version=2)
         the_exception = context.exception
         return self.assertEqual(exp, str(the_exception), "Dates for version 2 fail outside of Feb 18 2015")

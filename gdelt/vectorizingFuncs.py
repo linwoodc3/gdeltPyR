@@ -20,11 +20,11 @@ from dateutil.parser import parse
 ################################
 # Local Imports
 ################################
-from gdelt.multipdf import parallelize_dataframe
-from gdelt.helpers import testdate
+from gdelt.multipdf import _parallelize_dataframe
+from gdelt.helpers import _testdate
 
 
-def vectorizer(function, dateArray):
+def _vectorizer(function, dateArray):
     helper = np.vectorize(function)
 
     final = helper(dateArray.tolist()).tolist()
@@ -43,21 +43,21 @@ def vectorizer(function, dateArray):
 # Finds the urls from an array of dates
 
 
-def urlFinder(dataframe, targetDate, col):
+def _urlFinder(dataframe, targetDate, col):
     return dataframe[col][dataframe[col].str.contains(targetDate)]
 
 
-def vectorizedUrlFinder(function, urlList, frame):
+def _vectorizedUrlFinder(function, urlList, frame):
     helper = np.vectorize(function)
     return pd.concat(helper(urlList, frame).tolist())
 
 
-def downloadVectorizer(function, urlList):
+def _downloadVectorizer(function, urlList):
     """Vectorized function to download urls"""
     helper = np.vectorize(function)
     return pd.concat(helper(urlList).tolist()).reset_index(drop=True)
 
-def urlBuilder(dateString, version, table='events', translation=False):
+def _urlBuilder(dateString, version, table='events', translation=False):
     """
     Takes date string from gdeltRange string and creates GDELT urls
 
@@ -97,7 +97,7 @@ def urlBuilder(dateString, version, table='events', translation=False):
         if version == 1:
             base += 'gkg/'
             if isinstance(dateString,str):
-                comp = testdate(dateString)
+                comp = _testdate(dateString)
                 if comp < parse('2013 Apr 1'):
                     raise Exception('GDELT 1.0 Global Knowledge Graph requires dates greater'
                                     ' than or equal to April 1 2013')
@@ -107,7 +107,7 @@ def urlBuilder(dateString, version, table='events', translation=False):
                         map(
                             lambda x: x > parse('2013 04 01'), list(
                                 map(
-                                    testdate, dateString)))))):
+                                    _testdate, dateString)))))):
                     raise Exception('GDELT 1.0 Global Knowledge Graph requires dates greater'
                                     ' than or equal to April 1 2013')
 
@@ -212,10 +212,10 @@ def urlBuilder(dateString, version, table='events', translation=False):
                 map(
                     lambda x: x > parse('2013 04 01'), list(
                         map(
-                            testdate, dateString)))))):
+                            _testdate, dateString)))))):
 
             return (list(
-                map(lambda x: base + x + ".zip" if testdate(
+                map(lambda x: base + x + ".zip" if _testdate(
                     x).date() < parse(
                     '2013 04 01').date() else base + x + caboose,
                     dateString)))
@@ -247,7 +247,7 @@ def urlBuilder(dateString, version, table='events', translation=False):
 
         return base + dateString + caboose
 
-def geofilter(frame):
+def _geofilter(frame):
     """Filters dataframe for conversion to geojson or shapefile"""
     try:
         import geopandas as gpd
@@ -263,11 +263,11 @@ def geofilter(frame):
             filresults = frame[(frame['actiongeolat'].notnull()
                                 ) | (frame['actiongeolong'].notnull()
                                      )]
-        gdf = gpd.GeoDataFrame(filresults.assign(geometry=parallelize_dataframe(filresults)),
+        gdf = gpd.GeoDataFrame(filresults.assign(geometry=_parallelize_dataframe(filresults)),
                                crs={'init': 'epsg:4326'})
         gdf.columns = list(map(lambda x: (x.replace('_', "")).lower(), gdf.columns))
 
-        # final = gpd.GeoDataFrame(filresults.assign(geometry=parallelize_dataframe(filresults)),
+        # final = gpd.GeoDataFrame(filresults.assign(geometry=_parallelize_dataframe(filresults)),
         #                               crs={'init': 'epsg:4326'})
 
         final = gdf[gdf.geometry.notnull()]

@@ -23,7 +23,7 @@ import requests
 # Local imports
 ##################################
 
-def downloadAndExtract(gdeltUrl):
+def _downloadAndExtract(gdeltUrl):
     """Downloads and extracts GDELT zips without saving to disk"""
 
     response = requests.get(gdeltUrl, stream=True)
@@ -38,7 +38,7 @@ def downloadAndExtract(gdeltUrl):
     return pd.read_csv(BytesIO(data), delimiter='\t', header=None)
 
 
-def normalpull(url,table=None):
+def _normalpull(url,table=None):
     """When single string url, just download it"""
     r = requests.get(url, timeout=5)
     # print(len(r.content))

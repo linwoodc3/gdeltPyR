@@ -19,7 +19,7 @@ import numpy as np
 from dateutil.parser import parse
 
 
-def date_input_check(date, version):
+def _date_input_check(date, version):
     """Function to check date entered by user.
 
 
@@ -270,7 +270,7 @@ def date_input_check(date, version):
                             datetime.datetime.now())))
 
 
-def tblCheck(dataframe, tbl):
+def _tblCheck(dataframe, tbl):
     """Checking the input of tblType."""
     if tbl == 'events' or tbl == '' or tbl == 'mentions':
         resultsUrlList = dataframe[2][dataframe[2].str.contains(

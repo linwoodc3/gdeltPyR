@@ -8,16 +8,20 @@
 ##############################
 # Standard library imports
 ##############################
+
 from unittest import TestCase
 
 ##############################
 # Third party imports
 ##############################
+
 import numpy as np
+import coveralls
 
 ##############################
 # Local imports
 ##############################
+
 from gdelt.dateFuncs import gdeltRangeString, dateRanger
 from gdelt.vectorizingFuncs import urlBuilder
 

@@ -21,13 +21,13 @@ from concurrent.futures import ProcessPoolExecutor
 ##################################
 # Local imports
 ##################################
-from gdelt.helpers import shaper
+from gdelt.helpers import _shaper
 
 cores = cpu_count()
 e = ProcessPoolExecutor(max_workers=cores)
 
 
-def shaper(row):
+def _shaper(row):
     """
     Parallel function to create shapely points
     from latitude/longitude pair in dataframe
@@ -59,11 +59,11 @@ def shaper(row):
     return geometry
 
 
-def call_apply_fn(df):
-    return df.apply(shaper, axis=1)
+def _call_apply_fn(df):
+    return df.apply(_shaper, axis=1)
 
 
-def parallelize_dataframe(df):
+def _parallelize_dataframe(df):
     """Applying function"""
     df_split = np.array_split(df, cores * 2)
     finaldf = pd.concat(list(e.map(call_apply_fn, df_split)))

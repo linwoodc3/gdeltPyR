@@ -35,7 +35,7 @@ class NoDaemonProcessPool(multiprocessing.pool.Pool):
     Process = NoDaemonProcess
 
 
-def mp_worker(url, table=None):
+def _mp_worker(url, table=None):
     """Code to download the urls and blow away the buffer to keep memory usage down"""
 
     warnings.filterwarnings("ignore",

@@ -44,16 +44,22 @@ class testGdeltGetHeaders(TestCase):
     def test_events2_headers(self, mock_B):
         """Return csv."""
 
-        with open(os.path.join(gdelt.base.BASE_DIR, 'data', 'events2.csv'),
-                  'rb') as csvfile:
-            spamreader = csv.reader(csvfile)
-            spam = (csvfile.read())
-            response = mock_B()
-            response.content = spam
-            res = _events2Heads()
-        exp = pd.read_csv(BytesIO(response.content))
+        spam = pandas.read_csv(
+            os.path.join(gdelt.base.BASE_DIR, 'data', 'events2.csv'))
+        spam.columns = ['tableId', 'dataType',
+                        'Description']
+        spam = spam.assign(Empty='NULLABLE')[['tableId', 'dataType', 'Empty', 'Description']]
+        buffer = StringIO()
+        spam.to_csv(buffer,index=False)
 
-        return self.assertIsInstance(exp, pd.DataFrame, "Returned dataframe")
+        # df_bytes = spam.to_string(index=False).encode('utf-8')
+        data = buffer.getvalue().encode('utf-8')
+        response = mock_B()
+        response.content = data
+
+        res = _events2Heads()
+
+        return self.assertIsInstance(res, list, "Returned dataframe")
 
     @mock.patch.object(gdelt.getHeaders.requests, 'get')
     def test_events1_headers(self, mock_B):

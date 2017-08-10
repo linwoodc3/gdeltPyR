@@ -33,9 +33,20 @@ class testMultiDf(TestCase):
                 "events2samp.gz"),
                 compression="gzip")
 
+        try:
+            # Applying the function
+            events2 = events2.\
+                assign(geometry=_parallelize_dataframe(events2))
+            return self.assertTrue('geometry' in events2.columns)
+        except:
+            exp= ('You need to install shapely to use this feature.')
+            with self.assertRaises(Exception) as context:
+                events2 = events2. \
+                    assign(geometry=_parallelize_dataframe(events2))
+            the_exception = context.exception
 
-        # Applying the function
-        events2 = events2.\
-            assign(geometry=_parallelize_dataframe(events2))
 
-        return self.assertTrue('geometry' in events2.columns)
+            return self.assertIsInstance(str(the_exception),str, "Not installed")
+
+
+

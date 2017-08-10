@@ -107,7 +107,6 @@ class TestGdeltBaseSearch(TestCase):
         this_dir, this_filename = os.path.split(__file__)
         BASE_DIR = os.path.dirname(this_dir)
         BASE = "/".join(this_dir.split('/')[:-1])
-        print(BASE_DIR,BASE,exp)
         return self.assertEqual(BASE,exp)
 
     def test_Search_load(self):
@@ -161,7 +160,7 @@ class TestGdeltBaseSearch(TestCase):
         the_exception = context.exception
         exp = (
         """You entered "evens"; this is not a valid table name. Choose from "events", "mentions", or "gkg".""")
-        print(context.exception)
+
 
         # returning the objects
         return self.assertEqual(exp,str(context.exception))
@@ -282,7 +281,7 @@ class TestGdeltBaseSearch(TestCase):
         # instantiating the second mock
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
-                gdelt.base.BASE_DIR, "data", "mentionssamp.pkl.compress"),
+                gdelt.base.BASE_DIR, "data", "mentionssamp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)
@@ -310,8 +309,6 @@ class TestGdeltBaseSearch(TestCase):
         gd = gdelt.gdelt(version=1)
 
         res = gd.Search('2017 Jul 1', table='gkg')
-
-        print(type(res))
 
         # returning the objects
         return self.assertGreater(mock_A.return_value.shape[0], 0)
@@ -350,7 +347,7 @@ class TestGdeltBaseSearch(TestCase):
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "mentionsTranssamp.pkl.compress"),
+                "mentionsTranssamp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)
@@ -435,19 +432,19 @@ class TestGdeltBaseSearch(TestCase):
         mock_E = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "mentionslistsamp.pkl.compress"),
+                "mentionslistsamp.gz"),
                 compression="gzip")))
 
         mock_C = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "mentionslistsamp.pkl.compress"),
+                "mentionslistsamp.gz"),
                 compression="gzip")))
 
         mock_C = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "mentionslistsamp.pkl.compress"),
+                "mentionslistsamp.gz"),
                 compression="gzip")))
 
         mock_B = mock.MagicMock(return_value=pd.read_csv(
@@ -459,7 +456,7 @@ class TestGdeltBaseSearch(TestCase):
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "mentionslistsamp.pkl.compress"),
+                "mentionslistsamp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)

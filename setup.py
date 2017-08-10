@@ -52,37 +52,37 @@ setup(
                       "futures>=3.0.5; python_version == '2.6'"
                       " or python_version=='2.7'"
                       ],
-    extras_require = {
-            'geoSpatial':  ["fiona>=1.6", "shapely>=1.5","geopandas>-1.7"],
-            ":python_version<'3.3'": ["mock","futures"]
-        },
+    extras_require={
+        'geoSpatial': ["fiona>=1.6", "shapely>=1.5", "geopandas>-1.7"],
+        ":python_version<'3.3'": ["mock", "futures"]
+    },
     include_package_data=True,
     package_data={'utils': ['schema_csvs/*']},
-    data_files=[('data', ['data/cameoCodes.json','data/events1.csv',
-                          'data/events2.csv','data/gkg2.csv',
-                          'data/iatv.csv','data/mentions.csv',
-                          'data/visualgkg.csv','data/gkg2listsamp.gz',
+    data_files=[('data', ['data/cameoCodes.json', 'data/events1.csv',
+                          'data/events2.csv', 'data/gkg2.csv',
+                          'data/iatv.csv', 'data/mentions.csv',
+                          'data/visualgkg.csv', 'data/gkg2listsamp.gz',
                           'data/events2listsamp.gz', 'data/events1.csv',
- 'data/events1samp.gz',
- 'data/events2.csv',
- 'data/events2listsamp.gz',
- 'data/events2samp.gz',
- 'data/events2samps.csv.zip',
- 'data/events2Transsamp.gz',
- 'data/gkg1.csv',
- 'data/gkg1samp.gz',
- 'data/gkg2.csv',
- 'data/gkg2listsamp.gz',
- 'data/gkg2samp.gz',
- 'data/gkg2Transsamp.gz',
- 'data/iatv.csv',
- 'data/mentions.csv',
- 'data/mentionslistsamp.pkl.compress',
- 'data/mentionssamp.csv',
- 'data/mentionssamp.pkl.compress',
- 'data/mentionsTranssamp.pkl.compress',
- 'data/visualgkg.csv'
-])],
+                          'data/events1samp.gz',
+                          'data/events2.csv',
+                          'data/events2listsamp.gz',
+                          'data/events2samp.gz',
+                          'data/events2samps.csv.zip',
+                          'data/events2Transsamp.gz',
+                          'data/gkg1.csv',
+                          'data/gkg1samp.gz',
+                          'data/gkg2.csv',
+                          'data/gkg2listsamp.gz',
+                          'data/gkg2samp.gz',
+                          'data/gkg2Transsamp.gz',
+                          'data/iatv.csv',
+                          'data/mentions.csv',
+                          'data/mentionslistsamp.gz',
+                          'data/mentionssamp.csv',
+                          'data/mentionssamp.gz',
+                          'data/mentionsTranssamp.gz',
+                          'data/visualgkg.csv'
+                          ])],
     keywords='gdelt pandas tidy data api',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
@@ -98,6 +98,8 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5'
+        'Programming Language :: Python :: 3.4'
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6'
     ],
 )

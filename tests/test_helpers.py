@@ -59,9 +59,21 @@ class testHelpers(TestCase):
         dd = pd.read_pickle(os.path.join(
             gdelt.base.BASE_DIR, "data", "events2samp.gz"),
             compression="gzip").drop('CAMEOCodeDescription', axis=1)
-        fin = dd.apply(_shaper,axis=1)
 
-        return self.assertIsInstance(fin,pd.Series)
+        try:
+            # Applying the function
+            fin = dd.apply(_shaper, axis=1)
+
+            return self.assertIsInstance(fin, pd.Series)
+        except:
+            exp= ('You need to install shapely to use this feature.')
+            with self.assertRaises(Exception) as context:
+                fin = dd.apply(_shaper, axis=1)
+            the_exception = context.exception
+
+
+            return self.assertIsInstance(str(the_exception),str, "Not installed")
+
 
     def test_cameo(self):
         """Make the cameo code description"""

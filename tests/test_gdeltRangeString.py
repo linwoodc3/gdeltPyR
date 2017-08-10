@@ -75,7 +75,7 @@ class TestGdeltRangeString(TestCase):
         date_sequence = ['2016 10 01','2016 Dec 31']
         ranger_output = _dateRanger(date_sequence)
         gdeltstring_test = _gdeltRangeString(ranger_output, coverage=True, version=2)
-        print(gdeltstring_test.dtype)
+
         return self.assertIsInstance(gdeltstring_test,np.ndarray)
 
     def test_gdeltrange_sequence_v2(self):

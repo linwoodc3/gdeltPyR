@@ -17,6 +17,7 @@ except:
 
 from unittest import TestCase
 import os
+import sys
 import csv
 from io import BytesIO, StringIO
 import pickle
@@ -45,15 +46,26 @@ class testGdeltGetHeaders(TestCase):
         """Return csv."""
 
         spam = pandas.read_csv(
-            os.path.join(gdelt.base.BASE_DIR, 'data', 'events2.csv'))
+            os.path.join(gdelt.base.BASE_DIR, 'data', 'events2.csv'),encoding='utf-8')
         spam.columns = ['tableId', 'dataType',
                         'Description']
         spam = spam.assign(Empty='NULLABLE')[['tableId', 'dataType', 'Empty', 'Description']]
-        buffer = StringIO()
-        spam.to_csv(buffer,index=False)
+        ver = sys.version_info.major
+        if ver == 3:
+            buffer = StringIO()
+            spam.to_csv(buffer, index=False)
+            data = buffer.getvalue().encode('utf-8')
+        else:
+            buffer = BytesIO()
+            spam.to_csv(buffer, index=False,encoding='utf-8')
+            data = buffer.getvalue()
+
+
 
         # df_bytes = spam.to_string(index=False).encode('utf-8')
-        data = buffer.getvalue().encode('utf-8')
+
+
+
         response = mock_B()
         response.content = data
 
@@ -74,6 +86,8 @@ class testGdeltGetHeaders(TestCase):
         response.content = df_bytes
 
         res = _events1Heads()
+        ver = sys.version_info.major
+
         exp = pd.read_csv(BytesIO(response.content))
 
         return self.assertIsInstance(exp, pandas.DataFrame,
@@ -87,10 +101,21 @@ class testGdeltGetHeaders(TestCase):
             os.path.join(gdelt.base.BASE_DIR, 'data', 'mentions.csv'))
         spam.columns = ['tableId', 'dataType',
                         'Description']
-        buffer = StringIO()
-        spam.to_csv(buffer, '\t')
-        # df_bytes = spam.to_string(index=False).encode('utf-8')
-        data = buffer.getvalue().encode('utf-8')
+        ver = sys.version_info.major
+        if ver == 3:
+            buffer = StringIO()
+            spam.to_csv(buffer,sep='\t', index=False)
+            data = buffer.getvalue().encode('utf-8')
+        else:
+            buffer = BytesIO()
+            spam.to_csv(buffer,sep='\t', index=False, encoding='utf-8')
+            data = buffer.getvalue()
+
+
+        # buffer = StringIO()
+        # spam.to_csv(buffer, '\t')
+        # # df_bytes = spam.to_string(index=False).encode('utf-8')
+        # data = buffer.getvalue().encode('utf-8')
         response = mock_B()
         response.content = data
 
@@ -108,10 +133,20 @@ class testGdeltGetHeaders(TestCase):
             os.path.join(gdelt.base.BASE_DIR, 'data', 'gkg2.csv'))
         spam.columns = ['tableId', 'dataType',
                         'Description']
-        buffer = StringIO()
-        spam.to_csv(buffer, '\t')
-        # df_bytes = spam.to_string(index=False).encode('utf-8')
-        data = buffer.getvalue().encode('utf-8')
+        ver = sys.version_info.major
+        if ver == 3:
+            buffer = StringIO()
+            spam.to_csv(buffer,sep='\t', index=False)
+            data = buffer.getvalue().encode('utf-8')
+        else:
+            buffer = BytesIO()
+            spam.to_csv(buffer,sep='\t', index=False, encoding='utf-8')
+            data = buffer.getvalue()
+
+        # buffer = StringIO()
+        # spam.to_csv(buffer, '\t')
+        # # df_bytes = spam.to_string(index=False).encode('utf-8')
+        # data = buffer.getvalue().encode('utf-8')
         response = mock_B()
         response.content = data
 

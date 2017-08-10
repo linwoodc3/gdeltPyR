@@ -61,7 +61,7 @@ class TestGdeltDateInputs(TestCase):
         with self.assertRaises(Exception) as context:
             checked = _date_input_check(date_sequence, version=1)
         the_exception = context.exception
-        print(the_exception)
+
         return self.assertEqual(exp, str(the_exception), "Too early date "
                                                          "on Version 1")
 

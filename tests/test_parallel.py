@@ -17,6 +17,7 @@ except:
 
 from unittest import TestCase
 import os
+import sys
 import csv
 from io import BytesIO,StringIO
 from zipfile import ZipFile
@@ -40,18 +41,27 @@ from gdelt.parallel import _mp_worker
 
 
 class testParallelWorker(TestCase):
+
+
+
     @mock.patch.object(gdelt.parallel.requests, 'get')
     def test_parallel_events2_pass(self, mock_B):
         """Return csv."""
 
         # set up return value for mock
+        ver = sys.version_info.major
         spam = pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data", "events2samp.gz"),
                 compression="gzip").drop('CAMEOCodeDescription',axis=1)
         spam.columns = np.arange(len(spam.columns))
         spam[[26,27,28]] = spam[[26,27,28]].astype('str')
-        buffer = StringIO()
-        spam.to_csv(buffer, sep='\t', header=False,index=False)
+
+        if ver == 3:
+            buffer = StringIO()
+            spam.to_csv(buffer, sep='\t', header=False,index=False)
+        else:
+            buffer = BytesIO()
+            spam.to_csv(buffer, sep='\t', header=False, index=False)
         # print(spam)
 
         # making the zipfile
@@ -110,8 +120,14 @@ class testParallelWorker(TestCase):
             gdelt.base.BASE_DIR, "data", "gkg2samp.gz"),
             compression="gzip")
         spam.columns = np.arange(len(spam.columns))
-        buffer = StringIO()
-        spam.to_csv(buffer, sep='\t', header=False, index=False)
+        ver = sys.version_info.major
+        if ver == 3:
+            buffer = StringIO()
+            spam.to_csv(buffer, sep='\t', header=False,index=False)
+        else:
+            buffer = BytesIO()
+            spam.to_csv(buffer, sep='\t', header=False, index=False,encoding='utf-8')
+
         # print(spam)
 
         # making the zipfile
@@ -141,11 +157,17 @@ class testParallelWorker(TestCase):
 
         # set up return value for mock
         spam = pd.read_pickle(os.path.join(
-            gdelt.base.BASE_DIR, "data", "mentionssamp.pkl.compress"),
+            gdelt.base.BASE_DIR, "data", "mentionssamp.gz"),
             compression="gzip")
         spam.columns = np.arange(len(spam.columns))
-        buffer = StringIO()
-        spam.to_csv(buffer, sep='\t', header=False, index=False)
+        ver = sys.version_info.major
+        if ver == 3:
+            buffer = StringIO()
+            spam.to_csv(buffer, sep='\t', header=False, index=False)
+        else:
+            buffer = BytesIO()
+            spam.to_csv(buffer, sep='\t', header=False, index=False,
+                        encoding='utf-8')
         # print(spam)
 
         # making the zipfile

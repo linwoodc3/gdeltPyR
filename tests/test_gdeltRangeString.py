@@ -16,6 +16,8 @@ from unittest import TestCase
 #########################
 
 import coveralls
+import pandas as pd
+from dateutil.parser import parse
 
 ############################
 # Custom Import
@@ -32,6 +34,49 @@ class TestGdeltRangeString(TestCase):
         gdeltstring_test = np.sort(_gdeltRangeString(ranger_output, version=1))
         exp = np.sort(np.array(['20161003', '20161001', '20161002', '20161005', '20161004']))
         np.testing.assert_array_equal(exp, gdeltstring_test)
+
+    def test_gdeltrange_nearest_single(self):
+        date_string = _dateRanger([str((datetime.datetime.now()).date())])
+        ranger_test = _gdeltRangeString(date_string,coverage=False,version=2)
+        # build time range including 30 minutes before and 30 after current
+        r = pd.date_range(
+            datetime.datetime.now() - datetime.timedelta(minutes=30),
+            datetime.datetime.now() + datetime.timedelta(minutes=30),
+            freq='15min')
+        return self.assertTrue(r[0]<parse(ranger_test) < r[-1])
+
+    def test_gdeltrange_nearest_full(self):
+        date_string = _dateRanger([str((datetime.datetime.now()).date())])
+        ranger_test = _gdeltRangeString(date_string,coverage=True,version=2)
+
+        # convert result to array of python datetimes
+
+        vect = np.vectorize(parse)
+        comp = vect(ranger_test)
+
+        # build time range of all day up to latest 15 minute interval
+        # convert to pydatetime array
+        exp = (pd.date_range(start=str(datetime.datetime.now().date()),
+                            periods=len(ranger_test), freq='15 min')).\
+            to_pydatetime()
+
+        # compare arrays
+        return np.testing.assert_array_equal(comp, exp, 'Not equal')
+
+
+    def test_gdeltrange_sequence_v2_single_string(self):
+        date_sequence = '2016 10 01'
+        ranger_output = _dateRanger(date_sequence)
+        gdeltstring_test = _gdeltRangeString(ranger_output, version=2)
+        exp = '20161001234500'
+        return self.assertEqual(exp, gdeltstring_test)
+
+    def test_gdeltrange_sequence_v2_single_tester(self):
+        date_sequence = ['2016 10 01','2016 Dec 31']
+        ranger_output = _dateRanger(date_sequence)
+        gdeltstring_test = _gdeltRangeString(ranger_output, coverage=True, version=2)
+        print(gdeltstring_test.dtype)
+        return self.assertIsInstance(gdeltstring_test,np.ndarray)
 
     def test_gdeltrange_sequence_v2(self):
         date_sequence = ['2016 10 01', '2016 10 05']
@@ -97,4 +142,13 @@ class TestGdeltRangeString(TestCase):
         gdeltstring_test = np.sort(np.array(_gdeltRangeString(ranger_output, version=1)))
         exp = np.sort(np.array(['2001', '2002', '2003', '2004', '2005']))
         np.testing.assert_array_equal(exp, gdeltstring_test)
+
+    def test_separate_rangestring_24hours(self):
+        """Tests more than 3 dates"""
+
+        date_array = np.array(datetime.datetime(2017, 8, 6, 0, 0), dtype=object)
+        bottom_number = (datetime.datetime.now().time().hour)*4
+        ranger_test = _gdeltRangeString(date_array,coverage=True)
+
+        return self.assertGreaterEqual((ranger_test).shape[0],bottom_number)
 

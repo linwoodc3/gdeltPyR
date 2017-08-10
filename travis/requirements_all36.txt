@@ -5,6 +5,7 @@ flake8
 sphinx=1.5*
 nbsphinx
 ipython
+ipykernel
 jupyter
 python-dateutil
 pytz
@@ -26,6 +27,7 @@ seaborn
 lxml
 sqlalchemy
 bottleneck
+pandas-gbq
 pymysql
 Jinja2
 gdal

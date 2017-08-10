@@ -41,7 +41,7 @@ class testHelpers(TestCase):
     def test_urlgetter(self):
         """Pull the root url from a news story url"""
         dd = pd.read_pickle(os.path.join(
-            gdelt.base.BASE_DIR, "data", "events2samp.pkl.compress"),
+            gdelt.base.BASE_DIR, "data", "events2samp.gz"),
             compression="gzip").drop('CAMEOCodeDescription', axis=1)
         test = dd.drop_duplicates('SOURCEURL')[:9]
 
@@ -57,7 +57,7 @@ class testHelpers(TestCase):
     def test_shaper(self):
         """Make the points"""
         dd = pd.read_pickle(os.path.join(
-            gdelt.base.BASE_DIR, "data", "events2samp.pkl.compress"),
+            gdelt.base.BASE_DIR, "data", "events2samp.gz"),
             compression="gzip").drop('CAMEOCodeDescription', axis=1)
         fin = dd.apply(_shaper,axis=1)
 
@@ -69,7 +69,7 @@ class testHelpers(TestCase):
             gdelt.base.BASE_DIR, "data", "cameoCodes.json"))
 
         dd = pd.read_pickle(os.path.join(
-            gdelt.base.BASE_DIR, "data", "events2samp.pkl.compress"),
+            gdelt.base.BASE_DIR, "data", "events2samp.gz"),
             compression="gzip").drop('CAMEOCodeDescription', axis=1)
         da = dd.apply(lambda x: _cameos(dd,codes))
 

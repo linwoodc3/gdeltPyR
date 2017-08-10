@@ -82,7 +82,7 @@ class testGDELTVectorizingFuncs(TestCase):
 
         # load df
         spam = pd.read_pickle(os.path.join(
-            gdelt.base.BASE_DIR, "data", "events2samp.pkl.compress"),
+            gdelt.base.BASE_DIR, "data", "events2samp.gz"),
             compression="gzip").drop('CAMEOCodeDescription', axis=1)
 
         try:

@@ -65,7 +65,7 @@ class testresponse(TestCase):
         # loading the mock dataframe return
         events2 = pd.read_pickle(os.path.join(
             gdelt.base.BASE_DIR, "data",
-            "events2samp.pkl.compress"),
+            "events2samp.gz"),
             compression="gzip")
 
         # Creating the mock object
@@ -90,7 +90,7 @@ class testresponse(TestCase):
 
         events1 = pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "events1samp.pkl.compress"),
+                "events1samp.gz"),
                 compression="gzip")
 
 

@@ -56,12 +56,12 @@ class TestGdeltDateInputs(TestCase):
         date_sequence = str(datetime.datetime.now().date())
         exp = ("You entered today's date for a GDELT 1.0 query. GDELT 1.0's "
                "most recent data is always the trailing day (i.e. "
-               "2017-08-09).  Please retry your query.")
+               "2017-08-10).  Please retry your query.")
 
         with self.assertRaises(Exception) as context:
             checked = _date_input_check(date_sequence, version=1)
         the_exception = context.exception
-
+        print(the_exception)
         return self.assertEqual(exp, str(the_exception), "Too early date "
                                                          "on Version 1")
 

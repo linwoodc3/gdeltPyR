@@ -46,7 +46,7 @@ class testParallelWorker(TestCase):
 
         # set up return value for mock
         spam = pd.read_pickle(os.path.join(
-                gdelt.base.BASE_DIR, "data", "events2samp.pkl.compress"),
+                gdelt.base.BASE_DIR, "data", "events2samp.gz"),
                 compression="gzip").drop('CAMEOCodeDescription',axis=1)
         spam.columns = np.arange(len(spam.columns))
         spam[[26,27,28]] = spam[[26,27,28]].astype('str')
@@ -107,7 +107,7 @@ class testParallelWorker(TestCase):
 
         # set up return value for mock
         spam = pd.read_pickle(os.path.join(
-            gdelt.base.BASE_DIR, "data", "gkg2samp.pkl.compress"),
+            gdelt.base.BASE_DIR, "data", "gkg2samp.gz"),
             compression="gzip")
         spam.columns = np.arange(len(spam.columns))
         buffer = StringIO()

@@ -129,7 +129,7 @@ class TestGdeltBaseSearch(TestCase):
         # instantiating the second mock
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
-                gdelt.base.BASE_DIR, "data", "events2samp.pkl.compress"),
+                gdelt.base.BASE_DIR, "data", "events2samp.gz"),
                 compression="gzip")))
 
         gd = gdelt.gdelt(version=2)
@@ -151,7 +151,7 @@ class TestGdeltBaseSearch(TestCase):
         # instantiating the second mock
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
-                gdelt.base.BASE_DIR, "data", "events2samp.pkl.compress"),
+                gdelt.base.BASE_DIR, "data", "events2samp.gz"),
                 compression="gzip")))
 
         gd = gdelt.gdelt(version=2)
@@ -179,7 +179,7 @@ class TestGdeltBaseSearch(TestCase):
         # instantiating the second mock
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
-                gdelt.base.BASE_DIR, "data" ,"gkg2samp.pkl.compress"),
+                gdelt.base.BASE_DIR, "data" ,"gkg2samp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)
@@ -202,7 +202,7 @@ class TestGdeltBaseSearch(TestCase):
         # instantiating the second mock
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
-                gdelt.base.BASE_DIR, "data", "events1samp.pkl.compress"),
+                gdelt.base.BASE_DIR, "data", "events1samp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)
@@ -224,7 +224,7 @@ class TestGdeltBaseSearch(TestCase):
         # instantiating the second mock
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
-                gdelt.base.BASE_DIR, "data", "events1samp.pkl.compress"),
+                gdelt.base.BASE_DIR, "data", "events1samp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)
@@ -253,7 +253,7 @@ class TestGdeltBaseSearch(TestCase):
         # instantiating the second mock
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
-                gdelt.base.BASE_DIR, "data", "events1samp.pkl.compress"),
+                gdelt.base.BASE_DIR, "data", "events1samp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)
@@ -303,7 +303,7 @@ class TestGdeltBaseSearch(TestCase):
         # instantiating the second mock
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
-                gdelt.base.BASE_DIR, "data", "gkg1samp.pkl.compress"),
+                gdelt.base.BASE_DIR, "data", "gkg1samp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)
@@ -327,7 +327,7 @@ class TestGdeltBaseSearch(TestCase):
         # instantiating the second mock
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
-                gdelt.base.BASE_DIR, "data", "events2Transsamp.pkl.compress"),
+                gdelt.base.BASE_DIR, "data", "events2Transsamp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)
@@ -373,7 +373,7 @@ class TestGdeltBaseSearch(TestCase):
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "gkg2Transsamp.pkl.compress"),
+                "gkg2Transsamp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)
@@ -394,13 +394,13 @@ class TestGdeltBaseSearch(TestCase):
         mock_C = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "events2listsamp.pkl.compress"),
+                "events2listsamp.gz"),
                 compression="gzip")))
 
         mock_C = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "events2listsamp.pkl.compress"),
+                "events2listsamp.gz"),
                 compression="gzip")))
 
         mock_B = mock.MagicMock(return_value=pd.read_csv(
@@ -412,7 +412,7 @@ class TestGdeltBaseSearch(TestCase):
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "events2listsamp.pkl.compress"),
+                "events2listsamp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)
@@ -483,19 +483,19 @@ class TestGdeltBaseSearch(TestCase):
         mock_E = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "gkg2listsamp.pkl.compress"),
+                "gkg2listsamp.gz"),
                 compression="gzip")))
 
         mock_C = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "gkg2listsamp.pkl.compress"),
+                "gkg2listsamp.gz"),
                 compression="gzip")))
 
         mock_C = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "gkg2listsamp.pkl.compress"),
+                "gkg2listsamp.gz"),
                 compression="gzip")))
 
         mock_B = mock.MagicMock(return_value=pd.read_csv(
@@ -507,7 +507,7 @@ class TestGdeltBaseSearch(TestCase):
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "gkg2listsamp.pkl.compress"),
+                "gkg2listsamp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)
@@ -530,13 +530,13 @@ class TestGdeltBaseSearch(TestCase):
         mock_C = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "events2listsamp.pkl.compress"),
+                "events2listsamp.gz"),
                 compression="gzip")))
 
         mock_C = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "events2listsamp.pkl.compress"),
+                "events2listsamp.gz"),
                 compression="gzip")))
 
         mock_B = mock.MagicMock(return_value=pd.read_csv(
@@ -548,7 +548,7 @@ class TestGdeltBaseSearch(TestCase):
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "events2listsamp.pkl.compress"),
+                "events2listsamp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)
@@ -570,13 +570,13 @@ class TestGdeltBaseSearch(TestCase):
         mock_C = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "events2listsamp.pkl.compress"),
+                "events2listsamp.gz"),
                 compression="gzip")))
 
         mock_C = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "events2listsamp.pkl.compress"),
+                "events2listsamp.gz"),
                 compression="gzip")))
 
         mock_B = mock.MagicMock(return_value=pd.read_csv(
@@ -588,7 +588,7 @@ class TestGdeltBaseSearch(TestCase):
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "events2listsamp.pkl.compress"),
+                "events2listsamp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)
@@ -611,13 +611,13 @@ class TestGdeltBaseSearch(TestCase):
         mock_C = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "events2listsamp.pkl.compress"),
+                "events2listsamp.gz"),
                 compression="gzip")))
 
         mock_C = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "events2listsamp.pkl.compress"),
+                "events2listsamp.gz"),
                 compression="gzip")))
 
         mock_B = mock.MagicMock(return_value=pd.read_csv(
@@ -629,7 +629,7 @@ class TestGdeltBaseSearch(TestCase):
         mock_A = mock.MagicMock(return_value=(
             pd.read_pickle(os.path.join(
                 gdelt.base.BASE_DIR, "data",
-                "events2listsamp.pkl.compress"),
+                "events2listsamp.gz"),
                 compression="gzip")))
 
         # print(mock_A.return_value.columns)

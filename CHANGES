@@ -46,3 +46,6 @@
 
 2017-08-05
   Added coverage badge and test to CI; updated README; added detailed contributing documentation.
+
+2017-08-09
+  Achieved 80% unit test coverage for entire code base.

@@ -1,0 +1,103 @@
+{
+  "creationTime": "1424292420619", 
+  "description": "This is the GDELT 2.0 Mentions table.  Data begins February 19, 2015.  For more details see http://blog.gdeltproject.org/gdelt-2-0-our-global-world-in-realtime/ or the main GDELT Project website at http://gdeltproject.org/", 
+  "etag": "\"WLQb94_1oCOtna_uXzhhuBZlpHw/MTQyNDM3MDc4MjA1Ng\"", 
+  "id": "gdelt-bq:gdeltv2.eventmentions", 
+  "kind": "bigquery#table", 
+  "lastModifiedTime": "1501216832999", 
+  "location": "US", 
+  "numBytes": "187201390456", 
+  "numLongTermBytes": "0", 
+  "numRows": "839917406", 
+  "schema": {
+    "fields": [
+      {
+        "description": "This is the ID of the event that was mentioned in the article.", 
+        "name": "GLOBALEVENTID", 
+        "type": "INTEGER"
+      }, 
+      {
+        "description": "This is the 15-minute timestamp (YYYYMMDDHHMMSS) when the event being mentioned was first recorded by GDELT (the DATEADDED field of the original event record).  This field can be compared against the next one to identify events being mentioned for the first time (their first mentions) or to identify events of a particular vintage being mentioned now (such as filtering for mentions of events at least one week old).", 
+        "name": "EventTimeDate", 
+        "type": "INTEGER"
+      }, 
+      {
+        "description": "This is the 15-minute timestamp (YYYYMMDDHHMMSS) of the current update.  This is identical for all entries in the update file but is included to make it easier to load the Mentions table into a database.", 
+        "name": "MentionTimeDate", 
+        "type": "INTEGER"
+      }, 
+      {
+        "description": "This is a numeric identifier that refers to the source collection the document came from and is used to interpret the MentionIdentifier in the next column.  In essence, it specifies how to interpret the MentionIdentifier to locate the actual document.  At present, it can hold one of the following values:\no\t1 = WEB (The document originates from the open web and the MentionIdentifier is a fully-qualified URL that can be used to access the document on the web).\no\t2 = CITATIONONLY (The document originates from a broadcast, print, or other offline source in which only a textual citation is available for the document.  In this case the MentionIdentifier contains the textual citation for the document).\no\t3 = CORE (The document originates from the CORE archive and the MentionIdentifier contains its DOI, suitable for accessing the original document through the CORE website).\no\t4 = DTIC (The document originates from the DTIC archive and the MentionIdentifier contains its DOI, suitable for accessing the original document through the DTIC website).\no\t5 = JSTOR (The document originates from the JSTOR archive and the MentionIdentifier contains its DOI, suitable for accessing the original document through your JSTOR subscription if your institution subscribes to it).\no\t6 = NONTEXTUALSOURCE (The document originates from a textual proxy (such as closed captioning) of a non-textual information source (such as a video) available via a URL and the MentionIdentifier provides the URL of the non-textual original source.  At present, this Collection Identifier is used for processing of the closed captioning streams of the Internet Archive Television News Archive in which each broadcast is available via a URL, but the URL offers access only to the video of the broadcast and does not provide any access to the textual closed captioning used to generate the metadata.  This code is used in order to draw a distinction between URL-based textual material (Collection Identifier 1 (WEB) and URL-based non-textual material like the Television News Archive).", 
+        "name": "MentionType", 
+        "type": "INTEGER"
+      }, 
+      {
+        "description": "This is a human-friendly identifier of the source of the document.  For material originating from the open web with a URL this field will contain the top-level domain the page was from.  For BBC Monitoring material it will contain \u201cBBC Monitoring\u201d and for JSTOR material it will contain \u201cJSTOR.\u201d  This field is intended for human display of major sources as well as for network analysis of information flows by source, obviating the requirement to perform domain or other parsing of the MentionIdentifier field.", 
+        "name": "MentionSourceName", 
+        "type": "STRING"
+      }, 
+      {
+        "description": "This is the unique external identifier for the source document.  It can be used to uniquely identify the document and access it if you have the necessary subscriptions or authorizations and/or the document is public access.  This field can contain a range of values, from URLs of open web resources to textual citations of print or broadcast material to DOI identifiers for various document repositories.  For example, if MentionType is equal to 1, this field will contain a fully-qualified URL suitable for direct access.  If MentionType is equal to 2, this field will contain a textual citation akin to what would appear in an academic journal article referencing that document (NOTE that the actual citation format will vary (usually between APA, Chicago, Harvard, or MLA) depending on a number of factors and no assumptions should be made on its precise format at this time due to the way in which this data is currently provided to GDELT \u2013 future efforts will focus on normalization of this field to a standard citation format).  If MentionType is 3, the field will contain a numeric or alpha-numeric DOI that can be typed into JSTOR\u2019s search engine to access the document if your institution has a JSTOR subscription.", 
+        "name": "MentionIdentifier", 
+        "type": "STRING"
+      }, 
+      {
+        "description": "The sentence within the article where the event was mentioned (starting with the first sentence as 1, the second sentence as 2, the third sentence as 3, and so on).  This can be used similarly to the CharOffset fields below, but reports the event\u2019s location in the article in terms of sentences instead of characters, which is more amenable to certain measures of the \u201cimportance\u201d of an event\u2019s positioning within an article.", 
+        "name": "SentenceID", 
+        "type": "INTEGER"
+      }, 
+      {
+        "description": "The location within the article (in terms of English characters) where Actor1 was found.  This can be used in combination with the GKG or other analysis to identify further characteristics and attributes of the actor.  NOTE: due to processing performed on each article, this may be slightly offset from the position seen when the article is rendered in a web browser.", 
+        "name": "Actor1CharOffset", 
+        "type": "INTEGER"
+      }, 
+      {
+        "description": "The location within the article (in terms of English characters) where Actor2 was found.  This can be used in combination with the GKG or other analysis to identify further characteristics and attributes of the actor.  NOTE: due to processing performed on each article, this may be slightly offset from the position seen when the article is rendered in a web browser.", 
+        "name": "Actor2CharOffset", 
+        "type": "INTEGER"
+      }, 
+      {
+        "description": "The location within the article (in terms of English characters) where the core Action description was found.  This can be used in combination with the GKG or other analysis to identify further characteristics and attributes of the actor.  NOTE: due to processing performed on each article, this may be slightly offset from the position seen when the article is rendered in a web browser.", 
+        "name": "ActionCharOffset", 
+        "type": "INTEGER"
+      }, 
+      {
+        "description": "This records whether the event was found in the original unaltered raw article text (a value of 1) or whether advanced natural language processing algorithms were required to synthesize and rewrite the article text to identify the event (a value of 0).  See the discussion on the Confidence field below for more details.  Mentions with a value of \u201c1\u201d in this field likely represent strong detail-rich references to an event.", 
+        "name": "InRawText", 
+        "type": "INTEGER"
+      }, 
+      {
+        "description": "Percent confidence in the extraction of this event from this article.  See the discussion in the codebook at http://data.gdeltproject.org/documentation/GDELT-Event_Codebook-V2.0.pdf", 
+        "name": "Confidence", 
+        "type": "INTEGER"
+      }, 
+      {
+        "description": "The length in English characters of the source document (making it possible to filter for short articles focusing on a particular event versus long summary articles that casually mention an event in passing).", 
+        "name": "MentionDocLen", 
+        "type": "INTEGER"
+      }, 
+      {
+        "description": "The same contents as the AvgTone field in the Events table, but computed for this particular article.  NOTE: users interested in emotional measures should use the MentionIdentifier field above to merge the Mentions table with the GKG table to access the complete set of 2,300 emotions and themes from the GCAM system.", 
+        "name": "MentionDocTone", 
+        "type": "FLOAT"
+      }, 
+      {
+        "description": "This field is internally delimited by semicolons and is used to record provenance information for machine translated documents indicating the original source language and the citation of the translation system used to translate the document for processing.  It will be blank for documents originally in English.  At this time the field will also be blank for documents translated by a human translator and provided to GDELT in English (such as BBC Monitoring materials) \u2013 in future this field may be expanded to include information on human translation pipelines, but at present it only captures information on machine translated materials.  An example of the contents of this field might be \u201csrclc:fra; eng:Moses 2.1.1 / MosesCore Europarl fr-en / GT-FRA 1.0\u201d.  NOTE:  Machine translation is often not as accurate as human translation and users requiring the highest possible confidence levels may wish to exclude events whose only mentions are in translated reports, while those needing the highest-possible coverage of the non-Western world will find that these events often offer the earliest glimmers of breaking events or smaller-bore events of less interest to Western media.  \no\tSRCLC. This is the Source Language Code, representing the three-letter ISO639-2 code of the language of the original source material.  \no\tENG.  This is a textual citation string that indicates the engine(s) and model(s) used to translate the text.  The format of this field will vary across engines and over time and no expectations should be made on the ordering or formatting of this field.  In the example above, the string \u201cMoses 2.1.1 / MosesCore Europarl fr-en / GT-FRA 1.0\u201d indicates that the document was translated using version 2.1.1 of the Moses   SMT platform, using the \u201cMosesCore Europarl fr-en\u201d translation and language models, with the final translation enhanced via GDELT Translingual\u2019s own version 1.0 French translation and language models.  A value of \u201cGT-ARA 1.0\u201d indicates that GDELT Translingual\u2019s version 1.0 Arabic translation and language models were the sole resources used for translation.  Additional language systems used in the translation pipeline such as word segmentation systems are also captured in this field such that a value of \u201cGT-ZHO 1.0 / Stanford PKU\u201d indicates that the Stanford Chinese Word Segmenter   was used to segment the text into individual words and sentences, which were then translated by GDELT Translingual\u2019s own version 1.0 Chinese (Traditional or Simplified) translation and language models.", 
+        "name": "MentionDocTranslationInfo", 
+        "type": "STRING"
+      }, 
+      {
+        "description": "This field is currently blank, but is reserved for future use to encode special additional measurements for selected material.", 
+        "name": "Extras", 
+        "type": "STRING"
+      }
+    ]
+  }, 
+  "selfLink": "https://www.googleapis.com/bigquery/v2/projects/gdelt-bq/datasets/gdeltv2/tables/eventmentions", 
+  "tableReference": {
+    "datasetId": "gdeltv2", 
+    "projectId": "gdelt-bq", 
+    "tableId": "eventmentions"
+  }, 
+  "type": "TABLE"
+}

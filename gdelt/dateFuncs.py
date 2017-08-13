@@ -20,7 +20,7 @@ from dateutil.parser import parse
 ##################################
 # Local imports
 ##################################
-from gdelt.vectorizingFuncs import _vectorizer
+# from gdelt.vectorizingFuncs import _vectorizer
 
 
 def _parse_date(date_string):
@@ -176,8 +176,6 @@ def _gdeltRangeString(element, coverage=None, version=2.0):
 
         else:
             if coverage and int(version) != 1:
-
-
                 converted = restOfDay = np.array(
                     list(map(
                         lambda x: np.datetime64(parse(str(element) + " " + x)
@@ -274,15 +272,15 @@ def _gdeltRangeString(element, coverage=None, version=2.0):
     return converted
 
 
-def _dateMasker(dateString, version):
-    mask = (np.where((int(version == 1) and parse(dateString) >= parse(
-        '2013 04 01')) or (int(version) == 2),
-                     _vectorizer(_gdeltRangeString, _dateRanger(dateString))[:8],
-                     np.where(int(version) == 1 and parse(
-                         dateString) < parse('2006 01'),
-                              _vectorizer(_gdeltRangeString, _dateRanger(
-                                  dateString))[:4],
-                              _vectorizer(_gdeltRangeString, _dateRanger(
-                                  dateString))[:6]))).tolist()
-    return mask
+# def _dateMasker(dateString, version):
+#     mask = (np.where((int(version == 1) and parse(dateString) >= parse(
+#         '2013 04 01')) or (int(version) == 2),
+#                      _vectorizer(_gdeltRangeString, _dateRanger(dateString))[:8],
+#                      np.where(int(version) == 1 and parse(
+#                          dateString) < parse('2006 01'),
+#                               _vectorizer(_gdeltRangeString, _dateRanger(
+#                                   dateString))[:4],
+#                               _vectorizer(_gdeltRangeString, _dateRanger(
+#                                   dateString))[:6]))).tolist()
+#     return mask
 

@@ -41,8 +41,8 @@ install:
 
 
 script:
-  - py.test
-  - py.test tests/ --doctest-modules -v --cov gdelt --cov-report term-missing
+  - pytest
+  - coverage run --source=gdelt setup.py test
 
 cache:
   directories:

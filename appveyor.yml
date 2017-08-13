@@ -59,9 +59,8 @@ install:
 test_script:
 #  - dir
   #- "%PYTHON%\\python.exe setup.py test"
-  - py.test --cov=./
   - pytest
-  - py.test tests/ --doctest-modules -v --cov gdelt --cov-report term-missing
+  - coverage run --source=gdelt setup.py test
   
 after_test:
   - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel"

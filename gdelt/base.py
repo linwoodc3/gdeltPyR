@@ -428,9 +428,33 @@ class gdelt(object):
             # Download 2.0 Headers
             ###################################
 
-            self.events_columns = _events2Heads()
-            self.mentions_columns = _mentionsHeads()
-            self.gkg_columns = _gkgHeads()
+            if self.table =='events':
+                try:
+                    self.events_columns = \
+                    pd.read_csv(os.path.join(BASE_DIR, "data", 'events2.csv'))[
+                        'name'].values.tolist()
+
+                except:
+                    self.events_columns = _events2Heads()
+
+            elif self.table == 'mentions':
+                try:
+                    self.mentions_columns = \
+                        pd.read_csv(
+                            os.path.join(BASE_DIR, "data", 'mentions.csv'))[
+                            'name'].values.tolist()
+
+                except:
+                    self.mentions_columns = _mentionsHeads()
+            else:
+                try:
+                    self.gkg_columns = \
+                        pd.read_csv(
+                            os.path.join(BASE_DIR, "data", 'gkg2.csv'))[
+                            'name'].values.tolist()
+
+                except:
+                    self.gkg_columns = _gkgHeads()
 
         #####################################
         # GDELT Version 1.0 Analytics, Header, Downloads
@@ -439,13 +463,25 @@ class gdelt(object):
         if int(self.version) == 1:
 
             if self.table is "mentions":
-                raise BaseException('GDELT 1.0 does not have the "mentions"'
+                raise ValueError('GDELT 1.0 does not have the "mentions"'
                                     ' table. Specify the "events" or "gkg"'
                                     'table.')
+            if self.translation:
+                raise ValueError('GDELT 1.0 does not have an option to'
+                                    ' return translated table data. Switch to '
+                                    'version 2 by reinstantiating the gdelt '
+                                    'object with <gd = gdelt.gdelt(version=2)>')
             else:
                 pass
 
-            self.events_columns = _events1Heads()
+            try:
+                self.events_columns = \
+                    pd.read_csv(os.path.join(BASE_DIR, "data", 'events1.csv'))[
+                        'name'].values.tolist()
+
+            except:
+                self.events_columns = _events1Heads()
+
             columns = self.events_columns
 
             if self.table == 'gkg':
@@ -523,7 +559,7 @@ class gdelt(object):
         #     print("don't know what it is")
         # print (self.version,self.download_list,self.date, self.table, self.coverage, self.datesString)
         #
-        # print (self.download_list)
+        print (self.download_list)
         # if self.coverage:
         #     coverage = 'True'
         # else:

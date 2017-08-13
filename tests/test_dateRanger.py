@@ -48,3 +48,19 @@ class TestDateRanger(TestCase):
         ranger_test = _dateRanger(date_string)
         exp = (np.array(datetime.datetime(2016, 10, 1, 0, 0), dtype=object))
         return np.testing.assert_array_equal(exp, ranger_test)
+
+    def test_separate_dates(self):
+        """Tests more than 3 dates"""
+
+        date_sequence = ['2016 Jun 10','2016 Jun 15','2016 Jun 25']
+        ranger_test = _dateRanger(date_sequence)
+        exp = (np.array([datetime.datetime(2016, 6, 10, 0, 0),
+               datetime.datetime(2016, 6, 15, 0, 0),
+               datetime.datetime(2016, 6, 25, 0, 0)], dtype=object))
+        return np.testing.assert_array_equal(exp, ranger_test)
+
+
+
+
+
+

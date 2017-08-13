@@ -36,10 +36,12 @@ class NoDaemonProcessPool(multiprocessing.pool.Pool):
 
 
 def _mp_worker(url, table=None):
-    """Code to download the urls and blow away the buffer to keep memory usage down"""
+    """Code to download the urls and blow away the buffer to keep memory usage
+     down"""
 
     warnings.filterwarnings("ignore",
-                            '.*have mixed types. Specify dtype.*')  # ignore pandas warning for GDELT 1.0 dtype
+                            '.*have mixed types. Specify dtype.*')  # ignore
+    # pandas warning for GDELT 1.0 dtype
     # start = datetime.datetime.now()
     # proc_name = current_process().name
     #
@@ -53,7 +55,8 @@ def _mp_worker(url, table=None):
     # print(multiprocessing.current_process().name)
     # print('Starting {0}-{1}'.format(proc_name, proc))
     time.sleep(0.001)
-    # print("Getting to request process finished in {}".format(datetime.datetime.now() - start))
+    # print("Getting to request process finished in {}".\
+    # format(datetime.datetime.now() - start))
     # start = datetime.datetime.now()
     #################################
 
@@ -65,8 +68,8 @@ def _mp_worker(url, table=None):
                   "{0}".format(re.search('[0-9]{4,18}', url).group())
         warnings.warn(message)
 
-
-    # print (multiprocessing.Process(name=multiprocessing.current_process().name).is_alive())
+    # print (multiprocessing.Process(name=multiprocessing.current_process().\
+    # name).is_alive())
     start = datetime.datetime.now()
     try:
         buffer = BytesIO(r.content)
@@ -78,7 +81,8 @@ def _mp_worker(url, table=None):
             # parse_dates=[1, 2])
 
         elif table == 'gkg':
-            frame = pd.read_csv(buffer, compression='zip', sep='\t', warn_bad_lines=False)
+            frame = pd.read_csv(buffer, compression='zip', sep='\t',
+                                header=None, warn_bad_lines=False)
             # parse_dates=['DATE'], warn_bad_lines=False)
 
         else:
@@ -86,8 +90,10 @@ def _mp_worker(url, table=None):
             frame = pd.read_csv(buffer, compression='zip', sep='\t',
                                 header=None, warn_bad_lines=False)
 
-        # print("Pandas load finished in {}".format(datetime.datetime.now() - start))
-        # print ("{0} with id {1} finished processing in {2}".format(proc_name,proc,end))
+        # print("Pandas load finished in {}".\
+        # format(datetime.datetime.now() - start))
+        # print ("{0} with id {1} finished processing in {2}".\
+        # format(proc_name,proc,end))
         buffer.flush()
         buffer.close()
         return frame

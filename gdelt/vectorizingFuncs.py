@@ -24,38 +24,38 @@ from gdelt.multipdf import _parallelize_dataframe
 from gdelt.helpers import _testdate
 
 
-def _vectorizer(function, dateArray):
-    helper = np.vectorize(function)
-
-    final = helper(dateArray.tolist()).tolist()
-
-    if isinstance(final, list):
-
-        final = list(set(final))
-    elif isinstance(final, str):
-        final = final
-    else:
-        pass
-
-    return final
+# def _vectorizer(function, dateArray):
+#     helper = np.vectorize(function)
+#
+#     final = helper(dateArray.tolist()).tolist()
+#
+#     if isinstance(final, list):
+#
+#         final = list(set(final))
+#     elif isinstance(final, str):
+#         final = final
+#     else:
+#         pass
+#
+#     return final
 
 
 # Finds the urls from an array of dates
 
 
-def _urlFinder(dataframe, targetDate, col):
-    return dataframe[col][dataframe[col].str.contains(targetDate)]
+# def _urlFinder(dataframe, targetDate, col):
+#     return dataframe[col][dataframe[col].str.contains(targetDate)]
+
+#
+# def _vectorizedUrlFinder(function, urlList, frame):
+#     helper = np.vectorize(function)
+#     return pd.concat(helper(urlList, frame).tolist())
 
 
-def _vectorizedUrlFinder(function, urlList, frame):
-    helper = np.vectorize(function)
-    return pd.concat(helper(urlList, frame).tolist())
-
-
-def _downloadVectorizer(function, urlList):
-    """Vectorized function to download urls"""
-    helper = np.vectorize(function)
-    return pd.concat(helper(urlList).tolist()).reset_index(drop=True)
+# def _downloadVectorizer(function, urlList):
+#     """Vectorized function to download urls"""
+#     helper = np.vectorize(function)
+#     return pd.concat(helper(urlList).tolist()).reset_index(drop=True)
 
 def _urlBuilder(dateString, version, table='events', translation=False):
     """
@@ -276,4 +276,6 @@ def _geofilter(frame):
 
 
     except:
-        raise ImportError("You need to install geopandas for this feature.")
+        raise ValueError("The shaper function did not complete; check your"
+                         " input or make sure shapely/geopandas/fiona "
+                         "are installed.")

@@ -1,0 +1,220 @@
+name,type,description
+DATE,INTEGER,"This is the date in YYYYMMDD format on which the news media used to
+construct this GKG file was published. NOTE that unlike the main GDELT event stream files, this
+date represents the date of publication of the document from which the information was
+extracted – if the article discusses events in the past, the date is NOT time-shifted as it is for the
+GDELT event stream. This date will be the same for all rows in a file and is redundant from a
+data processing standpoint, but is provided to make it easier to load GKG files directly into an
+SQL database for analysis. NOTE: for some special collections this value may be 0 indicating that
+the field is either not applicable or not known for those materials. For example, OCR’d historical
+document collections may not have robust metadata on publication date."
+NUMARTS,INTEGER,"This is the total number of source documents containing one or more
+mentions of this count. This can be used as a method of assessing the “importance” of an
+count: the more discussion of that count, the more likely it is to be significant. The total
+universe of source documents varies over time, so it is recommended that this field be
+normalized by the average or other measure of the universe of counts during the time period of
+interest."
+COUNTS,INTEGER,"This is the list of Counts found in this document. Each Count found is separated with a semicolon, while
+the fields within a Count are separated by the pound symbol (“#”). Unlike the primary GDELT
+event stream, these records are not issued unique identifier numbers, nor are they dated. As an 
+example of how to interpret this file, an entry with CountType=KILL, Number=47,
+ObjectType=”jihadists” indicates that the article stated that 47 jihadists were killed. This field is
+identical in format and population as the corresponding field in the GKG 1.0 format.
+
+
+    o Count Type. (text) This is the value of the NAME field from the Category List
+spreadsheet indicating which category this count is of. At the time of this writing, this is
+most often AFFECT, ARREST, KIDNAP, KILL, PROTEST, SEIZE, or WOUND, though other
+categories may appear here as well in certain circumstances when they appear in
+context with one of these categories, or as other Count categories are added over time.
+A value of “PROTEST” in this field would indicate that this is a count of the number of
+protesters at a protest.
+
+    o Count. (integer) This is the actual count being reported. If CountType is “PROTEST”
+and Number is 126, this means that the source article contained a mention of 126
+protesters.
+
+    o Object Type. (text) This records any identifying information as to what the number
+refers to. For example, a mention of “20 Christian missionaries were arrested” will
+result in “Christian missionaries” being captured here. This field will be blank in cases
+where no identifying information could be identified.
+
+    o Location Type. See the documentation for V1Locations below.
+
+    o Location FullName. See the documentation for V1Locations below.
+
+    o Location CountryCode. See the documentation for V1Locations below.
+
+    o Location ADM1Code. See the documentation for V1Locations below.
+
+    o Location Latitude. See the documentation for V1Locations below.
+
+    o Location Longitude. See the documentation for V1Locations below.
+
+    o Location FeatureID. See the documentation for V1Locations below."
+THEMES,STRING,"This is the list of all Themes found in the nameset. For the
+complete list of possible themes, see the Category List spreadsheet. At the time of this writing
+there are over 150 themes currently recognized by the system."
+LOCATIONS,STRING,"This is a
+list of all locations found in the text, extracted through the Leetaru (2012) algorithm. 2
+ The
+algorithm is run in a more aggressive stance here than ordinary in order to extract every
+possible locative referent, so may have a slightly elevated level of false positives. Note: some
+locations have multiple accepted formal or informal names and this field is collapsed on name,
+rather than feature (since in some applications the understanding of a geographic feature differs
+based on which name was used to reference it). In cases where it is necessary to collapse by
+feature, the Geo_FeatureID column should be used, rather than the Geo_Fullname column. This
+is because the Geo_Fullname column captures the name of the location as expressed in the text
+and thus reflects differences in transliteration, alternative spellings, and alternative names for
+the same location. For example, Mecca is often spelled Makkah, while Jeddah is commonly
+spelled Jiddah or Jaddah. The Geo_Fullname column will reflect each of these different
+spellings, while the Geo_FeatureID column will resolve them all to the same unique GNS or GNIS
+feature identification number. For more information on the GNS and GNIS identifiers, see
+Leetaru (2012). 
+
+This field is identical in format and population as the corresponding field in the
+GKG 1.0 format.Location Type. (integer) This field specifies the geographic resolution of the match type
+and holds one of the following values: 1=COUNTRY (match was at the country level),
+2=USSTATE (match was to a US state), 3=USCITY (match was to a US city or landmark),
+4=WORLDCITY (match was to a city or landmark outside the US), 5=WORLDSTATE
+(match was to an Administrative Division 1 outside the US – roughly equivalent to a US
+state). This can be used to filter counts by geographic specificity, for example,
+extracting only those counts with a landmark-level geographic resolution for mapping.
+Note that matches with codes 1 (COUNTRY), 2 (USSTATE), and 5 (WORLDSTATE) will still
+provide a latitude/longitude pair, which will be the centroid of that country or state, but
+the FeatureID field below will contain its textual country or ADM1 code instead of a
+numeric featureid.
+
+
+    o Location FullName. (text) This is the full human-readable name of the matched
+location. In the case of a country it is simply the country name. For US and World states
+it is in the format of “State, Country Name”, while for all other matches it is in the
+format of “City/Landmark, State, Country”. This can be used to label locations when
+placing counts on a map. Note: this field reflects the precise name used to refer to the
+location in the text itself, meaning it may contain multiple spellings of the same location
+– use the FeatureID column to determine whether two location names refer to the same
+place.
+
+
+    o Location CountryCode. (text) This is the 2-character FIPS10-4 country code for the
+location. Note: GDELT continues to use the FIPS10-4 codes under USG guidance while
+GNS continues its formal transition to the successor Geopolitical Entities, Names, and
+Codes (GENC) Standard (the US Government profile of ISO 3166).
+
+
+o Location ADM1Code. (text) This is the 2-character FIPS10-4 country code followed by
+the 2-character FIPS10-4 administrative division 1 (ADM1) code for the administrative
+division housing the landmark. In the case of the United States, this is the 2-character
+shortform of the state’s name (such as “TX” for Texas). Note: see the notice above for
+CountryCode regarding the FIPS10-4 / GENC transition. Note: to obtain ADM2 (districtlevel)
+assignments for locations, you can either perform a spatial join against a ShapeFile
+template in any GIS software, or cross-walk the FeatureID to the GNIS/GNS databases –
+this will provide additional fields such as ADM2 codes and MGRS grid references for
+GNS.
+
+
+    o Location Latitude. (floating point number) This is the centroid latitude of the landmark
+for mapping. In the case of a country or administrative division this will reflect the
+centroid of that entire country/division.
+
+
+    o Location Longitude. (floating point number) This is the centroid longitude of the
+landmark for mapping. In the case of a country or administrative division this will reflect
+the centroid of that entire country/division.
+
+
+    o Location FeatureID. (text OR signed integer) This is the numeric GNS or GNIS FeatureID
+for this location OR a textual country or ADM1 code. More information on these values
+can be found in Leetaru (2012).4 Note: This field will be blank or contain a textual ADM1
+code for country or ADM1-level matches – see above. Note: For numeric GNS or GNIS
+FeatureIDs, this field can contain both positive and negative numbers, see Leetaru
+(2012) for more information on this."
+PERSONS,STRING,"This is the list of all person names found in the text,
+extracted through the Leetaru (2012) algorithm. 5
+ This name recognition algorithm is unique in
+that it is specially designed to recognize the African, Asian, and Middle Eastern names that yield
+significantly reduced accuracy with most name recognition engines. This field is identical in
+format and population as the corresponding field in the GKG 1.0 format."
+ORGANIZATIONS,STRING,"This is the list of all company and organization
+names found in the text, extracted through the Leetaru (2012) algorithm. 6
+ This is a
+combination of corporations, IGOs, NGOs, and any other local organizations such as a local fair
+or council. This engine is highly adaptive and is currently tuned to err on the side of inclusion
+when it is less confident about a match to ensure maximal recall of smaller organizations around
+the world that are of especial interest to many users of the GKG. Conversely, certain smaller
+companies with names and contexts that do not provide a sufficient recognition latch may be
+missed or occasionally misclassified as a person name depending on context. It is highly
+recommended that users of the Persons and Organizations fields histogram the results and
+discard names appearing just once or twice to eliminate most of these false positive matches.
+This field is identical in format and population as the corresponding field in the GKG 1.0 format."
+TONE,INTEGER,"This field contains a comma-delimited
+list of six core emotional dimensions, described in more detail below. Each is recorded as a
+single precision floating point number. This field is nearly identical in format and population as
+the corresponding field in the GKG 1.0 format with the sole exception of adding the single new
+WordCount variable at the end.
+
+
+    o Tone. (floating point number) This is the average “tone” of the document as a whole.
+The score ranges from -100 (extremely negative) to +100 (extremely positive). Common
+values range between -10 and +10, with 0 indicating neutral. This is calculated as
+Positive Score minus Negative Score. Note that both Positive Score and Negative Score
+are available separately below as well. A document with a Tone score close to zero may
+either have low emotional response or may have a Positive Score and Negative Score
+that are roughly equivalent to each other, such that they nullify each other. These
+situations can be detected either through looking directly at the Positive Score and
+Negative Score variables or through the Polarity variable.
+
+
+    o Positive Score. (floating point number) This is the percentage of all words in the article
+that were found to have a positive emotional connotation. Ranges from 0 to +100.
+
+
+    o Negative Score. (floating point number) This is the percentage of all words in the
+article that were found to have a positive emotional connotation. Ranges from 0 to
++100.
+
+
+    o Polarity. (floating point number) This is the percentage of words that had matches in
+the tonal dictionary as an indicator of how emotionally polarized or charged the text is.
+If Polarity is high, but Tone is neutral, this suggests the text was highly emotionally
+charged, but had roughly equivalent numbers of positively and negatively charged
+emotional words.
+
+
+    o Activity Reference Density. (floating point number) This is the percentage of words
+that were active words offering a very basic proxy of the overall “activeness” of the text
+compared with a clinically descriptive text.
+
+
+    o Self/Group Reference Density. (floating point number) This is the percentage of all
+words in the article that are pronouns, capturing a combination of self-references and group-based discourse. News media material tends to have very low densities of such
+language, but this can be used to distinguish certain classes of news media and certain
+contexts.
+
+
+    o Word Count. (integer) This is the total number of words in the document. This field
+has just been added to the format and will be blank or 0 for most documents until it is
+fully integrated into the GKG system"
+CAMEOEVENTIDS,INTEGER,"This field contains a comma-separated list of GlobalEventIDs
+from the master GDELT event stream of events that were found in the same article(s) as this
+count was found. This can be used, for example, to associate any protest events from the
+primary GDELT event database with any “PROTEST” counts found in the same articles to compile
+a basic measure of how many protesters were involved with the protest. This is useful in that
+the GDELT event record for the protest encodes many other variables, such as the specific actors
+involved and their attributes, while the Count record only records that a certain number of
+protesters were mentioned in an article. The same GlobalEventID may appear in multiple
+entries if multiple counts were found in the same article mentioning that event or if that event
+was mentioned in multiple news articles with different counts (reflecting conflicting or evolving
+information on the details of the event)."
+SOURCES,STRING,"This is a semicolon-delimited list of all of the sources publishing articles mentioning
+this nameset. For web-based news material, this is the top-level domain the page was from,
+while for BBC Monitoring service material, “BBC Monitoring” will appear. Thus, it is important
+to note that this field will contain a mixture of domain names and the phrase “BBC Monitoring”."
+SOURCEURLS,STRING,"This is a delimited list of ALL articles mentioning this nameset. Since URLs can
+contain a wide variety of characters the phrase “<UDIV>” is used as the delimiter between
+articles. For web-based news material, this will be the complete URL to the article, while for
+BBC Monitoring service material, “BBC Monitoring” will appear. Thus, it is important to note
+that this field will contain a mixture of URLs and the phrase “BBC Monitoring”. It is also
+important to note that this field contains a list of ALL source articles, unlike the primary GDELT
+event stream, which only lists the first source article mentioning an event in the case an event is
+mentioned in multiple articles."

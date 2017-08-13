@@ -6,7 +6,9 @@ coveralls
 sphinx=1.5*
 nbsphinx
 ipython
+iypkernel
 jupyter
+pandas-gbq
 python-dateutil
 pytz
 notebook

@@ -22,8 +22,6 @@ from dateutil.parser import parse
 def _date_input_check(date, version):
     """Function to check date entered by user.
 
-
-
     Parameters
     ----------
         date : {string or list},

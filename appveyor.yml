@@ -60,7 +60,7 @@ test_script:
 #  - dir
   #- "%PYTHON%\\python.exe setup.py test"
   - pytest
-  - coverage run --source=gdelt setup.py test
+#  - coverage run --source=gdelt setup.py test
   
 after_test:
   - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel"

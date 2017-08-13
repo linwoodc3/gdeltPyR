@@ -42,7 +42,7 @@ install:
 
 script:
   - pytest
-  - coverage run --source=gdelt setup.py test
+#  - coverage run --source=gdelt setup.py test
 
 cache:
   directories:

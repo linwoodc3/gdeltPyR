@@ -27,36 +27,36 @@ cores = cpu_count()
 e = ProcessPoolExecutor(max_workers=cores)
 
 
-def _shaper(row):
-    """
-    Parallel function to create shapely points
-    from latitude/longitude pair in dataframe
-
-    Parameters
-    ----------
-    row : pandas or dask dataframe row
-        Row containing latitude and longitude variables and data
-
-    Returns
-    -------
-    shapely point
-        Shapely spatial object for geoprocessing in Python.
-    """
-    try:
-        from shapely.geometry import Point
-    except:
-        raise ImportError('You need to install shapely to use this feature.')
-
-    try:
-        import fiona
-    except:
-        raise ImportError('You need to install fiona to use this feature.')
-    try:
-        import geopandas
-    except:
-        raise ImportError('You need to install geopandas to use this feature.')
-    geometry = Point(row['ActionGeo_Long'], row['ActionGeo_Lat'])
-    return geometry
+# def _shaper(row):
+#     """
+#     Parallel function to create shapely points
+#     from latitude/longitude pair in dataframe
+#
+#     Parameters
+#     ----------
+#     row : pandas or dask dataframe row
+#         Row containing latitude and longitude variables and data
+#
+#     Returns
+#     -------
+#     shapely point
+#         Shapely spatial object for geoprocessing in Python.
+#     """
+#     try:
+#         from shapely.geometry import Point
+#     except:
+#         raise ImportError('You need to install shapely to use this feature.')
+#
+#     try:
+#         import fiona
+#     except:
+#         raise ImportError('You need to install fiona to use this feature.')
+#     try:
+#         import geopandas
+#     except:
+#         raise ImportError('You need to install geopandas to use this feature.')
+#     geometry = Point(row['ActionGeo_Long'], row['ActionGeo_Lat'])
+#     return geometry
 
 
 def _call_apply_fn(df):
@@ -66,7 +66,7 @@ def _call_apply_fn(df):
 def _parallelize_dataframe(df):
     """Applying function"""
     df_split = np.array_split(df, cores * 2)
-    finaldf = pd.concat(list(e.map(call_apply_fn, df_split)))
+    finaldf = pd.concat(list(e.map(_call_apply_fn, df_split)))
     return finaldf
 
 

@@ -37,11 +37,12 @@ install:
     - 'pip install pip -U'
     - "pip install pytest-cov"
     - "pip install python-coveralls"
+    - "pip install geopandas"
 
 
 script:
-  - py.test --cov=./
-  - py.test tests/ --doctest-modules -v --cov gdelt --cov-report term-missing
+  - pytest
+#  - coverage run --source=gdelt setup.py test
 
 cache:
   directories:

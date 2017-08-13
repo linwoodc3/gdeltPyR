@@ -1,0 +1,158 @@
+{
+  "creationTime": "1466200464150", 
+  "description": "http://blog.gdeltproject.org/announcing-the-american-television-global-knowledge-graph-tv-gkg/", 
+  "etag": "\"WLQb94_1oCOtna_uXzhhuBZlpHw/MTQ2NjIwMDUxNzg4Mg\"", 
+  "id": "gdelt-bq:gdeltv2.iatvgkg", 
+  "kind": "bigquery#table", 
+  "lastModifiedTime": "1501218147284", 
+  "location": "US", 
+  "numBytes": "40587059621", 
+  "numLongTermBytes": "0", 
+  "numRows": "976642", 
+  "schema": {
+    "fields": [
+      {
+        "mode": "NULLABLE", 
+        "name": "GKGRECORDID", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "DATE", 
+        "type": "INTEGER"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "SourceCollectionIdentifier", 
+        "type": "INTEGER"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "SourceCommonName", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "DocumentIdentifier", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "Counts", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "V2Counts", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "Themes", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "V2Themes", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "Locations", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "V2Locations", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "Persons", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "V2Persons", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "Organizations", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "V2Organizations", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "V2Tone", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "Dates", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "GCAM", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "SharingImage", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "RelatedImages", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "SocialImageEmbeds", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "SocialVideoEmbeds", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "Quotations", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "AllNames", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "Amounts", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "TranslationInfo", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "Extras", 
+        "type": "STRING"
+      }
+    ]
+  }, 
+  "selfLink": "https://www.googleapis.com/bigquery/v2/projects/gdelt-bq/datasets/gdeltv2/tables/iatvgkg", 
+  "tableReference": {
+    "datasetId": "gdeltv2", 
+    "projectId": "gdelt-bq", 
+    "tableId": "iatvgkg"
+  }, 
+  "type": "TABLE"
+}

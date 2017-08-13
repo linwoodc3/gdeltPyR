@@ -10,18 +10,26 @@ if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
         py27)
             # Install some custom Python 2.7 requirements on OS X
             pip install pip -U
+            pip install rtree
+            pip install geopandas
             ;;
         py34)
             # Install some custom Python 3.4 requirements on OS X
             pip install pip -U
+            pip install rtree
+            pip install geopandas
             ;;
         py35)
             # Install some custom Python 3.5 requirements on OS X
             pip install pip -U
+            pip install rtree
+            pip install geopandas
             ;;
         py36)
             # Install some custom Python 3.6 requirements on OS X
             pip install pip -U
+            pip install rtree
+            pip install geopandas
             ;;
     esac
 else

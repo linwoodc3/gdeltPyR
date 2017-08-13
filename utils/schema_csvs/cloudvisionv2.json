@@ -1,0 +1,82 @@
+{
+  "creationTime": "1455642756833", 
+  "etag": "\"WLQb94_1oCOtna_uXzhhuBZlpHw/MTQ1NTY0Mjc1NjgzMw\"", 
+  "id": "gdelt-bq:gdeltv2.cloudvision", 
+  "kind": "bigquery#table", 
+  "lastModifiedTime": "1501219080054", 
+  "location": "US", 
+  "numBytes": "3887713174817", 
+  "numLongTermBytes": "0", 
+  "numRows": "299275773", 
+  "schema": {
+    "fields": [
+      {
+        "mode": "NULLABLE", 
+        "name": "DATE", 
+        "type": "INTEGER"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "DocumentIdentifier", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "ImageURL", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "Labels", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "GeoLandmarks", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "Logos", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "SafeSearch", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "Faces", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "OCR", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "LangHints", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "WidthHeight", 
+        "type": "STRING"
+      }, 
+      {
+        "mode": "NULLABLE", 
+        "name": "RawJSON", 
+        "type": "STRING"
+      }
+    ]
+  }, 
+  "selfLink": "https://www.googleapis.com/bigquery/v2/projects/gdelt-bq/datasets/gdeltv2/tables/cloudvision", 
+  "tableReference": {
+    "datasetId": "gdeltv2", 
+    "projectId": "gdelt-bq", 
+    "tableId": "cloudvision"
+  }, 
+  "type": "TABLE"
+}

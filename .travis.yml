@@ -41,7 +41,7 @@ install:
 
 
 script:
-  - py.test --cov=./
+  - py.test
   - py.test tests/ --doctest-modules -v --cov gdelt --cov-report term-missing
 
 cache:

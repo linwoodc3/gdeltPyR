@@ -83,7 +83,9 @@ setup(
                           'data/mentionsTranssamp.gz',
                           'data/visualgkg.csv'
                           ])],
-    keywords='gdelt pandas tidy data api',
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
+keywords='gdelt pandas tidy data api',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Science/Research',

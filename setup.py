@@ -5,8 +5,12 @@ from __future__ import absolute_import, print_function
 import codecs
 import os
 import re
-
 from setuptools import setup
+from setuptools.dist import Distribution
+
+class BinaryDistribution(Distribution):
+    def is_pure(self):
+        return False
 
 cwd = os.path.abspath(os.path.dirname(__file__))
 
@@ -45,7 +49,7 @@ setup(
     # download_url=extract_metaitem('download_url'),
     platforms=['Any'],
     packages=['gdelt'],
-    install_requires=['numpy', 'pandas', 'requests',
+    install_requires=['numpy>=1.9', 'pandas>=0.20', 'requests',
                       'python-dateutil',
                       'mock;python_version<"3.3"',
                       "futures; python_version < '3.0'",
@@ -57,7 +61,32 @@ setup(
         ":python_version<'3.3'": ["mock", "futures"]
     },
     include_package_data=True,
-    package_data={'utils': ['schema_csvs/*']},
+    distclass=BinaryDistribution,
+    package_data={'utils': ['schema_csvs/*'],
+                  'data':['data/cameoCodes.json', 'data/events1.csv',
+                          'data/events2.csv', 'data/gkg2.csv',
+                          'data/iatv.csv', 'data/mentions.csv',
+                          'data/visualgkg.csv', 'data/gkg2listsamp.gz',
+                          'data/events2listsamp.gz', 'data/events1.csv',
+                          'data/events1samp.gz',
+                          'data/events2.csv',
+                          'data/events2listsamp.gz',
+                          'data/events2samp.gz',
+                          'data/events2Transsamp.gz',
+                          'data/gkg1.csv',
+                          'data/gkg1samp.gz',
+                          'data/gkg2.csv',
+                          'data/gkg2listsamp.gz',
+                          'data/gkg2samp.gz',
+                          'data/gkg2Transsamp.gz',
+                          'data/iatv.csv',
+                          'data/mentions.csv',
+                          'data/mentionslistsamp.gz',
+                          'data/mentionssamp.csv',
+                          'data/mentionssamp.gz',
+                          'data/mentionsTranssamp.gz',
+                          'data/visualgkg.csv'
+                          ]},
     data_files=[('data', ['data/cameoCodes.json', 'data/events1.csv',
                           'data/events2.csv', 'data/gkg2.csv',
                           'data/iatv.csv', 'data/mentions.csv',
@@ -67,7 +96,6 @@ setup(
                           'data/events2.csv',
                           'data/events2listsamp.gz',
                           'data/events2samp.gz',
-                          'data/events2samps.csv.zip',
                           'data/events2Transsamp.gz',
                           'data/gkg1.csv',
                           'data/gkg1samp.gz',

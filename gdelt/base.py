@@ -559,7 +559,7 @@ class gdelt(object):
         #     print("don't know what it is")
         # print (self.version,self.download_list,self.date, self.table, self.coverage, self.datesString)
         #
-        print (self.download_list)
+        # print (self.download_list)
         # if self.coverage:
         #     coverage = 'True'
         # else:

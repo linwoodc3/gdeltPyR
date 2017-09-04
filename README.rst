@@ -147,6 +147,8 @@ After completing all steps above, tell conda to create a new environment, named 
 Windows Dev Environment
 -----------------------
 
+The main requirement for ``gdeltPyR`` is ``pandas``.  If you have an updated ``pip`` library (``pip install pip -U`` or ``conda update pip``), you can download the pandas wheel with ``pip download pandas`` and then install the wheel with ``pip install <insert pandas wheel name>``. Then, pip install gdelt.  If that does not work, continue reading.
+
 For Windows, we will again follow the ``pandas`` documentation (let me know if this doesn't work for ``gdeltPyR``).  To build on Windows, you need to have compilers installed to build the extensions. You will need to install the appropriate Visual Studio compilers, VS 2008 for Python 2.7, VS 2010 for 3.4, and VS 2015 for Python 3.5 and 3.6.
 
 For Python 2.7, you can install the mingw compiler which will work equivalently to VS 2008:

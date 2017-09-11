@@ -71,13 +71,13 @@ Latest release installs from PyPi::
 Latest dev version of ``gdeltPyR`` can be installed from GitHub.com::
 
     pip install git+https://github.com/linwoodc3/gdeltPyR
-    
-    
+
+
 
 
 .. image:: https://twistedsifter.files.wordpress.com/2015/06/people-tweeting-about-sunrises-over-a-24-hour-period.gif?w=700&h=453
 :alt: GDELT can help you visualize the world's news!!!  Analyze GDELT data with gdeltPyR!!
-    
+
 Basic Usage
 -----------
 
@@ -86,14 +86,14 @@ Basic Usage
     #############################
     # Import gdeltPyR; instantiate
     #############################
-    
+
     import gdelt
-    
+
     gd = gdelt.gdelt(version=2)
-    
+
     results = gd.Search(['2016 10 19','2016 10 22'],table='events',coverage=True,translation=False)
 
-    
+
 
 
 Contributing to gdelPyR

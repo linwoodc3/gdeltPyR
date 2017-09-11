@@ -89,6 +89,7 @@ class testGdeltGetHeaders(TestCase):
         ver = sys.version_info.major
 
         exp = pd.read_csv(BytesIO(response.content))
+        print(exp)
 
         return self.assertIsInstance(exp, pandas.DataFrame,
                                      "Returned dataframe")

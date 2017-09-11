@@ -559,7 +559,7 @@ class gdelt(object):
         #     print("don't know what it is")
         # print (self.version,self.download_list,self.date, self.table, self.coverage, self.datesString)
         #
-        print (self.download_list)
+        # print (self.download_list)
         # if self.coverage:
         #     coverage = 'True'
         # else:
@@ -626,6 +626,7 @@ class gdelt(object):
             pool.close()
             pool.terminate()
             pool.join()
+            # print(downloaded_dfs)
             results = pd.concat(downloaded_dfs)
             del downloaded_dfs
             results.reset_index(drop=True, inplace=True)
@@ -680,7 +681,6 @@ class gdelt(object):
 
         # r dataframe output
         elif output == 'r':
-
             if self.coverage:
                 coverage = 'True'
             else:

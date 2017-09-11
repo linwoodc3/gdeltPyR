@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Author:
-# Linwood Creekmore
+# Linwood Creekmore III
 # Email: valinvescap@gmail.com
 
 

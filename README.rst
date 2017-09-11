@@ -71,13 +71,13 @@ Latest release installs from PyPi::
 Latest dev version of ``gdeltPyR`` can be installed from GitHub.com::
 
     pip install git+https://github.com/linwoodc3/gdeltPyR
-    
-    
+
+
 
 
 .. image:: https://twistedsifter.files.wordpress.com/2015/06/people-tweeting-about-sunrises-over-a-24-hour-period.gif?w=700&h=453
 :alt: GDELT can help you visualize the world's news!!!  Analyze GDELT data with gdeltPyR!!
-    
+
 Basic Usage
 -----------
 
@@ -86,14 +86,14 @@ Basic Usage
     #############################
     # Import gdeltPyR; instantiate
     #############################
-    
+
     import gdelt
-    
+
     gd = gdelt.gdelt(version=2)
-    
+
     results = gd.Search(['2016 10 19','2016 10 22'],table='events',coverage=True,translation=False)
 
-    
+
 
 
 Contributing to gdelPyR
@@ -146,8 +146,6 @@ After completing all steps above, tell conda to create a new environment, named 
 
 Windows Dev Environment
 -----------------------
-
-The main requirement for ``gdeltPyR`` is ``pandas``.  If you have an updated ``pip`` library (``pip install pip -U`` or ``conda update pip``), you can download the pandas wheel with ``pip download pandas`` and then install the wheel with ``pip install <insert pandas wheel name>``. Then, pip install gdelt.  If that does not work, continue reading.
 
 For Windows, we will again follow the ``pandas`` documentation (let me know if this doesn't work for ``gdeltPyR``).  To build on Windows, you need to have compilers installed to build the extensions. You will need to install the appropriate Visual Studio compilers, VS 2008 for Python 2.7, VS 2010 for 3.4, and VS 2015 for Python 3.5 and 3.6.
 

@@ -638,3 +638,39 @@ class TestGdeltBaseSearch(TestCase):
         # returning the objects
         return self.assertGreater(mock_A.return_value.shape[0], 0)
 
+    @mock.patch.object(gdelt.base, '_mp_worker')
+    @mock.patch.object(gdelt.base, '_events2Heads')
+    @mock.patch.object(gdelt.base, 'Pool')
+    @mock.patch.object(gdelt.base.pd, 'concat')
+    @mock.patch.object(gdelt.base,'_geofilter')
+    def test_my_method_mock_gpd_normcols(self, mock_E,mock_D, mock_C, mock_B,
+                                             mock_A):
+        # instantiating the first mock; need the headers
+        d = pd.read_pickle(os.path.join(
+                gdelt.base.BASE_DIR, "data",
+                "events2listsamp.gz"),
+                compression="gzip")
+        mock_E = mock.MagicMock(return_value=(
+            d))
+
+        mock_C = mock.MagicMock(return_value=(
+            d))
+
+        mock_B = mock.MagicMock(return_value=pd.read_csv(
+            (os.path.join(gdelt.base.BASE_DIR, 'data', 'events2.csv')))[
+            'name'].values.tolist())
+
+        # instantiating the second mock
+
+        mock_A = mock.MagicMock(return_value=(
+            d))
+
+        # print(mock_A.return_value.columns)
+        gd = gdelt.gdelt(version=2)
+
+        res = gd.Search(date=['2017 May 1', '2017 Jun 1', '2017 Jul 1'],
+                        output='gpd',normcols=True)
+
+        # returning the objects
+        return self.assertGreater(mock_A.return_value.shape[0], 0)
+

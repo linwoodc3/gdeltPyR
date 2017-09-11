@@ -85,8 +85,10 @@ def _date_input_check(date, version):
                 test = str(datetime.datetime.strptime(l, '%Y%m'))
                 newdate.append(test)
             else:
-
-                test = str(parse(str(l)))
+                try:
+                    test = str(parse(str(l)))
+                except:
+                    test = l
                 newdate.append(test)
             if parse(test) < parse('Feb 18 2015') and version == 2:
                 raise ValueError(
@@ -119,19 +121,19 @@ def _date_input_check(date, version):
                     "One or more of your input date strings does not parse to "
                     "a date format. Check input."
                 )
-            if datetime.datetime.now().hour <= 6 and parse(
-                    "".join(date)).date() == (
-                        datetime.datetime.now().date() - datetime.timedelta(
-                        days=1)):
-                raise BaseException('GDELT 1.0 posts the latest daily update '
-                                    'by 6AM EST. The next update will appear '
-                                    'in {0}'.format(str(
-                    datetime.datetime.combine(
-                        datetime.datetime.now(), datetime.datetime.min.time()
-                    ) + datetime.timedelta(hours=6, minutes=00, seconds=00) -
-                    datetime.datetime.now())))
-
-            return "".join(date)
+            # if datetime.datetime.now().hour <= 6 and parse(
+            #         "".join(date)).date() == (
+            #             datetime.datetime.now().date() - datetime.timedelta(
+            #             days=1)):
+            #     raise BaseException('GDELT 1.0 posts the latest daily update '
+            #                         'by 6AM EST. The next update will appear '
+            #                         'in {0}'.format(str(
+            #         datetime.datetime.combine(
+            #             datetime.datetime.now(), datetime.datetime.min.time()
+            #         ) + datetime.timedelta(hours=6, minutes=00, seconds=00) -
+            #         datetime.datetime.now())))
+            #
+            # return "".join(date)
 
 
         elif len(date) == \
@@ -163,44 +165,44 @@ def _date_input_check(date, version):
                     "One of your dates is greater than the current date. "
                     "Check your entered date query."
                 )
-            elif np.any(
-                    np.logical_not(np.array(list(map(parse, date)
-                                                 )) > parse("Feb 18 2015"))) == \
-                    True and int(version) != 1:
-                raise ValueError(
-                    "GDELT 2.0 only supports \'Feb 18 2015 - Present\'queries "
-                    "currently. Try another date."
-                )
+            # elif np.any(
+            #         np.logical_not(np.array(list(map(parse, date)
+            #                                      )) > parse("Feb 18 2015"))) == \
+            #         True and int(version) != 1:
+            #     raise ValueError(
+            #         "GDELT 2.0 only supports \'Feb 18 2015 - Present\'queries "
+            #         "currently. Try another date."
+            #     )
 
-            elif version == 1:
-                if not np.all(
-                        np.logical_not(np.array(list(map(lambda x: parse(x),
-                                                         date)),
-                                                dtype='datetime64[D]') >=
-                                               np.datetime64(
-                                                   datetime.datetime.now().date()))):
-                    raise ValueError(
-                        "You have today's date in your query for GDELT 1.0. "
-                        " GDELT 1.0\'s most recent data"
-                        "is always the trailing day (i.e. {0}).  Please retry "
-                        "your query.".format(
-                            np.datetime64(datetime.datetime.now().date()) -
-                            np.timedelta64(1, 'D'))
-                    )
-                if datetime.datetime.now().hour <= 6 and (
-                            datetime.datetime.now().date() - datetime.timedelta(
-                            days=1)) in list(
-                    map(lambda x: parse(x).date(), date)):
-                    if datetime.datetime.now().hour < 6:
-                        raise BaseException('GDELT 1.0 posts the latest daily '
-                                            'update by 6AM EST.  The next '
-                                            'update will appear in {0}'.format(
-                            str(datetime.datetime.combine(
-                                datetime.datetime.now(),
-                                datetime.datetime.min.time()
-                            ) + datetime.timedelta(
-                                hours=6, minutes=00, seconds=00) -
-                                datetime.datetime.now())))
+            # elif version == 1:
+            # #     if not np.all(
+            # #             np.logical_not(np.array(list(map(lambda x: parse(x),
+            # #                                              date)),
+            # #                                     dtype='datetime64[D]') >=
+            # #                                    np.datetime64(
+            # #                                        datetime.datetime.now().date()))):
+            # #         raise ValueError(
+            # #             "You have today's date in your query for GDELT 1.0. "
+            # #             " GDELT 1.0\'s most recent data"
+            # #             "is always the trailing day (i.e. {0}).  Please retry "
+            # #             "your query.".format(
+            # #                 np.datetime64(datetime.datetime.now().date()) -
+            # #                 np.timedelta64(1, 'D'))
+            # #         )
+            #     if datetime.datetime.now().hour <= 6 and (
+            #                 datetime.datetime.now().date() - datetime.timedelta(
+            #                 days=1)) in list(
+            #         map(lambda x: parse(x).date(), date)):
+            #         if datetime.datetime.now().hour < 6:
+            #             raise BaseException('GDELT 1.0 posts the latest daily '
+            #                                 'update by 6AM EST.  The next '
+            #                                 'update will appear in {0}'.format(
+            #                 str(datetime.datetime.combine(
+            #                     datetime.datetime.now(),
+            #                     datetime.datetime.min.time()
+            #                 ) + datetime.timedelta(
+            #                     hours=6, minutes=00, seconds=00) -
+            #                     datetime.datetime.now())))
 
 
         elif len(date) > 2:
@@ -266,18 +268,3 @@ def _date_input_check(date, version):
                             ) + datetime.timedelta(
                                 hours=6, minutes=00, seconds=00) -
                             datetime.datetime.now())))
-
-
-def _tblCheck(dataframe, tbl):
-    """Checking the input of tblType."""
-    if tbl == 'events' or tbl == '' or tbl == 'mentions':
-        resultsUrlList = dataframe[2][dataframe[2].str.contains(
-            'export|mentions')]
-    elif tbl == 'gkg':
-        resultsUrlList = dataframe[2][dataframe[2].str.contains('gkg')]
-    else:
-        raise ValueError(
-            "Incorrect parameter \'{0}\' entered.  Did you mean to use \'{0}\'"
-            " as the parameter?"
-            "\nPlease check your \'tblType\' parameters.".format(tbl))
-    return resultsUrlList

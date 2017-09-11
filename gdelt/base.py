@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Author:
-# Linwood Creekmore III
+# Linwood Creekmore
 # Email: valinvescap@gmail.com
 
 
@@ -626,6 +626,7 @@ class gdelt(object):
             pool.close()
             pool.terminate()
             pool.join()
+            # print(downloaded_dfs)
             results = pd.concat(downloaded_dfs)
             del downloaded_dfs
             results.reset_index(drop=True, inplace=True)
@@ -680,7 +681,6 @@ class gdelt(object):
 
         # r dataframe output
         elif output == 'r':
-
             if self.coverage:
                 coverage = 'True'
             else:

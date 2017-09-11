@@ -28,7 +28,7 @@ import coveralls
 ##############################
 
 import gdelt
-from gdelt.helpers import _rooturl,_shaper,_cameos
+from gdelt.helpers import _rooturl,_shaper,_cameos,_testdate
 #
 class testHelpers(TestCase):
 #     def test_testdate(self):
@@ -38,6 +38,12 @@ class testHelpers(TestCase):
 #         resp = gdelt.helpers.testdate('2016 July 10')
 #         return (self.assertEqual(exp,resp,"The test date function works"))
 #
+    def test_date(self):
+
+        res = _testdate('1980')
+        return self.assertIsInstance(res,datetime.datetime)
+
+
     def test_urlgetter(self):
         """Pull the root url from a news story url"""
         dd = pd.read_pickle(os.path.join(

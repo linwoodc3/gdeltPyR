@@ -64,6 +64,20 @@ class TestGdeltDateInputs(TestCase):
 
         return self.assertIsInstance(str(the_exception),str, "Too early date "
                                                          "on Version 1")
+    def test_gdeltdate_check_v2_fail_one_wrong_inlist(self):
+        date_sequence = np.asarray(['2016 Jan 2', '2016 Jan 31',
+                                    str(datetime.timedelta(days=1) +
+                                        datetime.datetime.now())[:10]])
+        exp = ("One of your dates is greater than the current date. "
+                    "Check your entered date query.")
+
+        with self.assertRaises(Exception) as context:
+            checked = _date_input_check(date_sequence, version=2)
+        the_exception = context.exception
+        print (str(the_exception))
+
+        return self.assertIsInstance(str(the_exception),str, "One wrong date"
+                                     " in list of dates greater than 3 failed.")
 
     def test_gdeltdate_greater_current(self):
         date_sequence = str(datetime.datetime.now().date() + datetime. \

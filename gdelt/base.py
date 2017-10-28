@@ -34,7 +34,7 @@ import requests
 from gdelt.dateFuncs import (_dateRanger, _gdeltRangeString)
 from gdelt.getHeaders import _events1Heads, _events2Heads, _mentionsHeads, \
     _gkgHeads
-from gdelt.helpers import _cameos
+from gdelt.helpers import _cameos,_tableinfo
 from gdelt.inputChecks import (_date_input_check)
 from gdelt.parallel import _mp_worker
 from gdelt.vectorizingFuncs import _urlBuilder, _geofilter
@@ -724,3 +724,20 @@ class gdelt(object):
             self.final.columns = list(map(lambda x: (x.replace('_', "")).lower(), self.final.columns))
 
         return self.final
+
+
+    def schema(self,tablename):
+        """
+
+        Parameters
+        ----------
+        :param tablename: str
+            Name of table to retrieve desired schema
+
+        Returns
+        -------
+        :return: dataframe
+            pandas dataframe with schema
+        """
+
+        return _tableinfo(table=tablename,version=self.version)

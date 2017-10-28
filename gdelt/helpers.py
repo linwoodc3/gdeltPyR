@@ -9,6 +9,7 @@
 # Standard Library Imports
 ##############################
 import re
+import os
 import datetime
 
 
@@ -16,10 +17,14 @@ import datetime
 # Third party Library Imports
 ##############################
 from dateutil.parser import parse
+import pandas as pd
 
 ##############################
 # Filter functions for dataframes
 ##############################
+
+this_dir, this_filename = os.path.split(__file__)
+BASE_DIR = os.path.dirname(this_dir)
 
 def _cameos(x, codes):
     try:
@@ -80,3 +85,70 @@ def _testdate(dateString):
     else:
         comp = parse(dateString)
     return comp
+
+
+def _tableinfo(table='cameo',version=2):
+    """
+    Parameters
+    -----------
+    :param table: str
+        Name of GDELT table
+
+    Returns
+    --------
+
+    dataframe
+        Pandas dataframe containing schema of table
+
+    Examples
+    --------
+    Example of retrieving the events table schema.
+
+    >>> print([i for i in example_generator(4)])
+    [0, 1, 2, 3]
+    """
+
+
+
+    table = table.lower()
+
+    valid = ['cameo', 'events', 'gkg', 'vgkg', 'iatv',
+             'graph', 'ments', 'mentions', 'cloudviz',
+             'cloud vision', 'vision']
+    if table not in valid:
+        raise ValueError('You entered "{}"; this is not a valid table name.'
+                         ' Choose from "events", "mentions", or "gkg".'.format(
+            table))
+
+    if table == 'cameo':
+        tabs = pd.read_json(
+            os.path.join(BASE_DIR, 'data', 'cameoCodes.json'),
+            dtype={'cameoCode': 'str', "GoldsteinScale": np.float64})
+        tabs.set_index('cameoCode', drop=False, inplace=True)
+    elif table == 'events' and float(version) == 1.0:
+        tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'events1.csv'))
+
+    elif table == 'events' and float(version) == 2.0:
+        tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'events2.csv'))
+
+    elif table == 'gkg' or table == 'graph':
+        if float(version) != 2.0:
+            raise ValueError(
+                'We do not have a schema for GKG 1.0; use GKG 2.0\'s schema.')
+        else:
+            tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'gkg2.csv'))
+    elif table == 'mentions' or table == 'ments':
+        if float(version) != 2.0:
+            raise ValueError('GDELT 1.0 does not have a mentions table.')
+        else:
+            tabs = pd.read_csv(
+                os.path.join(BASE_DIR, 'data', 'mentions.csv'))
+
+    elif table == 'cloud vision' or table == 'vgkg' or table == 'cloudviz' \
+            or table == 'vision':
+        tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'visualgkg.csv'))
+
+    elif table == 'iatv' or table == 'tv':
+        tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'iatv.csv'))
+
+    return tabs

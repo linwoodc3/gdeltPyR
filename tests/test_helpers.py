@@ -28,8 +28,16 @@ import coveralls
 ##############################
 
 import gdelt
-from gdelt.helpers import _rooturl,_shaper,_cameos,_testdate
-#
+from gdelt.helpers import _rooturl,_shaper,_cameos,_testdate,_tableinfo
+
+##############################
+# Directories
+##############################
+
+this_dir, this_filename = os.path.split(__file__)
+BASE_DIR = os.path.dirname(this_dir)
+
+
 class testHelpers(TestCase):
 #     def test_testdate(self):
 #         """Testing whether a test string works"""
@@ -90,5 +98,78 @@ class testHelpers(TestCase):
             gdelt.base.BASE_DIR, "data", "events2samp.gz"),
             compression="gzip").drop('CAMEOCodeDescription', axis=1)
         da = dd.apply(lambda x: _cameos(dd,codes))
-
         return self.assertIsInstance(da,pd.Series)
+
+    def testtable_events2(self):
+        """Make the cameo code description"""
+        tabs = pd.read_csv(
+            os.path.join(BASE_DIR, 'data', 'events2.csv'))
+        return self.assertTrue(tabs.equals(_tableinfo('events',version=2)))
+
+    def testtable_gkg2(self):
+        """Make the cameo code description"""
+        tabs = pd.read_csv(
+            os.path.join(BASE_DIR, 'data', 'gkg2.csv'))
+        return self.assertTrue(tabs.equals(_tableinfo('gkg',version=2)))
+
+    def testtable_events1(self):
+        """Make the cameo code description"""
+        tabs = pd.read_csv(
+            os.path.join(BASE_DIR, 'data', 'events1.csv'))
+        return self.assertTrue(tabs.equals(_tableinfo('events',version=1)))
+
+    def testtable_mentspass(self):
+        """Make the cameo code description"""
+        tabs = pd.read_csv(
+            os.path.join(BASE_DIR, 'data', 'mentions.csv'))
+        return self.assertTrue(tabs.equals(_tableinfo('ments',version=2)))
+
+    def testtable_mentsfail(self):
+        """Make the cameo code description"""
+        exp = 'GDELT 1.0 does not have a mentions table.'
+        with self.assertRaises(Exception) as context:
+            checked = _tableinfo('ments',version=1)
+        the_exception = context.exception
+
+        return self.assertEqual(exp, str(the_exception))
+
+    def testtable_cloudviz(self):
+        """Make the cameo code description"""
+        tabs = pd.read_csv(
+            os.path.join(BASE_DIR, 'data', 'visualgkg.csv'))
+        return self.assertTrue(tabs.equals(_tableinfo('vision',version=2)))
+
+    def testtable_iatv(self):
+        """Make the cameo code description"""
+        tabs = pd.read_csv(
+            os.path.join(BASE_DIR, 'data', 'iatv.csv'))
+        return self.assertTrue(tabs.equals(_tableinfo('iatv',version=2)))
+
+
+    def testtable_cameo(self):
+        """Make the cameo code description"""
+        tabs = pd.read_json(
+            os.path.join(BASE_DIR, 'data', 'cameoCodes.json'),
+            dtype={'cameoCode': 'str', "GoldsteinScale": np.float64})
+
+        return self.assertEqual(_tableinfo('cameo').shape,tabs.shape)
+
+
+    def testtable_fail(self):
+        """Make the cameo code description"""
+        table = 'bobby'
+        valid = ['cameo', 'events', 'gkg', 'vgkg', 'iatv',
+                 'graph', 'ments', 'mentions', 'cloudviz',
+                 'cloud vision', 'vision']
+        exp = ('You entered "{}"; this is not a valid table name.'
+                         ' Choose from {}.'.format(
+            table,", ".join(valid)))
+        with self.assertRaises(Exception) as context:
+            checked = _tableinfo('bobby',version=1)
+        the_exception = context.exception
+
+        return self.assertEqual(exp, str(the_exception))
+
+
+
+

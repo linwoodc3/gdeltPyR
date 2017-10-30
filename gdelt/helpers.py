@@ -18,6 +18,7 @@ import datetime
 ##############################
 from dateutil.parser import parse
 import pandas as pd
+import numpy as np
 
 ##############################
 # Filter functions for dataframes
@@ -117,8 +118,8 @@ def _tableinfo(table='cameo',version=2):
              'cloud vision', 'vision']
     if table not in valid:
         raise ValueError('You entered "{}"; this is not a valid table name.'
-                         ' Choose from "events", "mentions", or "gkg".'.format(
-            table))
+                         ' Choose from {}.'.format(
+            table,", ".join(valid)))
 
     if table == 'cameo':
         tabs = pd.read_json(
@@ -132,11 +133,7 @@ def _tableinfo(table='cameo',version=2):
         tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'events2.csv'))
 
     elif table == 'gkg' or table == 'graph':
-        if float(version) != 2.0:
-            raise ValueError(
-                'We do not have a schema for GKG 1.0; use GKG 2.0\'s schema.')
-        else:
-            tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'gkg2.csv'))
+        tabs = pd.read_csv(os.path.join(BASE_DIR, 'data', 'gkg2.csv'))
     elif table == 'mentions' or table == 'ments':
         if float(version) != 2.0:
             raise ValueError('GDELT 1.0 does not have a mentions table.')

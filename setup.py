@@ -45,7 +45,7 @@ setup(
     # download_url=extract_metaitem('download_url'),
     platforms=['Any'],
     packages=['gdelt'],
-    install_requires=['numpy', 'pandas', 'requests',
+    install_requires=['numpy', 'pandas>=0.20.3', 'requests',
                       'python-dateutil',
                       'mock;python_version<"3.3"',
                       "futures; python_version < '3.0'",

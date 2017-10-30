@@ -49,3 +49,6 @@
 
 2017-08-09
   Achieved 80% unit test coverage for entire code base.
+
+2017-10-30
+  Added schema method to return table info data; switched continuous integration for MacOS to conda; kept failing. Up to 84% coverage

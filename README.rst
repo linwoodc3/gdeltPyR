@@ -46,17 +46,34 @@ Therefore, most `issues <https://github.com/linwoodc3/gdeltPyR/issues>`_ in this
 
 This phase is what will make `gdeltPyR` useful to a wider audience. The major addition will be an `Analysis` class.  For the data-literate users (data scientists, researchers, students, data journalists, etc), enhancements in this phase will save time by providing summary statistics and extraction methods of GDELT data, and as a result reduce the time a user would spend writing code to perform routine data cleanup/analysis.  For the non-technical audience (students, journalists, business managers, etc.), enhancesments in this phase will provide outputs that summarize GDELT data, which can in turn be used in reports, articles, etc.  Areas of focus include descriptive statistics (mean, split-apply-combine stats, etc), spatial analysis, and time series.
 
-**New Features**
-----------------
+**New Features** as of Oct 2017
+-------------------------------
 
 1.  Added geodataframe output.  This can be easily converted into a shapefile or `choropleth <https://en.wikipedia.org/wiki/Choropleth_map>`_ visualization.
 2.  Added continuous integration testing for Windows, OSX, and Linux (Ubuntu)
 3.  Normalized columns output; export data with SQL ready columns (no special characters, all lowercase)
 4.  Choosing between the native-english or translated-to-english datasets from GDELT v2.
+5.  Return the schema for a given table; just type the name of the table in the ``gdelt.gdelt.schema`` method and return the pandas dataframe with schema information
 
-Coming Soon (version 0.1.11, as of 29 May 2017)
+Basic Usage of New Schema Query
+-------------------------------
+
+.. code-block:: python
+
+    #############################
+    # Import gdeltPyR; instantiate
+    #############################
+
+    import gdelt
+
+    gd = gdelt.gdelt()
+
+    gd.schema('events')
+
+Coming Soon (version 0.1.11, as of Oct 2017)
 -----------------------------------------------
 
+* Output/store ``gdeltPyR`` results in `parquet format <http://wesmckinney.com/blog/python-parquet-update/>`_ ; efficient columnar storage to reduce memory footprint and optimize loading
 * Query Google's BigQuery directly from ``gdeltPyR`` using the `pandas.io.gbq` interface; requires authentication and Google Compute account
 * Adding a query for `GDELT Visual Knowledge Graph (VGKG) <http://blog.gdeltproject.org/gdelt-visual-knowledge-graph-vgkg-v1-0-available/>`_
 * Adding a query for `GDELT American Television Global Knowledge Graph (TV-GKG) <http://blog.gdeltproject.org/announcing-the-american-television-global-knowledge-graph-tv-gkg/>`_

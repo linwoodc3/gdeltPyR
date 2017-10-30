@@ -1,0 +1,25 @@
+name: testenv
+channels:
+  - conda-forge
+dependencies:
+- python=3
+- numpy
+- scipy
+- pandas
+- beautifulsoup4
+- gdal
+- geos
+- fiona
+- shapely
+- pyproj
+- gcc
+- cython
+- libspatialindex
+- rtree
+- jinja2
+- geopandas
+- pip
+- pip:
+    - coveralls
+    - pytest-cov
+    - python-coveralls

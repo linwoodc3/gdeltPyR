@@ -19,7 +19,7 @@ dependencies:
 - rtree
 - jinja2
 - geopandas
-- pip
+- pip!=10
 - pip:
     - coveralls
     - pytest-cov

@@ -34,10 +34,10 @@ matrix:
 install:
 
     - source travis/install.sh
-    - pip install pip -U
+    - pip install pip!=10
     - pip install pytest-cov
-    - pip install coveralls
-    - pip install python-coveralls
+    - pip install coveralls --ignore-installed  certifi
+    - pip install python-coveralls --ignore-installed  certifi
     - python setup.py install
 
 

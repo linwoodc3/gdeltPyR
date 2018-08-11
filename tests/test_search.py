@@ -15,22 +15,20 @@ except:
     from unittest import TestCase
     import mock
 
-from unittest import TestCase
 import os
+from unittest import TestCase
+
+import pandas as pd
+
+import gdelt
 
 
 ##############################
 # Third party imports
 ##############################
-
-import coveralls
-import pandas as pd
-
 ##############################
 # Local imports
 ##############################
-
-import gdelt
 
 
 class TestGdeltBaseSearch(TestCase):

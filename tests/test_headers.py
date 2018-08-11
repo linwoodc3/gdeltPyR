@@ -15,29 +15,25 @@ except:
     from unittest import TestCase
     import mock
 
-from unittest import TestCase
 import os
 import sys
-import csv
 from io import BytesIO, StringIO
-import pickle
+from unittest import TestCase
 
-##############################
-# Third Party Libraries
-##############################
-
-import pandas as pd
 import pandas
-import numpy as np
-import coveralls
-
-##############################
-# Custom Library Import
-##############################
+import pandas as pd
 
 import gdelt
 from gdelt.getHeaders import _events2Heads, _events1Heads, _gkgHeads, \
     _mentionsHeads
+
+
+##############################
+# Third Party Libraries
+##############################
+##############################
+# Custom Library Import
+##############################
 
 
 class testGdeltGetHeaders(TestCase):

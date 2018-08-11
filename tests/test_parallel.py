@@ -15,29 +15,26 @@ except:
     from unittest import TestCase
     import mock
 
-from unittest import TestCase
 import os
 import sys
-import csv
-from io import BytesIO,StringIO
-from zipfile import ZipFile
 import warnings
+from io import BytesIO, StringIO
+from unittest import TestCase
+from zipfile import ZipFile
+
+import numpy as np
+import pandas as pd
+
+import gdelt
+from gdelt.parallel import _mp_worker
+
 
 ##############################
 # Third Party Libraries
 ##############################
-
-import pandas as pd
-import pandas
-import numpy as np
-import coveralls
-
 ##############################
 # Custom Library Import
 ##############################
-
-import gdelt
-from gdelt.parallel import _mp_worker
 
 
 class testParallelWorker(TestCase):

@@ -74,7 +74,7 @@ def _parallelize_dataframe(df):
 # if __name__ == '__main__':
 #     import sys
 #     parallelize_dataframe(sys.argv[1:])
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     parser = argparse.ArgumentParser(description='Parallelize pandas apply function')
     parser.add_argument('--df', metavar='pandas.core.frame.DataFrame', required=True,
                         help='The target dataframe to apply the function.')

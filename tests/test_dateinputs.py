@@ -12,21 +12,18 @@
 import datetime
 from unittest import TestCase
 
-##############################
-# Third party imports
-##############################
-
-import coveralls
 import numpy as np
 from dateutil.parser import parse
 
+from gdelt.inputChecks import _date_input_check
+
+
+##############################
+# Third party imports
+##############################
 ##############################
 # Local imports
 ##############################
-
-from gdelt.inputChecks import _date_input_check
-from gdelt.dateFuncs import _dateRanger,_gdeltRangeString
-
 
 class TestGdeltDateInputs(TestCase):
     def test_gdeltdate_check_v2_fail(self):

@@ -52,3 +52,6 @@
 
 2017-10-30
   Added schema method to return table info data; switched continuous integration for MacOS to conda; kept failing. Up to 84% coverage
+
+2018-08-11
+  Added more unittests, included proxy parameter, removed r output and added parquet format.

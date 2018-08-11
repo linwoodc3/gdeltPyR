@@ -9,38 +9,42 @@
 # Standard Library Import
 ##############################
 
+
 try:
     from unittest import TestCase, mock
 except:
     from unittest import TestCase
     import mock
 
-from unittest import TestCase
 import os
-import csv
-from io import BytesIO,StringIO
-from zipfile import ZipFile
-import warnings
+from unittest import TestCase
+
+import pandas as pd
+
+import gdelt
+from gdelt.vectorizingFuncs import _urlBuilder, _geofilter
 
 ##############################
 # Third Party Libraries
 ##############################
-
-import pandas as pd
-import pandas
-import numpy as np
-import coveralls
-
 ##############################
 # Custom Library Import
 ##############################
 
-from gdelt.vectorizingFuncs import _urlBuilder,_geofilter
-# from gdelt.dateFuncs import _gdeltRangeString,_dateRanger
-import gdelt
+
+#################################
+# Test files
+#################################
+
+test_df = pd.read_pickle(os.path.join(
+    gdelt.base.BASE_DIR, "data", "events2samp.gz"),
+    compression="gzip").drop('CAMEOCodeDescription', axis=1)
 
 
 class testGDELTVectorizingFuncs(TestCase):
+
+    # print(test_df)
+
     def test_gdeltdate_urlbuilder_events_v1_three(self):
         date_sequence = ['20160101234500', '20160102234500', '20160103234500']
         exp = [
@@ -74,25 +78,56 @@ class testGDELTVectorizingFuncs(TestCase):
         with self.assertRaises(Exception) as context:
             result = _urlBuilder(date_sequence, version=1, table='gkg')
         the_exception = context.exception
+
         return self.assertEqual(exp, str(the_exception),
                                 "Version 1 old, gkg fail.")
 
-    def test_gdelt_geofilter_events2(self):
-        """Test ability to turn df into geodataframe"""
+    # def test_gdelt_geofilter_events2(self):
+    #     """Test ability to turn df into geodataframe"""
+    #
+    #     # load df
+    #     spam = pd.read_pickle(os.path.join(
+    #         gdelt.base.BASE_DIR, "data", "events2samp.gz"),
+    #         compression="gzip").drop('CAMEOCodeDescription', axis=1)
+    #     # print(spam)
+    #
+    #     try:
+    #         import geopandas as gpd
+    #         geo = _geofilter(spam)
+    #
+    #         return self.assertIsInstance(geo,gpd.GeoDataFrame)
+    #     except:
+    #         warnings.warn('Geopandas is not installed. '
+    #                       'Unable to test _geofilter')
+    #
+    #         exp = "Blank"
+    #         return self.assertEqual("Blank",exp)
+    def test_geopandas_import_pass(self):
+        """Test ability to import geopandas and create spatial object"""
+        import geopandas as gpd
 
-        # load df
-        spam = pd.read_pickle(os.path.join(
-            gdelt.base.BASE_DIR, "data", "events2samp.gz"),
-            compression="gzip").drop('CAMEOCodeDescription', axis=1)
+        # exp = "geopandas is not installed. gdeltPyR needs geopandas to export as shapefile. Visit http://geopandas.org/install.html for instructions."
+        gdf = _geofilter(test_df)
 
-        try:
-            import geopandas as gpd
-            geo = _geofilter(spam)
+        return self.assertTrue(isinstance(gdf, gpd.geodataframe.GeoDataFrame))
 
-            return self.assertIsInstance(geo,gpd.GeoDataFrame)
-        except:
-            warnings.warn('Geopandas is not installed. '
-                          'Unable to test _geofilter')
+    def test_geopandas_import_pass_normcol(self):
+        import geopandas as gpd
+        test_df.columns = list(
+            map(lambda x: (x.replace('_', "")).lower(), test_df.columns))
+        gdf = _geofilter(test_df)
+        return self.assertTrue(isinstance(gdf, gpd.geodataframe.GeoDataFrame))
 
-            exp = "Blank"
-            return self.assertEqual("Blank",exp)
+
+class testFailGeopandas(TestCase):
+
+    def test_geopandas_import_fail(self):
+        """Test ability to import geopandas"""
+        import sys
+        sys.modules['geopandas'] = None
+        exp = "geopandas is not installed. gdeltPyR needs geopandas to export as shapefile. Visit http://geopandas.org/install.html for instructions."
+        with self.assertRaises(Exception) as context:
+            gdf = _geofilter(test_df)
+        the_exception = context.exception
+
+        return self.assertTrue(exp, str(the_exception))

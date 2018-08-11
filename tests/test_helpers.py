@@ -9,26 +9,22 @@
 # Standard Library Import
 ##############################
 
-import os
 import datetime
-import pickle
+import os
 from unittest import TestCase
+
+import numpy as np
+import pandas as pd
+
+import gdelt
+from gdelt.helpers import _rooturl, _shaper, _cameos, _testdate, _tableinfo
 
 ##############################
 # Third Party Libraries
 ##############################
-
-
-import numpy as np
-import pandas as pd
-import coveralls
-
 ##############################
 # Custom Library Import
 ##############################
-
-import gdelt
-from gdelt.helpers import _rooturl,_shaper,_cameos,_testdate,_tableinfo
 
 ##############################
 # Directories
@@ -39,13 +35,7 @@ BASE_DIR = os.path.dirname(this_dir)
 
 
 class testHelpers(TestCase):
-#     def test_testdate(self):
-#         """Testing whether a test string works"""
-#         datestring = '2016 July 10'
-#         exp = datetime.datetime(2016, 7, 10, 0, 0)
-#         resp = gdelt.helpers.testdate('2016 July 10')
-#         return (self.assertEqual(exp,resp,"The test date function works"))
-#
+    """Test helper functions"""
     def test_date(self):
 
         res = _testdate('1980')

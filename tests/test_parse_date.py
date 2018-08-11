@@ -11,17 +11,12 @@
 import datetime
 from unittest import TestCase
 
-#########################
-# Third Party Import
-#########################
+from gdelt.dateFuncs import _parse_date
 
-import coveralls
 
 ############################
 # Custom Import
 ############################
-
-from gdelt.dateFuncs import _parse_date
 
 
 class TestParse_date(TestCase):

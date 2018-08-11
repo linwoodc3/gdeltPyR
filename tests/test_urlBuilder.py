@@ -11,20 +11,18 @@
 
 from unittest import TestCase
 
-##############################
-# Third party imports
-##############################
-
 import numpy as np
-import coveralls
-
-##############################
-# Local imports
-##############################
 
 from gdelt.dateFuncs import _gdeltRangeString, _dateRanger
 from gdelt.vectorizingFuncs import _urlBuilder
 
+
+##############################
+# Third party imports
+##############################
+##############################
+# Local imports
+##############################
 
 
 class TestUrlBuilder(TestCase):

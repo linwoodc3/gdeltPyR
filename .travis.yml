@@ -56,17 +56,17 @@ after_success:
   - codecov
   - coveralls
 
-
-script:
-  - pytest
-#  - coverage run --source=gdelt setup.py test
-
-cache:
-  directories:
-    - $HOME/.cache/pip
-before_cache:
-  - rm -f $HOME/.cache/pip/log/debug.log
-
-after_success:
-  - codecov
-  - coveralls
+#
+#script:
+#  - pytest
+##  - coverage run --source=gdelt setup.py test
+#
+#cache:
+#  directories:
+#    - $HOME/.cache/pip
+#before_cache:
+#  - rm -f $HOME/.cache/pip/log/debug.log
+#
+#after_success:
+#  - codecov
+#  - coveralls

@@ -37,7 +37,8 @@ install:
 - conda config --add channels conda-forge
 - conda update -q conda
 - "conda create -q -n test-environment python=%PYTHON_VERSION% numpy scipy
-  gdal geos cython pandas pyproj"
+  gdal geos cython pandas pyproj fiona shapely -c conda-forge"
+- conda update --all -c conda-forge
 - activate test-environment
 - "pip install -q pytest pytest-cov coveralls geopandas"
 - "pip install -qr requirements.txt"

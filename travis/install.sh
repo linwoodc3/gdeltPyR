@@ -26,8 +26,9 @@ if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
             ;;
         py34)
             # Install some custom Python 3.4 requirements on OS X
-            conda create -n testenv python=3.4 pandas numpy beautifulsoup4 scipy gdal geos fiona shapely pyproj cython gcc jinja2 rtree libspatialindex -c conda-forge
+            conda create -n testenv python=3.4 pandas geopandas numpy beautifulsoup4 scipy gdal geos fiona shapely pyproj cython gcc jinja2 rtree libspatialindex -c conda-forge
             source activate testenv
+            conda update --all -c conda-forge
             pip install pip -U
             pip install coveralls geopandas
             pip install pytest-cov
@@ -38,6 +39,7 @@ if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
             # Install some custom Python 3.5 requirements on OS X
             conda create -n testenv python=3.5 geopandas pandas numpy beautifulsoup4 scipy gdal geos fiona shapely pyproj cython gcc jinja2 rtree libspatialindex -c conda-forge
             source activate testenv
+            conda update --all -c conda-forge
             pip install pip -U
             pip install coveralls
             pip install pytest-cov
@@ -72,6 +74,7 @@ else
     conda config --add channels conda-forge
     conda create -n testenv python=$TRAVIS_PYTHON_VERSION pandas numpy beautifulsoup4 scipy gdal geos fiona shapely pyproj cython gcc jinja2 rtree libspatialindex -c conda-forge
     source activate testenv
+    conda update --all -c conda-forge
     pip install geopandas
 fi
 

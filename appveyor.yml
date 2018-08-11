@@ -2,66 +2,52 @@ build: false
 
 environment:
   matrix:
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7"
-      PYTHON_ARCH: "32"
-
-    - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.x" # currently 2.7.9
-      PYTHON_ARCH: "64"
-
-    - PYTHON: "C:\\Python34"
-      PYTHON_VERSION: "3.4"
-      PYTHON_ARCH: "32"
-
-    - PYTHON: "C:\\Python34-x64"
-      PYTHON_VERSION: "3.4.x" # currently 3.4.3
-      PYTHON_ARCH: "64"
-
-    - PYTHON: "C:\\Python35"
-      PYTHON_VERSION: "3.5"
-      PYTHON_ARCH: "32"
-
-    - PYTHON: "C:\\Python35-x64"
-      PYTHON_VERSION: "3.5.x"
-      PYTHON_ARCH: "64"
-
-    - PYTHON: "C:\\Python36"
-      PYTHON_VERSION: "3.6"
-      PYTHON_ARCH: "32"
-
-    - PYTHON: "C:\\Python36-x64"
-      PYTHON_VERSION: "3.6.x"
-      PYTHON_ARCH: "64"
+  # Python 2.7
+  - MINICONDA: C:\Miniconda
+    PYTHON_VERSION: 2.7
+    platform: x64
+  - MINICONDA: C:\Miniconda-x64
+    platform: x86
+  # Python 3.4
+  - MINICONDA: C:\Miniconda3
+    PYTHON_VERSION: 3.4
+    platform: x64
+  - MINICONDA: C:\Miniconda3-x64
+    platform: x86
+  # Python 3.5
+  - MINICONDA: C:\Miniconda35
+    PYTHON_VERSION: 3.5
+    platform: x64
+  - MINICONDA: C:\Miniconda35-x64
+    platform: x86
+  # Python 3.6
+  - MINICONDA: C:\Miniconda36
+    PYTHON_VERSION: 3.6
+    platform: x64
+  - MINICONDA: C:\Miniconda36-x64
+    platform: x86
 
       
 init:
-  - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
+- "ECHO %PYTHON_VERSION% %MINICONDA%"
+- "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%MINICONDA%\\Library\\bin;%PATH%"
 
 install:
-  - set PATH=%PYTHON%;%PYTHON%\scripts;%PATH%;
-  #- appveyor DownloadFile http://download.gisinternals.com/sdk/downloads/release-1600-gdal-1-11-mapserver-6-4/gdal-111-1600-core.msi
-
-  #- msiexec /i gdal-111-1600-core.msi /qn
-  #- appveyor DownloadFile http://download.gisinternals.com/sdk/downloads/release-1600-gdal-1-11-mapserver-6-4/GDAL-1.11.4.win32-py2.7.msi
-  #- msiexec /i GDAL-1.11.4.win32-py2.7.msi /qn
-  #- cd %APPVEYOR_BUILD_FOLDER%
-
-  - "%PYTHON%\\python.exe -m pip install wheel"
-  - "%PYTHON%/Scripts/pip.exe install nose"
-  - "%PYTHON%/Scripts/pip.exe install coverage"
-  - "%PYTHON%/Scripts/pip.exe install python-coveralls"
-  - "%PYTHON%/Scripts/pip.exe install coveralls"
-  - "%PYTHON%/Scripts/pip.exe install -U pytest"
-  - "%PYTHON%/Scripts/pip.exe install pytest-cov"
-  - "%PYTHON%/Scripts/pip.exe install -r requirements.txt"
+- conda config --set always_yes yes --set changeps1 no
+- conda config --add channels conda-forge
+- conda update -q conda
+- "conda create -q -n test-environment python=%PYTHON_VERSION% numpy scipy
+  gdal geos cython pandas pyproj"
+- activate test-environment
+- "pip install -q pytest pytest-cov coveralls geopandas"
+- "pip install -qr requirements.txt"
+- "pip install ."
+- "echo done"
 
 test_script:
-#  - dir
-  #- "%PYTHON%\\python.exe setup.py test"
   - pytest
-#  - coverage run --source=gdelt setup.py test
-  
+
+
 after_test:
   - "%WITH_COMPILER% %PYTHON%/python setup.py bdist_wheel"
   - rm -rf tests/coverages

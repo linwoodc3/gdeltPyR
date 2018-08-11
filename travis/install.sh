@@ -26,10 +26,10 @@ if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
             ;;
         py34)
             # Install some custom Python 3.4 requirements on OS X
-            conda create -n testenv python=3.4 geopandas pandas numpy beautifulsoup4 scipy gdal geos fiona shapely pyproj cython gcc jinja2 rtree libspatialindex -c conda-forge
+            conda create -n testenv python=3.4 pandas numpy beautifulsoup4 scipy gdal geos fiona shapely pyproj cython gcc jinja2 rtree libspatialindex -c conda-forge
             source activate testenv
             pip install pip -U
-            pip install coveralls
+            pip install coveralls geopandas
             pip install pytest-cov
             pip install python-coveralls
             conda info -a
@@ -57,13 +57,22 @@ if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
     esac
 else
     # Install some custom requirements on Linux
-
-    sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     sudo apt-get update -q -y
-    sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable -y
-    sudo apt-get install python-dev -y
-    sudo apt-get install gcc-4.8 -y
-    sudo apt-get clean	-y
+    if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi
+    bash miniconda.sh -b -p $HOME/miniconda;
+    export PATH="$HOME/miniconda/bin:$PATH";
+    hash -r;
+    conda config --set always_yes yes --set changeps1 no;
+    conda update -q conda
+    conda info -a;
+    conda config --add channels conda-forge
+    conda create -n testenv python=$TRAVIS_PYTHON_VERSION pandas numpy beautifulsoup4 scipy gdal geos fiona shapely pyproj cython gcc jinja2 rtree libspatialindex -c conda-forge
+    source activate testenv
+    pip install geopandas
 fi
 
 if [ "$TRAVIS_OS_NAME" == 'linux' ]; then

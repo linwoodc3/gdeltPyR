@@ -9,7 +9,7 @@
 # Standard Library Import
 ##############################
 
-
+import platform
 try:
     from unittest import TestCase, mock
 except:
@@ -27,6 +27,7 @@ from gdelt.vectorizingFuncs import _urlBuilder, _geofilter
 ##############################
 # Third Party Libraries
 ##############################
+
 ##############################
 # Custom Library Import
 ##############################
@@ -36,9 +37,22 @@ from gdelt.vectorizingFuncs import _urlBuilder, _geofilter
 # Test files
 #################################
 
-test_df = pd.read_pickle(os.path.join(
-    gdelt.base.BASE_DIR, "data", "events2samp.gz"),
-    compression="gzip").drop('CAMEOCodeDescription', axis=1)
+# can't read compressed pickles in old pandas version
+if platform.python_version_tuple()[1] == '4':
+    import gzip
+    import tempfile
+
+    fh = gzip.GzipFile(os.path.join(
+        gdelt.base.BASE_DIR, "data", "events2samp.gz"))
+    with tempfile.NamedTemporaryFile() as tmp:
+        lines = fh.read()
+        tmp.write(lines)
+        test_df = pd.read_pickle(tmp.name)
+
+else:
+    test_df = pd.read_pickle(os.path.join(
+        gdelt.base.BASE_DIR, "data", "events2samp.gz"),
+        compression="gzip").drop('CAMEOCodeDescription', axis=1)
 
 
 class testGDELTVectorizingFuncs(TestCase):

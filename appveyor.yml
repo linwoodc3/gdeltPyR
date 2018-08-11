@@ -40,7 +40,6 @@ install:
   gdal geos cython pandas pyproj beautifulsoup4 fiona ipykernel shapely -c
    conda-forge"
 - activate test-environment
-- pip install pip==9.0
 - conda update --all -c conda-forge
 - "pip install -q pytest pytest-cov coveralls geopandas"
 - "pip install -qr requirements.txt"
@@ -52,7 +51,7 @@ test_script:
 
 
 after_test:
-- python setup.py bdist_wheel
+- "%WITH_COMPILER% %MINICONDA%/python setup.py bdist_wheel"
   - rm -rf tests/coverages
   - if not exist dist mkdir dist
   - if exist .coverage (cp .coverage dist\) else (echo no .coverage)

@@ -72,15 +72,15 @@ else
     conda update -q conda
     conda info -a;
     conda config --add channels conda-forge
+    conda create -n testenv python=$TRAVIS_PYTHON_VERSION pandas numpy beautifulsoup4 scipy gdal geos fiona shapely pyproj cython gcc jinja2 rtree libspatialindex -c conda-forge
+    source activate testenv
     if [[ "$TRAVIS_PYTHON_VERSION" == "3.4" ]]; then
-      conda create -n testenv python=$TRAVIS_PYTHON_VERSION geopandas beautifulsoup4 libxml2 -c ioos
+      conda install geopandas beautifulsoup4 libxml2 -c ioos
       pip install pandas==0.20.3
     else
-      conda create -n testenv python=$TRAVIS_PYTHON_VERSION pandas numpy beautifulsoup4 scipy gdal geos fiona shapely pyproj cython gcc jinja2 rtree libspatialindex -c conda-forge
+      conda update --all -c conda-forge
       pip install geopandas
-    source activate testenv
     fi
-
 
 fi
 

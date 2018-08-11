@@ -40,7 +40,6 @@ install:
   gdal geos cython pandas pyproj beautifulsoup4 fiona ipykernel shapely -c
    conda-forge"
 - activate test-environment
-- pip install pip==9.0
 - conda update --all -c conda-forge
 - "pip install -q pytest pytest-cov coveralls geopandas"
 - "pip install -qr requirements.txt"

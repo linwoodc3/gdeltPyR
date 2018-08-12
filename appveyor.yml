@@ -51,7 +51,7 @@ test_script:
 
 
 after_test:
-- "%WITH_COMPILER% %MINICONDA%/python setup.py bdist_wheel"
+  - python.exe setup.py bdist_wheel
   - rm -rf tests/coverages
   - if not exist dist mkdir dist
   - if exist .coverage (cp .coverage dist\) else (echo no .coverage)

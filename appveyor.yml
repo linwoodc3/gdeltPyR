@@ -9,9 +9,9 @@ environment:
   - MINICONDA: C:\Miniconda-x64
     platform: x86
   # Python 3.4
-  - MINICONDA: C:\Miniconda3
-    PYTHON_VERSION: 3.4
-    platform: x64
+  #  - MINICONDA: C:\Miniconda3
+  #    PYTHON_VERSION: 3.4
+  #    platform: x64
   - MINICONDA: C:\Miniconda3-x64
     platform: x86
   # Python 3.5
@@ -37,8 +37,8 @@ install:
 - conda config --add channels conda-forge
 - conda update -q conda
 - "conda create -q -n test-environment python=%PYTHON_VERSION% numpy scipy
-  gdal geos cython pandas pyproj beautifulsoup4 fiona ipykernel shapely -c
-   conda-forge"
+  gdal geos cython pandas pyproj beautifulsoup4 fiona ipykernel shapely
+  geopandas -c conda-forge"
 - activate test-environment
 - conda update --all -c conda-forge
 - "pip install -q pytest pytest-cov coveralls geopandas"

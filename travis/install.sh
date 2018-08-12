@@ -37,7 +37,7 @@ if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
             ;;
         py35)
             # Install some custom Python 3.5 requirements on OS X
-            conda create -n testenv python=3.5 pandas numpy beautifulsoup4 scipy gdal geos fiona shapely pyproj cython gcc jinja2 rtree libspatialindex -c conda-forge
+            conda create -n testenv python=3.5 pandas numpy beautifulsoup4  geopandas scipy gdal geos fiona shapely pyproj cython gcc jinja2 rtree libspatialindex -c conda-forge
             source activate testenv
             conda update --all -c conda-forge
             pip install pip -U

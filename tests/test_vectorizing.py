@@ -38,21 +38,28 @@ from gdelt.vectorizingFuncs import _urlBuilder, _geofilter
 #################################
 
 # can't read compressed pickles in old pandas version
-if platform.python_version_tuple()[1] == '4':
-    import gzip
-    import tempfile
-
-    fh = gzip.GzipFile(os.path.join(
-        gdelt.base.BASE_DIR, "data", "events2samp.gz"))
-    with tempfile.NamedTemporaryFile() as tmp:
-        lines = fh.read()
-        tmp.write(lines)
-        test_df = pd.read_pickle(tmp.name)
-
-else:
+try:
     test_df = pd.read_pickle(os.path.join(
         gdelt.base.BASE_DIR, "data", "events2samp.gz"),
         compression="gzip").drop('CAMEOCodeDescription', axis=1)
+
+except:
+
+    if platform.python_version_tuple()[1] == '4':
+        import gzip
+        import tempfile
+
+        fh = gzip.GzipFile(os.path.join(
+            gdelt.base.BASE_DIR, "data", "events2samp.gz"))
+        with tempfile.NamedTemporaryFile() as tmp:
+            lines = fh.read()
+            tmp.write(lines)
+            test_df = pd.read_pickle(tmp.name)
+
+    else:
+        test_df = pd.read_pickle(os.path.join(
+            gdelt.base.BASE_DIR, "data", "events2samp.gz"),
+            compression="gzip").drop('CAMEOCodeDescription', axis=1)
 
 
 class testGDELTVectorizingFuncs(TestCase):

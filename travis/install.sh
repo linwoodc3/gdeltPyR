@@ -82,6 +82,7 @@ else
       conda install fiona shapely pyproj cython
       pip install geopandas
     fi
+    conda install geopandas
 
 fi
 

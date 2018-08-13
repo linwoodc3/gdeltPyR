@@ -3,24 +3,20 @@
 #########################
 
 import os
-import pickle
 from unittest import TestCase
+
+import pandas as pd
+
+import gdelt
+from gdelt.multipdf import _parallelize_dataframe
+
 
 #########################
 # Third Party Import
 #########################
-
-import coveralls
-import pandas as pd
-
-
 ############################
 # Custom Import
 ############################
-
-import gdelt
-from gdelt.multipdf import _parallelize_dataframe,_shaper
-from gdelt.base import BASE_DIR
 class testMultiDf(TestCase):
 
     def test_multidf_gpd_creation(self):

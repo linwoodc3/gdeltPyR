@@ -2,34 +2,35 @@ language: python
 cache: pip
 matrix:
     include:
-        - os: linux
-          sudo: required
-          python: 2.7
-          env: GDELT=py27
-        - os: linux
-          sudo: required
-          python: 3.4
-          env: GDELT=py34
-        - os: linux
-          sudo: required
-          python: 3.5
-          env: GDELT=py35
-        - os: linux
-          sudo: required
-          python: 3.6
-          env: GDELT=py36
-        - os: osx
-          language: generic
-          env: GDELT=py27
-        - os: osx
-          language: generic
-          env: GDELT=py34
-        - os: osx
-          language: generic
-          env: GDELT=py35
-        - os: osx
-          language: generic
-          env: GDELT=py36
+
+    - os: linux
+      sudo: required
+      python: 2.7
+      env: GDELT=py27
+    - os: linux
+      sudo: required
+      python: 3.4
+      env: GDELT=py34
+    - os: linux
+      sudo: required
+      python: 3.5
+      env: GDELT=py35
+    - os: linux
+      sudo: required
+      python: 3.6
+      env: GDELT=py36
+    - os: osx
+      language: generic
+      env: GDELT=py27
+    - os: osx
+      language: generic
+      env: GDELT=py34
+    - os: osx
+      language: generic
+      env: GDELT=py35
+    - os: osx
+      language: generic
+      env: GDELT=py36
 
 install:
 
@@ -56,17 +57,17 @@ after_success:
   - codecov
   - coveralls
 
-
-script:
-  - pytest
-#  - coverage run --source=gdelt setup.py test
-
-cache:
-  directories:
-    - $HOME/.cache/pip
-before_cache:
-  - rm -f $HOME/.cache/pip/log/debug.log
-
-after_success:
-  - codecov
-  - coveralls
+#
+#script:
+#  - pytest
+##  - coverage run --source=gdelt setup.py test
+#
+#cache:
+#  directories:
+#    - $HOME/.cache/pip
+#before_cache:
+#  - rm -f $HOME/.cache/pip/log/debug.log
+#
+#after_success:
+#  - codecov
+#  - coveralls

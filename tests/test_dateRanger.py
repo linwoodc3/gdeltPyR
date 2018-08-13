@@ -11,19 +11,17 @@
 import datetime
 from unittest import TestCase
 
+import numpy as np
+
+from gdelt.dateFuncs import _dateRanger
+
+
 #########################
 # Third Party Import
 #########################
-
-import numpy as np
-import coveralls
-
-
 ############################
 # Custom Import
 ############################
-
-from gdelt.dateFuncs import _dateRanger
 
 
 class TestDateRanger(TestCase):

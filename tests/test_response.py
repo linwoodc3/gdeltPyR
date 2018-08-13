@@ -20,27 +20,21 @@ try:
     from urllib.parse import urljoin
 except ImportError:
     from urlparse import urljoin
-import pickle
 import os
+
+import pandas as pd
+
+import gdelt
+from tests.constants import BASEURL
 
 ##################################
 # Third party imports
 ##################################
-
-import coveralls
-import pandas as pd
-
 ##################################
 # Local imports
 ##################################
 
-import gdelt
-from gdelt.vectorizingFuncs import _geofilter
-from tests.constants import BASEURL
 
-# import .constants
-
-# BASEURL = 'http://data.gdeltproject.org/'
 this_dir, this_filename = os.path.split(__file__)
 BASE_DIR = os.path.dirname(this_dir)
 

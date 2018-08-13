@@ -10,20 +10,14 @@
 # Standard library imports
 ##################################
 
+import datetime
+import json
+import multiprocessing.pool
 import os
 import re
-import json
-import datetime
-import multiprocessing.pool
 from functools import partial
 from multiprocessing import Pool, cpu_count
-from concurrent.futures import ProcessPoolExecutor
 
-
-##################################
-# Third party imports
-##################################
-from dateutil.parser import parse
 import numpy as np
 import pandas as pd
 import requests
@@ -34,20 +28,24 @@ import requests
 from gdelt.dateFuncs import (_dateRanger, _gdeltRangeString)
 from gdelt.getHeaders import _events1Heads, _events2Heads, _mentionsHeads, \
     _gkgHeads
-from gdelt.helpers import _cameos,_tableinfo
+from gdelt.helpers import _cameos, _tableinfo
 from gdelt.inputChecks import (_date_input_check)
 from gdelt.parallel import _mp_worker
 from gdelt.vectorizingFuncs import _urlBuilder, _geofilter
 
 
+##################################
+# Third party imports
+##################################
+
 
 class NoDaemonProcess(multiprocessing.Process):
     # make 'daemon' attribute always return False
     @property
-    def _get_daemon(self):
+    def _get_daemon(self):  # pragma: no cover
         return False
 
-    def _set_daemon(self, value):
+    def _set_daemon(self, value):  # pragma: no cover
         pass
 
     daemon = property(_get_daemon, _set_daemon)
@@ -75,7 +73,7 @@ try:
                          dtype=dict(cameoCode='str', GoldsteinScale=np.float64))
     codes.set_index('cameoCode', drop=False, inplace=True)
 
-except:
+except:  # pragma: no cover
     a = 'https://raw.githubusercontent.com/linwoodc3/gdeltPyR/master' \
         '/utils/' \
         'schema_csvs/cameoCodes.json'
@@ -90,7 +88,7 @@ class gdelt(object):
     """GDELT Object
         Read more in the :ref:`User Guide <k_means>`.
 
-        Parameters
+        Attributes
         ----------
         version : int, optional, {2,1}
             The version of GDELT services used by gdelt. 1 or 2
@@ -102,18 +100,20 @@ class gdelt(object):
             Count of total CPU cores available.
         pool: function
             Standard multiprocessing function to establish Pool workers
+        proxies: dict
+            Dictionary containing proxy information for the requests module.
+            For details on how to set, see
+            http://docs.python-requests.org/en/master/user/advanced/#proxies
+            Example:
+                >>>proxies = {'http': 'http://10.10.1.10:3128',\
+                'https': 'http://10.10.1.10:1080'}
+                >>> requests.get('http://example.org', proxies=proxies)
+                Or with a password or specific schema
+                >>>proxies = {'http': 'http://user:pass@10.10.1.10:3128/'}
+                >>>proxies = {'http://10.20.1.128': 'http://10.10.1.10:5323'}
 
-        Attributes
-        ----------
-        version : int, default: 2
-            The version of GDELT services used by gdelt. 1 or 2
-        cores :
-            Cores used for multiprocessing pipelines
-        pool : string
-            pool variable for multiprocessing workers.
-        baseUrl : string
-            Url for GDELT queries.
 
+        # TODO add abiity to pick custom time windows
 
         Examples
         --------
@@ -161,7 +161,8 @@ class gdelt(object):
                  gdelt2url='http://data.gdeltproject.org/gdeltv2/',
                  gdelt1url='http://data.gdeltproject.org/events/',
                  version=2.0,
-                 cores=cpu_count()
+                 cores=cpu_count(),
+                 proxies=None
 
                  ):
 
@@ -169,10 +170,20 @@ class gdelt(object):
         self.translation = None
         self.version = version
         self.cores = cores
+        self.proxies = proxies
         if int(version) == 2:
             self.baseUrl = gdelt2url
         elif int(version) == 1:
             self.baseUrl = gdelt1url
+        self.proxies = proxies
+        if proxies:
+            if isinstance(proxies, dict):
+                self.proxies = proxies
+            else:
+                raise TypeError("The proxies parameter must be a dictionary. "
+                                "See http://docs.python-requests.org/en/master/"
+                                "user/advanced/#proxies for more information.")
+
 
     ###############################
     # Searcher function for GDELT
@@ -381,7 +392,7 @@ class gdelt(object):
         #################################
         # R dataframe check; fail early
         #################################
-        if output == 'r':
+        if output == 'r':  # pragma: no cover
             try:
                 import feather
 
@@ -416,7 +427,7 @@ class gdelt(object):
         urlsv1events = partial(_urlBuilder, version=1, table='events')
         urlsv2gkg = partial(_urlBuilder, version=2, table='gkg', translation=self.translation)
 
-        eventWork = partial(_mp_worker, table='events')
+        eventWork = partial(_mp_worker, table='events', proxies=self.proxies)
         codeCams = partial(_cameos, codes=codes)
 
         #####################################
@@ -434,7 +445,7 @@ class gdelt(object):
                     pd.read_csv(os.path.join(BASE_DIR, "data", 'events2.csv'))[
                         'name'].values.tolist()
 
-                except:
+                except:  # pragma: no cover
                     self.events_columns = _events2Heads()
 
             elif self.table == 'mentions':
@@ -444,7 +455,7 @@ class gdelt(object):
                             os.path.join(BASE_DIR, "data", 'mentions.csv'))[
                             'name'].values.tolist()
 
-                except:
+                except:  # pragma: no cover
                     self.mentions_columns = _mentionsHeads()
             else:
                 try:
@@ -453,7 +464,7 @@ class gdelt(object):
                             os.path.join(BASE_DIR, "data", 'gkg2.csv'))[
                             'name'].values.tolist()
 
-                except:
+                except:  # pragma: no cover
                     self.gkg_columns = _gkgHeads()
 
         #####################################
@@ -479,7 +490,7 @@ class gdelt(object):
                     pd.read_csv(os.path.join(BASE_DIR, "data", 'events1.csv'))[
                         'name'].values.tolist()
 
-            except:
+            except:  # pragma: no cover
                 self.events_columns = _events1Heads()
 
             columns = self.events_columns
@@ -490,7 +501,7 @@ class gdelt(object):
 
             elif self.table == 'events' or self.table == '':
 
-                if self.coverage is True:
+                if self.coverage is True:  # pragma: no cover
 
                     self.download_list = (urlsv1events(v1RangerCoverage(
                         _dateRanger(self.date))))
@@ -500,7 +511,7 @@ class gdelt(object):
                     self.download_list = (urlsv1events(v1RangerNoCoverage(
                         _dateRanger(self.date))))
 
-            else:
+            else:  # pragma: no cover
                 raise Exception('You entered an incorrect table type for '
                                 'GDELT 1.0.')
         #####################################
@@ -510,7 +521,7 @@ class gdelt(object):
 
             if self.table == 'events' or self.table == '':
                 columns = self.events_columns
-                if self.coverage is True:
+                if self.coverage is True:  # pragma: no cover
 
                     self.download_list = (urlsv2events(v2RangerCoverage(
                         _dateRanger(self.date))))
@@ -521,7 +532,7 @@ class gdelt(object):
 
             if self.table == 'gkg':
                 columns = self.gkg_columns
-                if self.coverage is True:
+                if self.coverage is True:  # pragma: no cover
 
                     self.download_list = (urlsv2gkg(v2RangerCoverage(
                         _dateRanger(self.date))))
@@ -532,7 +543,7 @@ class gdelt(object):
 
             if self.table == 'mentions':
                 columns = self.mentions_columns
-                if self.coverage is True:
+                if self.coverage is True:  # pragma: no cover
 
                     self.download_list = (urlsv2mentions(v2RangerCoverage(
                         _dateRanger(self.date))))
@@ -609,7 +620,7 @@ class gdelt(object):
                 #     results = eventWork(self.download_list)
                 #
                 # else:
-                results = _mp_worker(self.download_list)
+                results = _mp_worker(self.download_list, proxies=self.proxies)
 
         else:
 
@@ -622,7 +633,8 @@ class gdelt(object):
 
                 pool = NoDaemonProcessPool(processes=cpu_count())
                 downloaded_dfs = list(pool.imap_unordered(_mp_worker,
-                                                          self.download_list))
+                                                          self.download_list,
+                                                          proxies=self.proxies))
             pool.close()
             pool.terminate()
             pool.join()
@@ -639,14 +651,14 @@ class gdelt(object):
 
         # check for empty dataframe
         if results is not None:
-            if len(results.columns) == 57:
+            if len(results.columns) == 57:  # pragma: no cover
                 results.columns = columns[:-1]
 
             else:
                 results.columns = columns
 
         # if dataframe is empty, raise error
-        elif results is None or len(results) == 0:
+        elif results is None or len(results) == 0:  # pragma: no cover
             raise ValueError("This GDELT query returned no data. Check "
                              "query parameters and "
                              "retry")
@@ -680,7 +692,7 @@ class gdelt(object):
             self.final = self.final[self.final.geometry.notnull()]
 
         # r dataframe output
-        elif output == 'r':
+        elif output == 'r':  # pragma: no cover
             if self.coverage:
                 coverage = 'True'
             else:
@@ -740,4 +752,5 @@ class gdelt(object):
             pandas dataframe with schema
         """
 
-        return _tableinfo(table=tablename,version=self.version)
+        return _tableinfo(table=tablename,
+                          version=self.version)  # pragma: no cover

@@ -43,12 +43,13 @@ def _date_input_check(date, version):
     if isinstance(date, str):
 
         if date != "":
-            if parse(date) > datetime.datetime.now():
+            if parse(date) > datetime.datetime.now():  # pragma: no cover
                 raise ValueError(
                     'Your date is greater than the current date. '
                     'Please enter a relevant date.'
                 )
-            elif parse(date) < parse('Feb 18 2015') and int(version) != 1:
+            elif parse(date) < parse('Feb 18 2015') and int(
+                    version) != 1:  # pragma: no cover
                 raise ValueError(
                     "GDELT 2.0 only supports \'Feb 18 2015 - Present\' "
                     "queries currently. Try another date."
@@ -65,7 +66,7 @@ def _date_input_check(date, version):
         # GDELT release yesterday's data 6AM today
         if datetime.datetime.now().hour <= 6 and parse(date).date() == (
                     datetime.datetime.now().date() - datetime.timedelta(
-                    days=1)) and version == 1:
+            days=1)) and version == 1:  # pragma: no cover
             raise BaseException('GDELT 1.0 posts the latest daily update by '
                                 '6AM EST.'
                                 'The next update will appear in {0}'.format(
@@ -81,13 +82,13 @@ def _date_input_check(date, version):
             if len(l) == 4:
                 test = (str(datetime.datetime.strptime(l, '%Y')))
                 newdate.append(test)
-            elif len(l) == 6:
+            elif len(l) == 6:  # pragma: no cover
                 test = str(datetime.datetime.strptime(l, '%Y%m'))
                 newdate.append(test)
             else:
                 try:
                     test = str(parse(str(l)))
-                except:
+                except:  # pragma: no cover
                     test = l
                 newdate.append(test)
             if parse(test) < parse('Feb 18 2015') and version == 2:
@@ -105,7 +106,8 @@ def _date_input_check(date, version):
                         'Please enter a relevant date.'
                     )
                 elif version == 2 and parse("".join(date)) < \
-                        parse('Feb 18 2015') and int(version) != 1:
+                        parse('Feb 18 2015') and int(
+                    version) != 1:  # pragma: no cover
                     raise ValueError(
                         "GDELT 2.0 only supports \'Feb 18 2015 - "
                         "Present\'queries currently. Try another date."
@@ -141,7 +143,7 @@ def _date_input_check(date, version):
 
             try:
                 list(map(parse, date))
-            except Exception as exc:
+            except Exception as exc:  # pragma: no cover
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
                 traceback.print_exception(exc_type, exc_value, exc_traceback,
@@ -209,7 +211,7 @@ def _date_input_check(date, version):
 
             try:
                 map(parse, date)
-            except Exception as exc:
+            except Exception as exc:  # pragma: no cover
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 traceback.print_tb(exc_traceback, limit=1, file=sys.stdout)
                 traceback.print_exception(exc_type, exc_value, exc_traceback,
@@ -231,7 +233,7 @@ def _date_input_check(date, version):
             elif np.any(
                     np.logical_not(np.array(list(map(parse, date)
                                                  )) > parse("Feb 18 2015"))) == \
-                    True and int(version) != 1:
+                    True and int(version) != 1:  # pragma: no cover
                 raise ValueError(
                     "GDELT 2.0 only supports \'Feb 18 2015 - Present\'queries "
                     "currently. Try another date."
@@ -243,7 +245,7 @@ def _date_input_check(date, version):
                                                          date)),
                                                 dtype='datetime64[D]') >=
                                                np.datetime64(
-                                                   datetime.datetime.now().date()))):
+                                                   datetime.datetime.now().date()))):  # pragma: no cover
                     raise ValueError(
                         "You have today's date in your query for GDELT 1.0. "
                         "GDELT 1.0\'s most recent data"
@@ -256,7 +258,7 @@ def _date_input_check(date, version):
                 if datetime.datetime.now().hour <= 6 and (
                             datetime.datetime.now().date() - datetime.timedelta(
                             days=1)) in list(map(
-                    lambda x: parse(x).date(), date)):
+                    lambda x: parse(x).date(), date)):  # pragma: no cover
                     if datetime.datetime.now().hour < 6:
                         raise BaseException('GDELT 1.0 posts the latest daily '
                                             'update by 6AM EST.'

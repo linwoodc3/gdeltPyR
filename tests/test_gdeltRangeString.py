@@ -11,20 +11,18 @@
 
 from unittest import TestCase
 
-#########################
-# Third Party Import
-#########################
-
-import coveralls
 import pandas as pd
-from dateutil.parser import parse
-
-############################
-# Custom Import
-############################
 
 from gdelt.dateFuncs import _dateRanger, _gdeltRangeString
 from gdelt.inputChecks import *
+
+
+#########################
+# Third Party Import
+#########################
+############################
+# Custom Import
+############################
 
 
 class TestGdeltRangeString(TestCase):

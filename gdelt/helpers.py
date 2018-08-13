@@ -5,20 +5,19 @@
 # Linwood Creekmore
 # Email: valinvescap@gmail.com
 
+import datetime
+import os
 ##############################
 # Standard Library Imports
 ##############################
 import re
-import os
-import datetime
 
-
+import numpy as np
+import pandas as pd
 ##############################
 # Third party Library Imports
 ##############################
 from dateutil.parser import parse
-import pandas as pd
-import numpy as np
 
 ##############################
 # Filter functions for dataframes
@@ -62,7 +61,10 @@ def _shaper(row):
         import geopandas
     except:
         raise ImportError('You need to install geopandas to use this feature.')
-    geometry = Point(row['ActionGeo_Long'], row['ActionGeo_Lat'])
+    try:
+        geometry = Point(row['ActionGeo_Long'], row['ActionGeo_Lat'])
+    except:
+        geometry = Point(row['actiongeolong'], row['actiongeolat'])
     return geometry
 
 

@@ -54,7 +54,8 @@ setup(
                       ],
     extras_require={
         'geoSpatial': ["fiona>=1.6", "shapely>=1.5", "geopandas>-1.7"],
-        ":python_version<'3.3'": ["mock", "futures"]
+        ":python_version<'3.3'": ["mock", "futures"],
+        'r': ['pyarrow']
     },
     include_package_data=True,
     package_data={'utils': ['schema_csvs/*']},

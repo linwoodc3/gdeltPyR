@@ -55,3 +55,6 @@
 
 2018-08-11
   Added more unittests, included proxy parameter, removed r output and added parquet format.
+
+2018-10-18
+  Fixed bug in line 636; had hanging proxies parameter.

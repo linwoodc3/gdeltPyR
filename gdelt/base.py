@@ -634,7 +634,7 @@ class gdelt(object):
                 pool = NoDaemonProcessPool(processes=cpu_count())
                 downloaded_dfs = list(pool.imap_unordered(_mp_worker,
                                                           self.download_list,
-                                                          proxies=self.proxies))
+                                                          ))
             pool.close()
             pool.terminate()
             pool.join()

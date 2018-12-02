@@ -4,6 +4,8 @@ requests>=2.11.1
 six>=1.10.0
 python-dateutil>=2.5.3
 beautifulsoup4
+pytest-cov
+geopandas
 
 # for Python 2.7 and 2.6 (environment marker support as of pip 6.0)
 futures ; python_version < '3.3'

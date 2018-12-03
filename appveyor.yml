@@ -10,10 +10,6 @@ environment:
   - MINICONDA: C:\Miniconda35
     PYTHON_VERSION: 3.5
     platform: x64
-  # Python 3.6
-  - MINICONDA: C:\Miniconda36
-    PYTHON_VERSION: 3.6
-    platform: x64
 
       
 init:

@@ -26,10 +26,10 @@ The GDELT Project advertises as the largest, most comprehensive, and highest res
 
 GDELT Facts
 -----------
-* **GDELT 1.0 is a daily dataset**
+* GDELT 1.0 is a daily dataset
      *  Version 1.0 only has 'events' and 'gkg' tables
      *  Version 1.0 posts the previous day's data at 6AM EST of next day (i.e. Monday's data will be available 6AM Tuesday EST)
-* **GDELT 2.0 is updated every 15 minutes**
+* GDELT 2.0 is updated every 15 minutes
      *  Some time intervals in GDELT 2.0 are missing; ``gdeltPyR`` provides a warning message when data is missing
      *  Version 2.0 has 'events','gkg', and 'mentions' tables
      *  Version 2.0 has a distinction between native english and translated-to-english
@@ -235,7 +235,7 @@ See the `full conda docs here <http://conda.pydata.org/docs>`_.
 
 The last step is installing the gdelt development source into this new directory. First, make sure that you cd into the gdeltPyR source directory using the instructions above.  You have two options to build the code:
 
-1.  The best way to develop 'gdeltPyR' is to build the extensions in-place by running:
+*  The best way to develop 'gdeltPyR' is to build the extensions in-place by running:
 
 .. code-block:: bash
 
@@ -243,7 +243,7 @@ The last step is installing the gdelt development source into this new directory
 
 If you startup the Python interpreter in the pandas source directory you will call the built C extensions
 
-2.  Another very common option is to do a develop install of pandas:
+*  Another very common option is to do a develop install of pandas:
 
 .. code-block:: bash
 

@@ -36,7 +36,7 @@ install:
 - conda config --set always_yes yes --set changeps1 no
 - conda config --add channels conda-forge
 - conda update -q conda
-- "cconda create --quiet --name test-environment python=%PYTHON_VERSION% pandas --file requirements.txt --file requirements_geo.txt"
+- "conda create --quiet --name test-environment python=%PYTHON_VERSION% pandas --file requirements.txt --file requirements_geo.txt"
 - activate test-environment
 - "echo done"
 

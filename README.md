@@ -1,6 +1,6 @@
-| **`Linux and Mac OS`** | **`Windows OS`** | **`Module Version`** | **`Coverage`**|
+| **`Linux and Mac OS`** | **`Windows OS`** | **`Module Version`** | **`Coverage`**|**`Downloads`**|
 |-----------------|---------------------|------------------|------------------|
-|[![Build Status](https://travis-ci.org/linwoodc3/gdeltPyR.svg?branch=master)](https://travis-ci.org/linwoodc3/gdeltPyR)|[![Build status](https://ci.appveyor.com/api/projects/status/yc6u8v6uvg212dcm?svg=true)](https://ci.appveyor.com/project/linwoodc3/gdeltpyr/history)|[![PyPI version](https://badge.fury.io/py/gdelt.svg)](https://badge.fury.io/py/gdelt)|[![Coverage Status](https://coveralls.io/repos/github/linwoodc3/gdeltPyR/badge.svg?branch=master)](https://coveralls.io/github/linwoodc3/gdeltPyR?branch=master)|
+|[![Build Status](https://travis-ci.org/linwoodc3/gdeltPyR.svg?branch=master)](https://travis-ci.org/linwoodc3/gdeltPyR)|[![Build status](https://ci.appveyor.com/api/projects/status/yc6u8v6uvg212dcm?svg=true)](https://ci.appveyor.com/project/linwoodc3/gdeltpyr/history)|[![PyPI version](https://badge.fury.io/py/gdelt.svg)](https://badge.fury.io/py/gdelt)|[![Coverage Status](https://coveralls.io/repos/github/linwoodc3/gdeltPyR/badge.svg?branch=master)](https://coveralls.io/github/linwoodc3/gdeltPyR?branch=master)|[![Downloads](https://pepy.tech/badge/gdelt)](https://pepy.tech/project/gdelt)|
 
 
 # gdeltPyR

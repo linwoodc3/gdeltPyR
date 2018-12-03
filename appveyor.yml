@@ -6,26 +6,14 @@ environment:
   - MINICONDA: C:\Miniconda
     PYTHON_VERSION: 2.7
     platform: x64
-  - MINICONDA: C:\Miniconda-x64
-    platform: x86
-  # Python 3.4
-  #  - MINICONDA: C:\Miniconda3
-  #    PYTHON_VERSION: 3.4
-  #    platform: x64
-  - MINICONDA: C:\Miniconda3-x64
-    platform: x86
   # Python 3.5
   - MINICONDA: C:\Miniconda35
     PYTHON_VERSION: 3.5
     platform: x64
-  - MINICONDA: C:\Miniconda35-x64
-    platform: x86
   # Python 3.6
   - MINICONDA: C:\Miniconda36
     PYTHON_VERSION: 3.6
     platform: x64
-  - MINICONDA: C:\Miniconda36-x64
-    platform: x86
 
       
 init:
@@ -35,7 +23,6 @@ init:
 install:
 - conda config --set always_yes yes --set changeps1 no
 - conda config --add channels conda-forge
-- conda config --remove channels defaults
 - conda update -q conda
 - "conda create --quiet --name test-environment python=%PYTHON_VERSION% pandas --file requirements.txt --file requirements_geo.txt"
 - activate test-environment

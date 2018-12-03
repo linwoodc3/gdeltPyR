@@ -36,14 +36,8 @@ install:
 - conda config --set always_yes yes --set changeps1 no
 - conda config --add channels conda-forge
 - conda update -q conda
-- "conda create -q -n test-environment python=%PYTHON_VERSION% numpy scipy
-  gdal geos cython pandas pyproj beautifulsoup4 fiona ipykernel shapely
-  geopandas -c conda-forge"
+- "cconda create --quiet --name test-environment python=%PYTHON_VERSION% pandas --file requirements.txt --file requirements_geo.txt"
 - activate test-environment
-- conda update --all -c conda-forge
-- "pip install -q pytest pytest-cov coveralls geopandas"
-- "pip install -qr requirements.txt"
-- "pip install ."
 - "echo done"
 
 test_script:

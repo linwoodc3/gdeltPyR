@@ -9,10 +9,6 @@ matrix:
       env: GDELT=py27
     - os: linux
       sudo: required
-      python: 3.4
-      env: GDELT=py34
-    - os: linux
-      sudo: required
       python: 3.5
       env: GDELT=py35
     - os: linux

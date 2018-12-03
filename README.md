@@ -1,8 +1,6 @@
-| **`Linux and Mac OS`** | **`Windows OS`** | **`Module Version`** | **`Coverage`**|
-|-----------------|---------------------|------------------|------------------|
-|[![Build Status](https://travis-ci.org/linwoodc3/gdeltPyR.svg?branch=master)](https://travis-ci.org/linwoodc3/gdeltPyR)|[![Build status](https://ci.appveyor.com/api/projects/status/yc6u8v6uvg212dcm?svg=true)](https://ci.appveyor.com/project/linwoodc3/gdeltpyr/history)|[![PyPI version](https://badge.fury.io/py/gdelt.svg)](https://badge.fury.io/py/gdelt)|[![Coverage Status](https://coveralls.io/repos/github/linwoodc3/gdeltPyR/badge.svg?branch=master)](https://coveralls.io/github/linwoodc3/gdeltPyR?branch=master)|
-
-
+| **`Linux and Mac OS`** | **`Windows OS`** | **`Module Version`** | **`Coverage`**|**`Downloads`**|
+|-----------------|---------------------|------------------|------------------|-----------|
+|[![Build Status](https://travis-ci.org/linwoodc3/gdeltPyR.svg?branch=master)](https://travis-ci.org/linwoodc3/gdeltPyR)|[![Build status](https://ci.appveyor.com/api/projects/status/yc6u8v6uvg212dcm?svg=true)](https://ci.appveyor.com/project/linwoodc3/gdeltpyr/history)|[![PyPI version](https://badge.fury.io/py/gdelt.svg)](https://badge.fury.io/py/gdelt)|[![Coverage Status](https://coveralls.io/repos/github/linwoodc3/gdeltPyR/badge.svg?branch=master)](https://coveralls.io/github/linwoodc3/gdeltPyR?branch=master)|[![Downloads](https://pepy.tech/badge/gdelt)](https://pepy.tech/project/gdelt)|
 # gdeltPyR
 gdeltPyR is a Python-based framework to access and analyze [Global Database of Events, Language, and Tone (GDELT) 1.0 or 2.0](http://gdeltproject.org/data.html) data in a Python Pandas or R dataframe. A user can enter a single date, date range (list of two strings), or individual dates (more than two in a list) and return a [tidy data set ready for scientific or data-driven exploration](http://vita.had.co.nz/papers/tidy-data.pdf).  
 

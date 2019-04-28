@@ -19,10 +19,8 @@ matrix:
 install:
   # Install conda
   - source travis/install.sh
-
-
-  # Install dependencies
   - conda env create --file="${ENV_FILE}"
+  - conda init bash
   - conda activate test
   - pip install -e .
   - conda list

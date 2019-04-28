@@ -5,6 +5,7 @@ include *.rst
 include AUTHORS.rst
 include README.rst
 include README.md
+include CHANGES
 recursive-include docs *
 recursive-include data *.json
 recursive-include utils/schema_csvs *

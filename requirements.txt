@@ -12,7 +12,7 @@ pytest-cov
 geopandas
 psycopg2>=2.5.1
 SQLAlchemy>=0.8.3
-geopy==1.10.0
+geopy>=1.10.0
 matplotlib>=1.2.1
 descartes>=1.0
 pytest>=3.1.0

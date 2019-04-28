@@ -35,9 +35,9 @@ def _events1Heads():
                  "GDELT_1.0_event_Column_Labels_Header_Row_Sep2016.tsv")
             )
     data = BytesIO(conte.content)
-    eventsDbHeaders = pd.read_csv(data, delimiter='\t', usecols=['tableId'])
+    eventsDbHeaders = pd.read_csv(data, delimiter='\t', header=0)
 
-    return eventsDbHeaders['tableId'].tolist()
+    return eventsDbHeaders[eventsDbHeaders.columns[0]].tolist()
 
 
 #######################################

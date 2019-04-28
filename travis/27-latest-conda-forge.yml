@@ -1,0 +1,30 @@
+name: test
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=2.7
+  - six
+  - pip
+  # required
+  - numpy
+  - pandas
+  - shapely
+  - fiona
+  - pyproj
+  - geopandas
+  # testing
+  - pytest
+  - pytest-cov
+  - codecov
+  - coveralls
+  - mock
+  # optional
+  - rtree
+  - matplotlib
+  - descartes
+  - mapclassify
+  - geopy
+  - SQLalchemy
+  - psycopg2
+  - libspatialite

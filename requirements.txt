@@ -8,14 +8,13 @@ requests>=2.11.1
 six>=1.10.0
 python-dateutil>=2.5.3
 beautifulsoup4
-pytest-cov>=3.6
 geopandas
 psycopg2>=2.5.1
 SQLAlchemy>=0.8.3
 geopy>=1.10.0
 matplotlib>=1.2.1
 descartes>=1.0
-pytest>=3.1.0
+pytest>=3.6.0
 pytest-cov
 codecov
 rtree>=0.8

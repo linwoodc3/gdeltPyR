@@ -4,7 +4,7 @@
 # gdeltPyR
 gdeltPyR is a Python-based framework to access and analyze [Global Database of Events, Language, and Tone (GDELT) 1.0 or 2.0](http://gdeltproject.org/data.html) data in a Python Pandas or R dataframe. A user can enter a single date, date range (list of two strings), or individual dates (more than two in a list) and return a [tidy data set ready for scientific or data-driven exploration](http://vita.had.co.nz/papers/tidy-data.pdf).  
 
-* Python 2 is retiring.  Because `gdeltPyR` depends on several libraries that are stopping supoort for Python 2, it's only prudent that we do the same.  `gdeltPyR` functionality in Python 2 will become buggy over the coming months.  Move to Python 3 for the best experience. 
+* **Python 2 is retiring**.  Because `gdeltPyR` depends on several libraries that will end Python 2 support, it's only prudent that we do the same.  `gdeltPyR` functionality in Python 2 will become buggy over the coming months.  Move to Python 3 for the best experience.
 
 `gdeltPyR` retrieves [GDELT data, version 1.0 or version 2.0](http://gdeltproject.org/data.html#intro) via [parallel HTTP GET requests](http://docs.python-requests.org/en/v0.10.6/user/advanced/#asynchronous-requests) and will provide a method to [access GDELT data directly via Google BigQuery ](http://gdeltproject.org/data.html#googlebigquery). Therefore, the more cores you have, the less time it takes to pull more data.  Moreover, the more RAM you have, the more data you can pull.  And finally, for RAM-limited workflows, create a pipeline that pulls data, writes to disk, and flushes.  
 

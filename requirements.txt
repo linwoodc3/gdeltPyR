@@ -8,7 +8,7 @@ requests>=2.11.1
 six>=1.10.0
 python-dateutil>=2.5.3
 beautifulsoup4
-pytest-cov
+pytest-cov>=3.6
 geopandas
 psycopg2>=2.5.1
 SQLAlchemy>=0.8.3

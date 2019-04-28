@@ -21,7 +21,7 @@ install:
   - source travis/install.sh
   - conda env create --file="${ENV_FILE}"
   - conda init bash
-  - conda activate test
+  - source activate test
   - pip install -e .
   - conda list
 

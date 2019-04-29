@@ -1,47 +1,32 @@
 language: python
-cache: pip
-matrix:
-    include:
 
-    - os: linux
-      sudo: required
-      python: 2.7
-      env: GDELT=py27
-    - os: linux
-      sudo: required
-      python: 3.5
-      env: GDELT=py35
-    - os: linux
-      sudo: required
-      python: 3.6
-      env: GDELT=py36
-    - os: osx
-      language: generic
-      env: GDELT=py27
-    - os: osx
-      language: generic
-      env: GDELT=py34
-    - os: osx
-      language: generic
-      env: GDELT=py35
-    - os: osx
-      language: generic
-      env: GDELT=py36
+sudo: false
+
+matrix:
+  include:
+    # Python 2.7
+    - env: ENV_FILE="travis/27-latest-conda-forge.yml"
+
+    # Python 3.5 and 3.6 test all supported Pandas versions
+    - env: ENV_FILE="travis/35-defaults.yml"
+    - env: ENV_FILE="travis/35-latest-conda-forge.yml"
+    - env: ENV_FILE="travis/36-defaults.yml"
+    - env: ENV_FILE="travis/36-latest-conda-forge.yml"
+    # Python 3.7
+    - env: ENV_FILE="travis/37-defaults.yml"
+    - env: ENV_FILE="travis/37-latest-conda-forge.yml"
 
 install:
-
-    - source travis/install.sh
-    - pip install pip!=10
-    - pip install pytest-cov
-    - pip install coveralls --ignore-installed  certifi
-    - pip install python-coveralls --ignore-installed  certifi
-    - python setup.py install
-
-
+  # Install conda
+  - source travis/install.sh
+  - conda env create --file="${ENV_FILE}"
+  - conda init bash
+  - source activate test
+  - pip install -e .
+  - conda list
 
 script:
   - pytest
-#  - coverage run --source=gdelt setup.py test
 
 cache:
   directories:
@@ -52,18 +37,3 @@ before_cache:
 after_success:
   - codecov
   - coveralls
-
-#
-#script:
-#  - pytest
-##  - coverage run --source=gdelt setup.py test
-#
-#cache:
-#  directories:
-#    - $HOME/.cache/pip
-#before_cache:
-#  - rm -f $HOME/.cache/pip/log/debug.log
-#
-#after_success:
-#  - codecov
-#  - coveralls

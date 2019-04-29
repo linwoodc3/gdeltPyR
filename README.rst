@@ -282,4 +282,4 @@ We follow the `pandas <https://pandas.pydata.org/pandas-docs/stable/contributing
 * PERF: Performance improvement
 * CLN: Code cleanup
 
-See `this issue as an example <https://github.com/linwoodc3/gdeltPyR/issues/8>`__... -*- mode: rst -*-
+See `this issue as an example <https://github.com/linwoodc3/gdeltPyR/issues/8>`__

@@ -1,4 +1,4 @@
-pandas>=0.20
+pandas>=0.23
 numpy>=1.11.1
 requests>=2.11.1
 six>=1.10.0

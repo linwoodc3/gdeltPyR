@@ -1,0 +1,29 @@
+name: test
+channels:
+  - defaults
+dependencies:
+  - python=3.9
+  - six
+  - pip
+  # required
+  - numpy
+  - pandas
+  - shapely
+  - fiona
+  - pyproj
+  - geopandas
+  # testing
+  - pytest
+  # optional
+  - rtree
+  - matplotlib
+  - descartes
+  - SQLalchemy
+  - psycopg2
+  - libspatialite
+  - pip:
+      - codecov
+      - geopy
+      - coveralls
+      - pytest-cov
+      - coverage

@@ -16,13 +16,9 @@ matrix:
     - env: ENV_FILE="travis/37-defaults.yml"
     - env: ENV_FILE="travis/37-latest-conda-forge.yml"
 
-    # Python 3.7
+    # Python 3.8
     - env: ENV_FILE="travis/38-defaults.yml"
     - env: ENV_FILE="travis/38-latest-conda-forge.yml"
-
-    # Python 3.7
-    - env: ENV_FILE="travis/39-defaults.yml"
-    - env: ENV_FILE="travis/39-latest-conda-forge.yml"
 
 install:
   # Install conda

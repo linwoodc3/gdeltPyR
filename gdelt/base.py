@@ -340,7 +340,7 @@ class gdelt(object):
         >>> results = gd.Search(['2016 Oct 10'], table='gkg')
         >>> print(len(results))
         2398
-        >>> print(results.V2Persons.ix[2])
+        >>> print(results.V2Persons.iloc[2])
         Juanita Broaddrick,1202;Monica Lewinsky,1612;Donald Trump,12;Donald
         Trump,244;Wolf Blitzer,1728;Lucianne Goldberg,3712;Linda Tripp,3692;
         Bill Clinton,47;Bill Clinton,382;Bill Clinton,563;Bill Clinton,657;Bill
@@ -645,7 +645,7 @@ class gdelt(object):
 
 
         if self.table == 'gkg' and self.version == 1:
-            results.columns = results.ix[0].values.tolist()
+            results.columns = results.iloc[0].values.tolist()
             results.drop([0], inplace=True)
             columns = results.columns
 

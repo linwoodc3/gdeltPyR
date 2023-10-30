@@ -28,6 +28,11 @@ from gdelt.vectorizingFuncs import _urlBuilder, _geofilter
 # Third Party Libraries
 ##############################
 
+try:
+    import geopandas
+except:
+    print('geopandas not installed')
+
 ##############################
 # Custom Library Import
 ##############################
@@ -125,7 +130,7 @@ class testGDELTVectorizingFuncs(TestCase):
     #         return self.assertEqual("Blank",exp)
     def test_geopandas_import_pass(self):
         """Test ability to import geopandas and create spatial object"""
-        import geopandas as gpd
+        #import geopandas as gpd
 
         # exp = "geopandas is not installed. gdeltPyR needs geopandas to export as shapefile. Visit http://geopandas.org/install.html for instructions."
         gdf = _geofilter(test_df)

@@ -43,7 +43,7 @@ where = ["data"]
 "*"= ["*.gz", "*.csv","*.zip","*.json","*.compress"]
 
 [tool.gdelt.extras]
-geoSpatial= ["fiona>=1.6", "shapely>=1.5", "geopandas>1.7"]
+geoSpatial= ["fiona>=1.6", "shapely>=1.5", "geopandas>1.7","CHANGES","LICENSE","README.md"]
 
 [project.urls]
 "Homepage" = "https://linwoodc3.github.io/gdeltPyR/"

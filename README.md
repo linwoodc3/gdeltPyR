@@ -76,6 +76,12 @@ print(gd.schema('events'))
 pip install gdelt
 ```
 
+It can also be installed using `conda`
+
+```bash
+conda install gdelt
+```
+
 ### Basic Examples
 
 **GDELT 1.0 Queries**

@@ -87,6 +87,12 @@ Latest release installs from PyPi::
 
     pip install gdelt
 
+You can also install using ``conda``::
+
+    conda install gdelt
+
+
+
 Latest dev version of ``gdeltPyR`` can be installed from GitHub.com::
 
     pip install git+https://github.com/linwoodc3/gdeltPyR

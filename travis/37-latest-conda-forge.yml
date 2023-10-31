@@ -27,3 +27,9 @@ dependencies:
   - SQLalchemy
   - psycopg2
   - libspatialite
+  - pip:
+      - codecov
+      - geopy
+      - coveralls
+      - pytest-cov
+      - coverage

@@ -12,11 +12,12 @@ import os
 ##############################
 import re
 
-import numpy as np
-import pandas as pd
 ##############################
 # Third party Library Imports
 ##############################
+
+import numpy as np
+import pandas as pd
 from dateutil.parser import parse
 
 ##############################

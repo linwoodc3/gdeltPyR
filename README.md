@@ -1,6 +1,6 @@
-| **`Linux and Mac OS`** | **`Windows OS`** | **`Module Version`** | **`Coverage`**|**`Downloads`**|
-|-----------------|---------------------|------------------|------------------|-----------|
-|[![Build Status](https://travis-ci.org/linwoodc3/gdeltPyR.svg?branch=master)](https://travis-ci.org/linwoodc3/gdeltPyR)|[![Build status](https://ci.appveyor.com/api/projects/status/yc6u8v6uvg212dcm?svg=true)](https://ci.appveyor.com/project/linwoodc3/gdeltpyr/history)|[![PyPI version](https://badge.fury.io/py/gdelt.svg)](https://badge.fury.io/py/gdelt)|[![Coverage Status](https://coveralls.io/repos/github/linwoodc3/gdeltPyR/badge.svg?branch=master)](https://coveralls.io/github/linwoodc3/gdeltPyR?branch=master)|[![Downloads](https://pepy.tech/badge/gdelt)](https://pepy.tech/project/gdelt)|
+|**`Windows OS`** | **`Module Version`** | **`Coverage`**|**`Downloads`**|
+|---------------------|------------------|------------------|-----------|
+|[![Build status](https://ci.appveyor.com/api/projects/status/yc6u8v6uvg212dcm?svg=true)](https://ci.appveyor.com/project/linwoodc3/gdeltpyr/history)|[![PyPI version](https://badge.fury.io/py/gdelt.svg)](https://badge.fury.io/py/gdelt)|[![Coverage Status](https://coveralls.io/repos/github/linwoodc3/gdeltPyR/badge.svg?branch=master)](https://coveralls.io/github/linwoodc3/gdeltPyR?branch=master)|[![Downloads](https://pepy.tech/badge/gdelt)](https://pepy.tech/project/gdelt)|
 # gdeltPyR
 gdeltPyR is a Python-based framework to access and analyze [Global Database of Events, Language, and Tone (GDELT) 1.0 or 2.0](http://gdeltproject.org/data.html) data in a Python Pandas or R dataframe. A user can enter a single date, date range (list of two strings), or individual dates (more than two in a list) and return a [tidy data set ready for scientific or data-driven exploration](http://vita.had.co.nz/papers/tidy-data.pdf).  
 
@@ -33,15 +33,6 @@ This project will evolve in [two phases](https://github.com/linwoodc3/gdeltPyR/p
 
 This phase is what will make `gdeltPyR` useful to a wider audience. The major addition will be an `Analysis` method of the `gdelt` class which will analyze outputs of the `Search` method.  For data-literate users (data scientists, researchers, students, data journalists, etc), enhancements in this phase will save time by providing summary statistics and extraction methods of GDELT data, and as a result reduce the time a user would spend writing code to perform routine data cleanup/analysis.  For the non-technical audience (students, journalists, business managers, etc.), enhancesments in this phase will provide outputs that summarize GDELT data, which can in turn be used in reports, articles, etc.  Areas of focus include descriptive statistics (mean, split-apply-combine stats, etc), spatial analysis, and time series.
 
-
-## New Features (0.1.10) as of Oct 2017
-
-1.  Added geodataframe output; can be easily converted into a shapefile or [choropleth](https://en.wikipedia.org/wiki/Choropleth_map) visualization.
-2.  Added continuous integration testing for Windows, OSX, and Linux (Ubuntu)
-3.  Normalized columns output; export data with SQL ready columns (no special characters, all lowercase)
-4.  Choosing between the native-english or translated-to-english datasets from GDELT v2.
-5.  **Added schema method to query table info/column descriptions.**
-
 ```python
 # Basic use and new schema method
 import gdelt
@@ -55,7 +46,7 @@ print(gd.schema('events'))
 
 ```
 
-## Coming Soon (version 0.1.11, as of Oct 2017)
+## Coming Soon (in version 0.2, as of Oct 2023)
 
 * Output/store `gdeltPyR` results in [parquet format](http://wesmckinney.com/blog/python-parquet-update/); efficient columnar storage to reduce memory footprint and optimize loading
 * Query Google's BigQuery directly from `gdeltPyR` using the `pandas.io.gbq` interface; requires authentication and Google Compute account
@@ -74,6 +65,12 @@ print(gd.schema('events'))
 
 ```bash
 pip install gdelt
+```
+
+It can also be installed using `conda`
+
+```bash
+conda install gdelt
 ```
 
 ### Basic Examples

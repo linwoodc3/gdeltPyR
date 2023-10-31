@@ -58,3 +58,6 @@
 
 2018-10-18
   Fixed bug in line 636; had hanging proxies parameter.
+
+2023 -10-29
+  Fixing the missing CHANGES file that causes error on pip install.

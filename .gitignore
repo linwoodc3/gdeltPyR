@@ -2,3 +2,6 @@
 .coverage
 *.pyc
 tests/__pycache__/*
+/notebook/
+/travis/
+/.travis.yml

@@ -24,7 +24,7 @@ matrix:
 install:
   # Install conda
   - source travis/install.sh
-  - conda update -n base conda
+  - conda update -q conda
   - conda install -n base conda-libmamba-solver
   - conda config --set solver libmamba
   - conda env create --file="${ENV_FILE}"

@@ -5,6 +5,10 @@
 # Linwood Creekmore
 # Email: valinvescap@gmail.com
 
+##############################
+# Standard Library Imports
+##############################
+
 import datetime
 import multiprocessing
 import re
@@ -12,6 +16,10 @@ import time
 import warnings
 from io import BytesIO
 from multiprocessing import freeze_support
+
+##############################
+# Third party Library Imports
+##############################
 
 import pandas as pd
 import requests

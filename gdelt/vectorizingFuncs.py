@@ -10,19 +10,20 @@
 ##################################
 import datetime
 
+############################
+# Third Party imports
+#############################
 import numpy as np
 from dateutil.parser import parse
-
 from gdelt.helpers import _testdate
+
 ################################
 # Local Imports
 ################################
 from gdelt.multipdf import _parallelize_dataframe
 
 
-############################
-# Third Party imports
-#############################
+
 
 def _urlBuilder(dateString, version, table='events', translation=False):
     """

@@ -17,6 +17,7 @@ import os
 import re
 from functools import partial
 from multiprocessing import Pool, cpu_count
+import concurrent
 
 ##################################
 # Third party imports
@@ -477,7 +478,7 @@ class gdelt(object):
 
         if int(self.version) == 1:
 
-            if self.table is "mentions":
+            if self.table == "mentions":
                 raise ValueError('GDELT 1.0 does not have the "mentions"'
                                     ' table. Specify the "events" or "gkg"'
                                     'table.')
@@ -633,15 +634,25 @@ class gdelt(object):
                 pool = Pool(processes=cpu_count())
                 downloaded_dfs = list(pool.imap_unordered(eventWork,
                                                           self.download_list))
+                pool.close()
+                pool.terminate()
+                pool.join()
             else:
 
-                pool = NoDaemonProcessPool(processes=cpu_count())
-                downloaded_dfs = list(pool.imap_unordered(_mp_worker,
-                                                          self.download_list,
-                                                          ))
-            pool.close()
-            pool.terminate()
-            pool.join()
+                #pool = NoDaemonProcessPool(processes=cpu_count())
+                with concurrent.futures.ProcessPoolExecutor() as executor:
+                    # Submit tasks to the executor
+                    downloaded_dfs = list(executor.map(_mp_worker,self.download_list))
+
+                    # downloaded_dfs = []
+                    #
+                    # # Wait for all of the tasks to finish executing
+                    # for result in results:
+                    #     downloaded_dfs = downloaded_dfs.append(results)
+                # downloaded_dfs = list(pool.imap_unordered(_mp_worker,
+                #                                           self.download_list,
+                #                                           ))
+
             # print(downloaded_dfs)
             results = pd.concat(downloaded_dfs)
             del downloaded_dfs

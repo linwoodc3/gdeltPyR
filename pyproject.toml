@@ -12,7 +12,7 @@ name = "gdelt"
 authors = [
     {name = "Linwood Creekmore", email = "valinvescap@gmail.com"},
 ]
-version = "0.1.12"
+version = "0.1.13"
 description = "Python-based framework to access and analyze Global Database of Events, Language, and Tone (GDELT) 1.0 or 2.0 data in a Python Pandas or R dataframe"
 readme = "README.md"
 license = { file="LICENSE" }

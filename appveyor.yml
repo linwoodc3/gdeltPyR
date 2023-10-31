@@ -2,11 +2,6 @@ build: false
 
 environment:
   matrix:
-  # Python 2.7
-  - MINICONDA: C:\Miniconda
-    PYTHON_VERSION: 2.7
-    platform: x64
-  # Python 3.5
   - MINICONDA: C:\Miniconda35
     PYTHON_VERSION: 3.5
     platform: x64

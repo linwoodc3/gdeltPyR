@@ -1,7 +1,5 @@
 .. -*- mode: rst -*-
 
-.. image:: https://travis-ci.org/linwoodc3/gdeltPyR.svg?branch=master
-    :target: https://travis-ci.org/linwoodc3/gdeltPyR
 
 .. image:: https://ci.appveyor.com/api/projects/status/yc6u8v6uvg212dcm/branch/master?svg=true
     :target: https://ci.appveyor.com/project/linwoodc3/gdeltpyr/history
@@ -48,15 +46,6 @@ Therefore, most `issues <https://github.com/linwoodc3/gdeltPyR/issues>`__ in thi
 
 This phase is what will make ``gdeltPyR`` useful to a wider audience. The major addition will be an ``Analysis`` class.  For the data-literate users (data scientists, researchers, students, data journalists, etc), enhancements in this phase will save time by providing summary statistics and extraction methods of GDELT data, and as a result reduce the time a user would spend writing code to perform routine data cleanup/analysis.  For the non-technical audience (students, journalists, business managers, etc.), enhancesments in this phase will provide outputs that summarize GDELT data, which can in turn be used in reports, articles, etc.  Areas of focus include descriptive statistics (mean, split-apply-combine stats, etc), spatial analysis, and time series.
 
-New Features as of Oct 2017
--------------------------------
-
-*  Added geodataframe output.  This can be easily converted into a shapefile or `choropleth <https://en.wikipedia.org/wiki/Choropleth_map>`_ visualization.
-*  Added continuous integration testing for Windows, OSX, and Linux (Ubuntu)
-*  Normalized columns output; export data with SQL ready columns (no special characters, all lowercase)
-*  Choosing between the native-english or translated-to-english datasets from GDELT v2.
-*  Return the schema for a given table; just type the name of the table in the ``gdelt.gdelt.schema`` method and return the pandas dataframe with schema information
-
 Basic Usage of New Schema Query
 -------------------------------
 
@@ -72,7 +61,7 @@ Basic Usage of New Schema Query
 
     gd.schema('events')
 
-Coming Soon (version 0.1.11, as of Oct 2017)
+Coming Next (in version 0.2, as of Oct 2023)
 -----------------------------------------------
 
 * Output/store ``gdeltPyR`` results in `parquet format <http://wesmckinney.com/blog/python-parquet-update/>`_ ; efficient columnar storage to reduce memory footprint and optimize loading
@@ -148,25 +137,11 @@ An easy way to create a ``gdeltPyR`` development environment is as follows.
 After completing all steps above, tell conda to create a new environment, named ``gdelt_dev``, or any other name you would like for this environment, by running:
 
 
-* For Python 2.7
+* For Python 3.8
 
 .. code-block:: bash
 
-    conda create -n gdelt_dev python=2 -c conda-forge --file travis/requirements_all.txt
-
-
-* For Python 3.5
-
-.. code-block:: bash
-
-    conda create -n gdelt_dev python=3 -c conda-forge --file travis/requirements_all.txt
-
-
-* For Python 3.6
-
-.. code-block:: bash
-
-    conda create -n gdelt_dev python=3.6 -c conda-forge --file travis/requirements_all36.txt
+    conda create -n gdelt_dev python=3.8 -c conda-forge --file travis/requirements_all36.txt
 
 
 Windows Dev Environment

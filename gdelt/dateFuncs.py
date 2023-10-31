@@ -171,8 +171,8 @@ def _gdeltRangeString(element, coverage=None, version=2.0):
                         ), times[:hour * 4 + conditioner])))
             else:
 
-                converted = datetime.datetime.now().replace(
-                    minute=multiple, second=0).strftime('%Y%m%d%H%M%S')
+                converted = (datetime.datetime.now().replace(
+                    minute=multiple, second=0)-datetime.timedelta(minutes=15)).strftime('%Y%m%d%H%M%S')
 
         else:
             if coverage and int(version) != 1:

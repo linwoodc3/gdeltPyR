@@ -20,7 +20,33 @@ What is gdeltPyR?
 
 ``gdeltPyR`` retrieves `GDELT, 1.0 and 2.0 data, <http://gdeltproject.org/data.html>`_  via `parallel HTTP GET requests <http://docs.python-requests.org/en/v0.10.6/user/advanced/#asynchronous-requests>`_ and will also include a method to  `access GDELT data via Google BigQuery  <http://gdeltproject.org/data.html#googlebigquery>`_. Therefore, the more CPUs or cores you have, the less time it takes to pull more data.  Moreover, the more RAM you have, the more data you can pull.  And finally, for RAM-limited workflows, create a pipeline that pulls data, writes to disc, and flushes.  The only limitation with data pulls ``gdeltPyR`` is you hardware.
 
-The GDELT Project advertises as the largest, most comprehensive, and highest resolution open database of human society ever created. It monitors print, broadcast, and web news media in over 100 languages from across every country in the world to keep continually updated on breaking developments anywhere on the planet. Its historical archives stretch back to January 1, 1979 and accesses the world’s breaking events and reaction in near-realtime as both the GDELT Event and Global Knowledge Graph update every 15 minutes.  Visit the `GDELT website to learn more about the project <(http://gdeltproject.org/#intro)>`_.
+::
+
+ Notice : A word of caution for users of this library, not to discourage use but mainly
+ to raise awareness. Researchers and practitioners should consider pros and cons of using
+ auto-coded conflict data like GDELT.
+
+ Pros. GDELT excels in breadth and speed. It churns out coded conflict data every 15
+ minutes for events across the globe. GDELT codes news articles from global websites
+ in multiple languages and provides the source URLs for fact-checking.
+
+ Cons. These benefits introduce risks as well. GDELT’s preference for breadth creates
+ a dichotomy of sourcing. It contains data from reliable sources, as well as articles
+ from questionable or lesser-known websites.
+
+ Solution. Be careful and think critically when using automatically-coded conflict data
+ to support research claims. Watch for duplicate reports, circular reporting, erroneous
+ reports, and significant events that rely on a single report from a largely unknown,
+ obscure source. This library has a method—the `_rooturl` method in helpers—that can find
+ the root url/source for every url in the results; use it wisely! For more reading on the
+ advantages and disadvantages of using GDELT, read the following as a start:
+
+     - `The Empirical Use of GDELT Big Data in Academic Research
+     - `Political instability patterns are obscured by conflict dataset scope conditions, sources, and coding choices
+
+
+
+The GDELT creator claims the project is the largest, most comprehensive, and highest resolution open database of human society ever created. It monitors print, broadcast, and web news media in over 100 languages from across every country in the world to keep continually updated on breaking developments anywhere on the planet. Its historical archives stretch back to January 1, 1979 and accesses the world’s breaking events and reaction in near-realtime as both the GDELT Event and Global Knowledge Graph update every 15 minutes.  Visit the `GDELT website to learn more about the project <(http://gdeltproject.org/#intro)>`_.
 
 GDELT Facts
 -----------
@@ -148,13 +174,6 @@ Windows Dev Environment
 -----------------------
 
 For Windows, we will again follow the ``pandas`` documentation (let me know if this doesn't work for ``gdeltPyR``).  To build on Windows, you need to have compilers installed to build the extensions. You will need to install the appropriate Visual Studio compilers, VS 2008 for Python 2.7, VS 2010 for 3.4, and VS 2015 for Python 3.5 and 3.6.
-
-For Python 2.7, you can install the mingw compiler which will work equivalently to VS 2008:
-
-.. code-block:: bash
-
-    conda install -n gdelt_dev libpython
-
 
 or use the Microsoft Visual Studio VC++ compiler for Python. Note that you have to check the x64 box to install the x64 extension building capability as this is not installed by default.
 

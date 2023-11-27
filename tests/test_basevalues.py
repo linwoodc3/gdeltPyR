@@ -10,7 +10,13 @@
 ##############################
 
 import os
+import json
 from unittest import TestCase
+
+
+##############################
+# Third Party Import
+##############################
 
 import numpy as np
 import pandas as pd
@@ -34,8 +40,12 @@ class TestBaseValues(TestCase):
         f = os.path.join(BASE_DIR, 'data', 'cameoCodes.json')
         resp = pd.read_json(f,dtype={'cameoCode': 'str', "GoldsteinScale": np.float64})
         resp.set_index('cameoCode', drop=False, inplace=True)
-        print("This is {}".format(gdelt.__file__))
-        return (self.assertTrue(resp.equals(codes)))
+        print(resp.columns,resp.index,resp.shape)
+        code_test = pd.DataFrame(codes).astype(dtype={'cameoCode': 'str', "GoldsteinScale": np.float64})
+        code_test.set_index('cameoCode', drop=False, inplace=True)
+        code_test = code_test.sort_index()
+        print(code_test.columns,code_test.index,code_test.shape)
+        return (self.assertTrue(resp.equals(code_test)))
 
     def test_proxy_dict(self):
         "Test if proxy is dictionary"

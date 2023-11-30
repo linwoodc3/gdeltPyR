@@ -52,6 +52,7 @@ print(gd.schema('events'))
 
 ```
 
+
 ## Coming in next versions (in version 0.2, as of Oct 2023)
 
 * Output/store `gdeltPyR` results in [parquet format](http://wesmckinney.com/blog/python-parquet-update/); efficient columnar storage to reduce memory footprint and optimize loading
@@ -73,11 +74,12 @@ print(gd.schema('events'))
 pip install gdelt
 ```
 
-It can also be installed using `conda` (*depends on conda-forge project update*)
+Soon, it can also be installed using `conda` (*depends on conda-forge project update*)
 
 ```bash
 conda install gdelt -c conda-forge
 ```
+
 
 ### Basic Examples
 

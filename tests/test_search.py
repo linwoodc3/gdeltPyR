@@ -26,6 +26,10 @@ import gdelt
 ##############################
 # Third party imports
 ##############################
+
+import geopandas as gpd
+
+
 ##############################
 # Local imports
 ##############################
@@ -422,7 +426,7 @@ class TestGdeltBaseSearch(TestCase):
     @mock.patch.object(gdelt.base, '_mentionsHeads')
     @mock.patch.object(gdelt.base, 'Pool')
     @mock.patch.object(gdelt.base.pd, 'concat')
-    @mock.patch.object(gdelt.base,'NoDaemonProcessPool')
+    @mock.patch.object(gdelt.base.concurrent.futures, 'ProcessPoolExecutor')
     def test_my_method_mock_mentions_list_pass(self, mock_E, mock_D, mock_C, mock_B,
                                               mock_A):
         # instantiating the first mock; need the headers
@@ -469,7 +473,7 @@ class TestGdeltBaseSearch(TestCase):
     @mock.patch.object(gdelt.base, '_gkgHeads')
     @mock.patch.object(gdelt.base, 'Pool')
     @mock.patch.object(gdelt.base.pd, 'concat')
-    @mock.patch.object(gdelt.base, 'NoDaemonProcessPool')
+    @mock.patch.object(gdelt.base.concurrent.futures, 'ProcessPoolExecutor')
     def test_my_method_mock_gkg2_list_pass(self, mock_E, mock_D, mock_C,
                                                mock_B,
                                                mock_A):

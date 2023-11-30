@@ -55,7 +55,6 @@ class NoDaemonProcess(multiprocessing.Process):
 
     daemon = property(_get_daemon, _set_daemon)
 
-
 # We sub-class multiprocessing.pool.Pool instead of multiprocessing.Pool
 # because the latter is only a wrapper function, not a proper class.
 class NoDaemonProcessPool(multiprocessing.pool.Pool):
@@ -75,10 +74,12 @@ UTIL_FILES_PATH = os.path.join(BASE_DIR, "gdeltPyR", "utils", "schema_csvs")
 try:
 
     codes = pd.read_json(os.path.join(BASE_DIR, 'data', 'cameoCodes.json'),
-                         dtype=dict(cameoCode='str', GoldsteinScale=np.float64))
+                         dtype=dict(cameoCode='str', GoldsteinScale=float),precise_float=True,convert_dates=False)
     codes.set_index('cameoCode', drop=False, inplace=True)
 
+
 except:  # pragma: no cover
+    print('here')
     a = 'https://raw.githubusercontent.com/linwoodc3/gdeltPyR/master' \
         '/utils/' \
         'schema_csvs/cameoCodes.json'
@@ -433,7 +434,7 @@ class gdelt(object):
         urlsv2gkg = partial(_urlBuilder, version=2, table='gkg', translation=self.translation)
 
         eventWork = partial(_mp_worker, table='events', proxies=self.proxies)
-        codeCams = partial(_cameos, codes=codes)
+        codeCams = partial(_cameos, codes=self.codes)
 
         #####################################
         # GDELT Version 2.0 Headers

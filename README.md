@@ -4,11 +4,17 @@
 # gdeltPyR
 gdeltPyR is a Python-based framework to access and analyze [Global Database of Events, Language, and Tone (GDELT) 1.0 or 2.0](http://gdeltproject.org/data.html) data in a Python Pandas or R dataframe. A user can enter a single date, date range (list of two strings), or individual dates (more than two in a list) and return a [tidy data set ready for scientific or data-driven exploration](http://vita.had.co.nz/papers/tidy-data.pdf).  
 
-* **Python 2 is retiring**.  Because `gdeltPyR` depends on several libraries that will end Python 2 support, it's only prudent that we do the same.  `gdeltPyR` functionality in Python 2 will become buggy over the coming months.  Move to Python 3 for the best experience.
+> **Notice** : A word of caution for users of this library, not to discourage use but mainly to raise awareness. Researchers and practitioners should consider pros and cons of using auto-coded conflict data like GDELT.
+> * **Pros**. GDELT excels in breadth and speed. It churns out coded conflict data every 15 minutes for events across the globe. GDELT codes news articles from global websites in multiple languages and provides the source URLs for fact-checking.
+> * **Cons**. These benefits introduce risks as well. GDELT’s preference for breadth creates a dichotomy of sourcing. It contains data from reliable sources, as well as articles from questionable or lesser-known websites.
+> * **Solution**. Be careful and think critically when using automatically-coded conflict data to support research claims. Watch for duplicate reports, circular reporting, erroneous reports, and significant events that rely on a single report from a largely unknown, obscure source. This library has a method—the `_rooturl` method in helpers—that can find the root url/source for every url in the results; use it wisely! For more reading on the advantages and disadvantages of using GDELT, read the following as a start:
+>    * [The Empirical Use of GDELT Big Data in Academic Research](https://www.globe-project.eu/the-empirical-use-of-gdelt-big-data-in-academic-research_13809.pdf)
+>    * [Political instability patterns are obscured by conflict dataset scope conditions, sources, and coding choices](https://www.nature.com/articles/s41599-023-01559-4)
+
 
 `gdeltPyR` retrieves [GDELT data, version 1.0 or version 2.0](http://gdeltproject.org/data.html#intro) via [parallel HTTP GET requests](http://docs.python-requests.org/en/v0.10.6/user/advanced/#asynchronous-requests) and will provide a method to [access GDELT data directly via Google BigQuery ](http://gdeltproject.org/data.html#googlebigquery). Therefore, the more cores you have, the less time it takes to pull more data.  Moreover, the more RAM you have, the more data you can pull.  And finally, for RAM-limited workflows, create a pipeline that pulls data, writes to disk, and flushes.  
 
-The GDELT Project advertises as the largest, most comprehensive, and highest resolution open database of human society ever created. It monitors print, broadcast, and web news media in over 100 languages from across every country in the world to keep continually updated on breaking developments anywhere on the planet. Its historical archives stretch back to January 1, 1979 and accesses the world’s breaking events and reaction in near-realtime as both the GDELT Event and Global Knowledge Graph update every 15 minutes.  Visit the [GDELT website to learn more about the project](http://gdeltproject.org/#intro).
+The GDELT creator claims the project is the largest, most comprehensive, and highest resolution open database of human society ever created. It monitors print, broadcast, and web news media in over 100 languages from across every country in the world to keep continually updated on breaking developments anywhere on the planet. Its historical archives stretch back to January 1, 1979 and accesses the world’s breaking events and reaction in near-realtime as both the GDELT Event and Global Knowledge Graph update every 15 minutes.  Visit the [GDELT website to learn more about the project](http://gdeltproject.org/#intro).
 
 ### *GDELT Facts*
 
@@ -46,7 +52,8 @@ print(gd.schema('events'))
 
 ```
 
-## Coming Soon (in version 0.2, as of Oct 2023)
+
+## Coming in next versions (in version 0.2, as of Oct 2023)
 
 * Output/store `gdeltPyR` results in [parquet format](http://wesmckinney.com/blog/python-parquet-update/); efficient columnar storage to reduce memory footprint and optimize loading
 * Query Google's BigQuery directly from `gdeltPyR` using the `pandas.io.gbq` interface; requires authentication and Google Compute account
@@ -67,11 +74,12 @@ print(gd.schema('events'))
 pip install gdelt
 ```
 
-It can also be installed using `conda`
+Soon, it can also be installed using `conda` (*depends on conda-forge project update*)
 
 ```bash
-conda install gdelt
+conda install gdelt -c conda-forge
 ```
+
 
 ### Basic Examples
 
@@ -177,12 +185,6 @@ An easy way to create a `gdeltPyR` development environment is as follows.
 
 After completing all steps above, tell conda to create a new environment, named `gdelt_dev`, or any other name you would like for this environment, by running:
 
-
-* For Python 2.7 
-```bash
- conda create -n gdelt_dev python=2 -c conda-forge --file travis/requirements_all.txt
-
-```
 
 * For Python 3.5 
 ```bash

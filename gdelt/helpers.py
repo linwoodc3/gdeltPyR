@@ -72,8 +72,8 @@ def _shaper(row):
 def _rooturl(row):
     """Finds the root url of a news article"""
     s = row['SOURCEURL']
-    r = re.compile('(?<=http://)([A-Za-z0-9\.-]+)(?=/)')
-    r2 = re.compile('(?<=https://)([A-Za-z0-9\.-]+)(?=/)')
+    r = re.compile('(?<=http://)([A-Za-z0-9.-]+)(?=/)')
+    r2 = re.compile('(?<=https://)([A-Za-z0-9.-]+)(?=/)')
 
     if r.search(s):
         return r.search(s).group()

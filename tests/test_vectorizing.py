@@ -133,6 +133,7 @@ class testGDELTVectorizingFuncs(TestCase):
         #import geopandas as gpd
 
         # exp = "geopandas is not installed. gdeltPyR needs geopandas to export as shapefile. Visit http://geopandas.org/install.html for instructions."
+        import geopandas as gpd
         gdf = _geofilter(test_df)
 
         return self.assertTrue(isinstance(gdf, gpd.geodataframe.GeoDataFrame))

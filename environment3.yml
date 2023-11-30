@@ -11,15 +11,20 @@ dependencies:
 - geos
 - fiona
 - shapely
-- pyproj
-- gcc
+- matplotlib
+- holoviews
+- geoviews
+- seaborn
+- folium
 - cython
 - libspatialindex
 - rtree
 - jinja2
 - geopandas
+- ipykernel
 - pip!=10
 - pip:
+    - pytest
     - coveralls
     - pytest-cov
     - python-coveralls
